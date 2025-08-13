@@ -6,7 +6,7 @@ import Navbar from "@/components/Navbar";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
-  weight: ['300'],
+  weight: ['500'],
   variable: '--font-plus-jakarta-sans',
 })
 
