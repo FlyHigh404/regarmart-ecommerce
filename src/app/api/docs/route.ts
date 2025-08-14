@@ -1,4 +1,4 @@
-// app/reference/route.ts
+// app/api/docs/route.ts
 import { ApiReference } from '@scalar/nextjs-api-reference'
 
 const config = {
