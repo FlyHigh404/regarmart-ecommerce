@@ -433,8 +433,8 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer",
-            "format": "int64"
+            "type": "string",
+            "description": "ID unik produk"
           },
           "name": {
             "type": "string"
@@ -453,8 +453,11 @@
             "$ref": "#/components/schemas/Category"
           },
           "imageUrl": {
-            "type": "string",
-            "format": "uri"
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
           },
           "createdAt": {
             "type": "string",
@@ -470,8 +473,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer",
-            "format": "int64"
+            "type": "string"
           },
           "name": {
             "type": "string"
@@ -485,8 +487,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer",
-            "format": "int64"
+            "type": "string"
           },
           "product": {
             "$ref": "#/components/schemas/Product"
@@ -523,8 +524,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer",
-            "format": "int64"
+            "type": "string"
           },
           "totalAmount": {
             "type": "number",
@@ -585,8 +585,7 @@
             "type": "integer"
           },
           "categoryId": {
-            "type": "integer",
-            "format": "int64"
+            "type": "string"
           },
           "imageUrl": {
             "type": "string",
