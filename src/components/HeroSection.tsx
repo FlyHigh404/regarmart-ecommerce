@@ -16,12 +16,12 @@ const HeroSection = () => {
     const popularProducts = [
         {
             id: 1,
-            name: "Gula Segar",
+            name: "Wortel Segar",
             weight: "500gr",
             description: "Gudang hari ini, dijamin segar",
             price: "Rp7,500",
             stock: "120",
-            image: "/placeholder.svg?height=120&width=120",
+            image: "/wortel.png",
         },
         {
             id: 2,
@@ -30,7 +30,7 @@ const HeroSection = () => {
             description: "Sumber kalsium, bebas pengawet",
             price: "Rp17,500",
             stock: "120",
-            image: "/placeholder.svg?height=120&width=120",
+            image: "/susu.png",
         },
         {
             id: 3,
@@ -39,7 +39,7 @@ const HeroSection = () => {
             description: "Masuk gudang hari ini, dijamin",
             price: "Rp15,500",
             stock: "13",
-            image: "/placeholder.svg?height=120&width=120",
+            image: "/telur.png",
         },
     ]
 
@@ -66,7 +66,6 @@ const HeroSection = () => {
                         height={355}
                         className="object-contain animate-fade-in-left"
                     />
-
                     {/* Label Terjangkau */}
                     <div className="absolute lg:top-[22px] lg:left-[8px] bg-[#51B94A]/60 text-white px-4 py-2.5 rounded-xl flex items-center gap-2 font-medium lg:text-[0.95rem] shadow-md animate-slide-in-left animation-delay-300">
                         Terjangkau
@@ -179,11 +178,10 @@ const HeroSection = () => {
                     </div>
 
                     {/* Popular products section */}
-                    <div className="text-left max-w-7xl mx-auto px-4">
-                        <h2 className="text-lg sm:text-xl lg:text-base font-semibold text-gray-700 mb-4 lg:ml-36 animate-fade-in-up animation-delay-800">
+                    <div className="text-left max-w-7xl lg:w-3xl mx-auto px-4">
+                        <h2 className="text-lg sm:text-xl lg:text-base font-semibold text-gray-700 mb-4 lg:ml-22 animate-fade-in-up animation-delay-800">
                             Produk populer hari ini!
                         </h2>
-
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                             {popularProducts.map((product, index) => (
                                 <div
@@ -219,7 +217,7 @@ const HeroSection = () => {
                                     </p>
 
                                     {/* 5. Harga */}
-                                    <span className="block text-base sm:text-xl lg:text-sm font-bold text-gray-800 mb-3">
+                                    <span className="block text-base sm:text-xl lg:text-sm font-bold text-gray-800 mb-1.5">
                                         {product.price}
                                     </span>
 
