@@ -69,7 +69,7 @@ const Navbar = () => {
                             >
                                 <a
                                     href={item.href}
-                                    className={`relative transition-all duration-300 font-semibold text-sm hover:scale-105 group 
+                                    className={`relative transition-all duration-300 font-medium text-sm hover:scale-105 group 
                                         ${isActive
                                             ? "bg-gradient-to-r from-[#6EC568] to-[#26A81D] bg-clip-text text-transparent"
                                             : "text-gray-700 hover:bg-gradient-to-r hover:from-[#6EC568] hover:to-[#26A81D] hover:bg-clip-text hover:text-transparent"
@@ -101,11 +101,11 @@ const Navbar = () => {
 
                     {/* Auth buttons */}
                     <div className="flex items-center gap-3 ml-2">
-                        <Link href={""} className="cursor-pointer font-semibold text-sm transition-all duration-300 px-4 py-2 rounded-lg bg-gradient-to-r from-[#6EC568] to-[#26A81D] bg-clip-text text-transparent hover:opacity-80">
+                        <Link href={""} className="cursor-pointer font-medium text-sm transition-all duration-300 px-4 py-2 rounded-lg bg-gradient-to-r from-[#6EC568] to-[#26A81D] bg-clip-text text-transparent hover:opacity-80">
                             Log in
                         </Link>
 
-                        <button className="cursor-pointer bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 hover:shadow-xl hover:scale-105">
+                        <button className="cursor-pointer bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 hover:shadow-xl hover:scale-105">
                             Sign in
                         </button>
                     </div>

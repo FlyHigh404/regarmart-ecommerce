@@ -6,10 +6,10 @@ import Navbar from "@/components/Navbar";
 import { Providers } from "@/components/providers";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["300"],
-  variable: "--font-plus-jakarta-sans",
-});
+  subsets: ['latin'],
+  weight: ['500'],
+  variable: '--font-plus-jakarta-sans',
+})
 
 export const metadata: Metadata = {
   title: "Regar Mart App",
