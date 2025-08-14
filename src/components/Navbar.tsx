@@ -1,14 +1,18 @@
 "use client"
 import { useState, useEffect } from "react"
-import { Menu, X, ShoppingCart } from "lucide-react"
+import { Menu, X, ShoppingCart, User, LogOut, Settings } from "lucide-react"
 import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
+import { useSession, signOut } from "next-auth/react"
+import Image from "next/image"
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false)
     const router = useRouter()
     const pathname = usePathname()
+    const { data: session, status } = useSession()
 
     useEffect(() => {
         const handleScroll = () => setIsScrolled(window.scrollY > 20)
@@ -28,6 +32,12 @@ const Navbar = () => {
     const handleNavClick = (href: string) => {
         setIsMobileMenuOpen(false)
         router.push(href)
+    }
+
+    const handleLogout = async () => {
+        await signOut({ redirect: false })
+        router.push("/")
+        setIsUserDropdownOpen(false)
     }
 
     return (
@@ -92,23 +102,97 @@ const Navbar = () => {
 
                 <div className="hidden md:flex items-center gap-3 animate-fade-in-down" style={{ animationDelay: "0.5s" }}>
                     {/* Cart icon with badge */}
-                    <button className="cursor-pointer relative p-3 rounded-xl transition-all duration-300 hover:scale-105">
+                    <button 
+                        className="cursor-pointer relative p-3 rounded-xl transition-all duration-300 hover:scale-105"
+                        onClick={() => router.push("/keranjang")}
+                    >
                         <ShoppingCart className="w-5 h-5 text-[#4BBF42]" />
                         <span className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
                             2
                         </span>
                     </button>
 
-                    {/* Auth buttons */}
-                    <div className="flex items-center gap-3 ml-2">
-                        <Link href={""} className="cursor-pointer font-medium text-sm transition-all duration-300 px-4 py-2 rounded-lg bg-gradient-to-r from-[#6EC568] to-[#26A81D] bg-clip-text text-transparent hover:opacity-80">
-                            Log in
-                        </Link>
+                    {/* Auth buttons - Conditional rendering based on session */}
+                    {status === "authenticated" ? (
+                        <div className="relative ml-2">
+                            <button
+                                className="flex items-center gap-2 cursor-pointer"
+                                onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                            >
+                                <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-green-500">
+                                    {session.user?.image ? (
+                                        <Image
+                                            src={session.user.image}
+                                            alt="User Avatar"
+                                            width={40}
+                                            height={40}
+                                            className="object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full bg-green-100 flex items-center justify-center">
+                                            <User className="w-5 h-5 text-green-600" />
+                                        </div>
+                                    )}
+                                </div>
+                                <span className="text-sm font-medium text-gray-700">
+                                    {session.user?.name?.split(' ')[0] || 'Profile'}
+                                </span>
+                            </button>
 
-                        <button className="cursor-pointer bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 hover:shadow-xl hover:scale-105">
-                            Sign in
-                        </button>
-                    </div>
+                            {/* User dropdown menu */}
+                            {isUserDropdownOpen && (
+                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
+                                    <div className="px-4 py-2 border-b border-gray-100">
+                                        <p className="text-sm font-medium text-gray-900">
+                                            {session.user?.name || 'User'}
+                                        </p>
+                                        <p className="text-xs text-gray-500 truncate">
+                                            {session.user?.email}
+                                        </p>
+                                    </div>
+                                    <Link
+                                        href="/profile"
+                                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        onClick={() => setIsUserDropdownOpen(false)}
+                                    >
+                                        <User className="w-4 h-4 mr-2" />
+                                        Profile
+                                    </Link>
+                                    <Link
+                                        href="/settings"
+                                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        onClick={() => setIsUserDropdownOpen(false)}
+                                    >
+                                        <Settings className="w-4 h-4 mr-2" />
+                                        Settings
+                                    </Link>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                    >
+                                        <LogOut className="w-4 h-4 mr-2" />
+                                        Logout
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-3 ml-2">
+                            <Link 
+                                href="/auth/sign-in" 
+                                className="cursor-pointer font-medium text-sm transition-all duration-300 px-4 py-2 rounded-lg bg-gradient-to-r from-[#6EC568] to-[#26A81D] bg-clip-text text-transparent hover:opacity-80"
+                            >
+                                Log in
+                            </Link>
+
+                            <Link 
+                                href="/auth/sign-in"
+                                className="cursor-pointer bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 hover:shadow-xl hover:scale-105"
+                            >
+                                Sign up
+                            </Link>
+                        </div>
+                    )}
                 </div>
 
                 {!isMobileMenuOpen && (
@@ -170,7 +254,13 @@ const Navbar = () => {
 
                     <div className="mt-8 border-t border-gray-200 pt-6 space-y-4">
                         {/* Cart icon */}
-                        <button className="cursor-pointer relative p-3 rounded-xl w-full flex items-center justify-center border border-gray-300 hover:border-green-500 transition-all duration-300">
+                        <button 
+                            className="cursor-pointer relative p-3 rounded-xl w-full flex items-center justify-center border border-gray-300 hover:border-green-500 transition-all duration-300"
+                            onClick={() => {
+                                router.push("/keranjang")
+                                setIsMobileMenuOpen(false)
+                            }}
+                        >
                             <ShoppingCart className="w-5 h-5 text-[#4BBF42] mr-2" />
                             <span className="text-sm font-semibold">Keranjang</span>
                             <span className="absolute top-2 right-4 w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
@@ -178,17 +268,44 @@ const Navbar = () => {
                             </span>
                         </button>
 
-                        {/* Auth buttons */}
-                        <Link
-                            href={""}
-                            className="block w-full text-center font-semibold text-sm px-4 py-3 rounded-lg bg-gradient-to-r from-[#6EC568] to-[#26A81D] bg-clip-text text-transparent hover:opacity-80"
-                        >
-                            Log in
-                        </Link>
-
-                        <button className="w-full cursor-pointer bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 hover:shadow-xl">
-                            Sign in
-                        </button>
+                        {/* Auth buttons - Conditional rendering */}
+                        {status === "authenticated" ? (
+                            <>
+                                <Link
+                                    href="/profile"
+                                    className="block w-full text-center font-semibold text-sm px-4 py-3 rounded-lg bg-gradient-to-r from-[#6EC568] to-[#26A81D] bg-clip-text text-transparent hover:opacity-80"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    My Profile
+                                </Link>
+                                <button
+                                    onClick={() => {
+                                        handleLogout()
+                                        setIsMobileMenuOpen(false)
+                                    }}
+                                    className="w-full cursor-pointer bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 hover:shadow-xl"
+                                >
+                                    Logout
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <Link
+                                    href="/auth/login"
+                                    className="block w-full text-center font-semibold text-sm px-4 py-3 rounded-lg bg-gradient-to-r from-[#6EC568] to-[#26A81D] bg-clip-text text-transparent hover:opacity-80"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    Log in
+                                </Link>
+                                <Link
+                                    href="/auth/register"
+                                    className="w-full cursor-pointer bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 hover:shadow-xl"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    Sign up
+                                </Link>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
