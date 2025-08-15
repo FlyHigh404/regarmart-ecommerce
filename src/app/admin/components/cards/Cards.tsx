@@ -51,7 +51,7 @@ interface CardBadgeProps extends React.HTMLAttributes<HTMLDivElement> {}
 export const CardBadge: React.FC<CardBadgeProps> = ({ children, className, ...props }) => {
   return (
     <div
-      className={`p-2 rounded-lg bg-gray-100 inline-flex items-center justify-center ${className}`}
+      className={`w-12 h-12 p-3 rounded-lg bg-gray-100 inline-flex items-center justify-center ${className}`}
       {...props}
     >
       {children}

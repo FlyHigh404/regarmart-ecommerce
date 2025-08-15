@@ -1,4 +1,4 @@
-import { Package, TrendingUp,ShoppingBag } from "lucide-react"
+import { Package, TrendingUp } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle,CardBadge } from "@/app/admin/components/cards/Cards"
 
 interface PesananCardProps {
@@ -16,8 +16,8 @@ export default function PesananCard({
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-gray-600">Total Produk</CardTitle>
-        <CardBadge className="bg-green-100">
-          <ShoppingBag className="w-4 h-4 text-green-600" />
+        <CardBadge className="bg-yellow-100">
+          <Package className="w-8 h-8 text-yellow-600" />
         </CardBadge>
       </CardHeader>
       <CardContent>

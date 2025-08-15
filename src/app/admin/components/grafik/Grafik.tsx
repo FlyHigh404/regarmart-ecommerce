@@ -1,38 +1,47 @@
 import React, { useState } from 'react';
 import './grafik.css';
 
+// =========================================================
+// DEFINISI TIPE DATA TSX
+// =========================================================
 interface SalesData {
   month?: string;
   day?: string;
-  year?: number;
+  year: number;
   sales: number;
 }
 
+// =========================================================
+// DATA DUMMY DENGAN TAHUN
+// =========================================================
 const salesDataBulan: SalesData[] = [
-  { month: 'Jan', sales: 45 },
-  { month: 'Feb', sales: 65 },
-  { month: 'Mar', sales: 80 },
-  { month: 'Apr', sales: 75 },
-  { month: 'May', sales: 110 },
-  { month: 'Jun', sales: 155 },
-  { month: 'Jul', sales: 140 },
+  { month: 'Jan', sales: 45, year: 2025 },
+  { month: 'Feb', sales: 65, year: 2025 },
+  { month: 'Mar', sales: 80, year: 2025 },
+  { month: 'Apr', sales: 75, year: 2025 },
+  { month: 'May', sales: 110, year: 2025 },
+  { month: 'Jun', sales: 155, year: 2025 },
+  { month: 'Jul', sales: 140, year: 2025 },
   { month: 'Aug', sales: 122, year: 2025 },
-  { month: 'Sep', sales: 90 },
-  { month: 'Oct', sales: 145 },
-  { month: 'Nov', sales: 185 },
-  { month: 'Dec', sales: 148 },
+  { month: 'Sep', sales: 90, year: 2025 },
+  { month: 'Oct', sales: 145, year: 2025 },
+  { month: 'Nov', sales: 185, year: 2025 },
+  { month: 'Dec', sales: 148, year: 2025 },
 ];
 
 const salesDataMinggu: SalesData[] = [
-  { day: 'Sen', sales: 20 },
-  { day: 'Sel', sales: 35 },
-  { day: 'Rab', sales: 50 },
-  { day: 'Kam', sales: 30 },
-  { day: 'Jum', sales: 45 },
-  { day: 'Sab', sales: 60 },
-  { day: 'Min', sales: 40 },
+  { day: 'Sen', sales: 20, year: 2025 },
+  { day: 'Sel', sales: 35, year: 2025 },
+  { day: 'Rab', sales: 50, year: 2025 },
+  { day: 'Kam', sales: 30, year: 2025 },
+  { day: 'Jum', sales: 45, year: 2025 },
+  { day: 'Sab', sales: 60, year: 2025 },
+  { day: 'Min', sales: 40, year: 2025 },
 ];
 
+// =========================================================
+// KOMPONEN GRAFIK UTAMA
+// =========================================================
 const Grafik: React.FC = () => {
   const [activeBarIndex, setActiveBarIndex] = useState<number | null>(null);
   const [filterAktif, setFilterAktif] = useState<'bulan' | 'minggu'>('bulan');
@@ -69,7 +78,6 @@ const Grafik: React.FC = () => {
         </div>
         <div className="bar-chart">
           {dataTampil.map((data, index) => {
-            // barHeight didefinisikan di sini
             const barHeight = (data.sales / maxSales) * 100;
             return (
               <div
@@ -78,22 +86,18 @@ const Grafik: React.FC = () => {
                 onMouseEnter={() => setActiveBarIndex(index)}
                 onMouseLeave={() => setActiveBarIndex(null)}
               >
-                <div
-                  className="bar"
-                  style={{ height: `${barHeight}%` }}
-                ></div>
                 {activeBarIndex === index && (
-                  <div 
-                    className="tooltip" 
-                    style={{ bottom: `${barHeight}%` }} 
-                  >
-                    <span className="tooltip-dot"></span>
+                  <div className="tooltip" style={{ bottom: `calc(${barHeight}% + 10px)` }}>
                     <div className="tooltip-content">
-                      <p>{data.month || data.day}{data.year ? `, ${data.year}` : ''}</p>
-                      <p>Penjualan: Rp{data.sales}Jt</p>
+                      <p className="font-base">
+                        <span className="tooltip-dot"></span>
+                        {data.month || data.day}, {data.year}
+                      </p>
+                      <p>Penjualan: <span className="font-bold">Rp{data.sales}Jt</span></p>
                     </div>
                   </div>
                 )}
+                <div className="bar" style={{ height: `${barHeight}%` }}></div>
               </div>
             );
           })}

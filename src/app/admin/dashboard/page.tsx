@@ -6,6 +6,7 @@ import CardPenjualan from "../components/cards/CardPenjualan";
 import CardPesanan from "../components/cards/CardPesanan";
 import CardPengguna from "../components/cards/CardPengguna";
 import Grafik from "@/app/admin/components/grafik/Grafik"
+import ActivityLogCard from "@/app/admin/components/logAktivitas/LogAktivitas"
 
 export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -36,7 +37,7 @@ export default function AdminDashboard() {
           <span className="text-base font-medium text-gray-800 hidden md:block">
            Hello, <span className="font-bold">Admin</span></span>
           <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white font-bold overflow-hidden">
-            <img src="" alt="Admin Avatar" className="rounded-full object-cover" />
+            <img src="/icon.png" alt="Admin Avatar" className="rounded-full object-cover" />
           </div>
         </div>
       </div>
@@ -57,6 +58,12 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+       {/* Log Aktivitas */}
+      <div className="space-y-6">
+        <div className="bg-white rounded-b-md">
+          <ActivityLogCard />
+        </div>
+      </div>
     </AdminLayout>
   );
 }

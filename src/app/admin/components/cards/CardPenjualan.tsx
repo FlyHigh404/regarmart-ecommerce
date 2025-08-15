@@ -1,4 +1,4 @@
-import { ShoppingBag, TrendingUp } from "lucide-react"
+import { TrendingUp, ChartLine } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardBadge } from "@/app/admin/components/cards/Cards"
 
 interface PenjualanCardProps {
@@ -17,7 +17,7 @@ export default function PenjualanCard({
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-gray-600">Total Pesanan</CardTitle>
        <CardBadge className="bg-green-100">
-          <ShoppingBag className="w-4 h-4 text-green-600" />
+          <ChartLine className="w-8 h-8 text-green-600" />
         </CardBadge>
       </CardHeader>
       <CardContent>

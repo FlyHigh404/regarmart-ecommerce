@@ -16,12 +16,9 @@ export default function PenggunaCard({
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-gray-600">Total Pengguna</CardTitle>
-        <CardBadge className="bg-green-100">
-          <ShoppingBag className="w-4 h-4 text-green-600" />
+        <CardBadge className="bg-purple-100">
+          <Users className="w-8 h-8 text-purple-600" />
         </CardBadge>
-        <div className="p-2 rounded-lg bg-purple-100">
-          <Users className="w-4 h-4 text-purple-600" />
-        </div>
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold text-gray-900">{totalUsers.toLocaleString()}</div>
