@@ -49,7 +49,7 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
             </span>
 
             {/* 6. Button */}
-            <button className="w-full bg-green-500 hover:bg-green-600 text-white px-3 py-2 lg:px-2.5 lg:py-2 rounded-lg font-medium text-sm lg:text-sm transition-all duration-300 flex items-center justify-center gap-2 hover:shadow-lg transform hover:scale-105 active:scale-95">
+            <button className="w-full bg-green-500 hover:bg-green-600 text-white py-2 lg:px-2.5 lg:py-2 rounded-lg font-small text-xs lg:text-[10px] transition-all duration-300 flex items-center justify-center gap-0.5 hover:shadow-lg transform hover:scale-105 active:scale-95">
                 <Plus className="w-4 h-4 lg:w-4 lg:h-4" />
                 Tambah ke Keranjang
             </button>

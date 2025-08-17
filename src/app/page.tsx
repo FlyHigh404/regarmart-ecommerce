@@ -1,12 +1,13 @@
-//import HeroSection from "../components/HeroSection";
-//import AdminDashboard from "@/app/admin/dashboard/page";
-
+import Footer from "@/components/Footer";
 import HeroSection from "@/components/HeroSection";
+import Navbar from "@/components/Navbar";
 
 export default function Home() {
   return (
    <>
-     // <HeroSection />
+    <Navbar />
+    <HeroSection />
+    <Footer />
     </>
   );
 }
