@@ -26,7 +26,7 @@ export default function KatalogPage() {
   const [selectedCategory, setSelectedCategory] = useState("Semua");
   const [scrolled, setScrolled] = useState(false);
 
-  // 🔹 Tambah state untuk pagination
+  //state pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15; 
 
@@ -48,10 +48,10 @@ export default function KatalogPage() {
     return matchesSearch && matchesCategory;
   });
 
-  // 🔹 Hitung total halaman
+  // total halaman
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
-  // 🔹 Ambil produk sesuai halaman
+  // Ambil produk sesuai halaman
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
   const currentProducts = filteredProducts.slice(indexOfFirst, indexOfLast);
