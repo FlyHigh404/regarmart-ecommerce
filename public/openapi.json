@@ -374,6 +374,45 @@
         }
       }
     },
+    "/api/admin/category": {
+      "post": {
+        "tags": ["Admin", "Products"],
+        "summary": "Create new category",
+        "description": "Membuat kategori baru (admin only)",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                },
+                "required": ["name"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Kategori berhasil dibuat",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                }
+              }
+            }
+          }
+        }
+      }
+     },
     "/api/payment/qris/generate": {
       "post": {
         "tags": ["Payment"],
@@ -643,6 +682,64 @@
         "scheme": "bearer",
         "bearerFormat": "JWT"
       }
+    },
+    "Rating": {
+        "type": "object",
+        "properties": {
+            "id": {
+                "type": "string",
+                "description": "ID unik rating"
+            },
+            "productId": {
+                "type": "string",
+                "description": "ID produk yang dinilai"
+            },
+            "userId": {
+                "type": "string",
+                "description": "ID pengguna yang memberikan rating"
+            },
+            "value": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5,
+                "description": "Nilai rating dari 1 hingga 5"
+            },
+            "createdAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Waktu pembuatan rating"
+            }
+        }
+    },
+    "Review": {
+        "type": "object",
+        "properties": {
+            "id": {
+                "type": "string",
+                "description": "ID unik review"
+            },
+            "productId": {
+                "type": "string",
+                "description": "ID produk yang diulas"
+            },
+            "userId": {
+                "type": "string",
+                "description": "ID pengguna yang memberikan ulasan"
+            },
+            "content": {
+                "type": "string",
+                "description": "Isi ulasan"
+            },
+            "ratingId": {
+                "type": "string",
+                "description": "ID rating terkait"
+            },
+            "createdAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Waktu pembuatan ulasan"
+            }
+        }
     }
   }
 }
