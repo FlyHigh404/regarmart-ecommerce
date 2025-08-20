@@ -1,38 +1,78 @@
-import NextAuth from "next-auth";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import { PrismaClient } from "@prisma/client";
-import GoogleProvider from "next-auth/providers/google";
+import NextAuth, { AuthOptions } from 'next-auth'
+import { PrismaAdapter } from '@auth/prisma-adapter'
+import GoogleProvider from 'next-auth/providers/google'
+import CredentialsProvider from 'next-auth/providers/credentials'
+import bcrypt from 'bcryptjs'
+import { prisma } from '@/lib/prisma'
+import type { Adapter } from 'next-auth/adapters'
 
-const prisma = new PrismaClient();
-
-export const authOptions = {
-  adapter: PrismaAdapter(prisma),
+export const authOptions: AuthOptions = {
+  adapter: PrismaAdapter(prisma) as Adapter,
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
-  ],
-  callbacks: {
-    async session({ session, user }: { session: any; user: any }) {
-      const dbUser = await prisma.user.findUnique({
-        where: { email: user.email as string },
-      });
-      
-      if (dbUser) {
-        session.user.role = dbUser.role;
-        session.user.id = dbUser.id;
+    CredentialsProvider({
+      name: 'credentials',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error('Email dan password diperlukan')
+        }
+
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email }
+        })
+
+        if (!user || !user.password) {
+          throw new Error('User tidak ditemukan')
+        }
+
+        const isCorrectPassword = await bcrypt.compare(
+          credentials.password,
+          user.password
+        )
+        if (!isCorrectPassword) throw new Error('Password salah')
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          image: user.image,
+        }
       }
-      
-      return session;
+    })
+  ],
+  session: {
+    strategy: 'jwt'
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.role = (user as any).role
+        token.id = (user as any).id
+      }
+      return token
     },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.role = token.role as string
+        session.user.id = token.id as string
+      }
+      return session
+    }
   },
   pages: {
-    signIn: "/auth/signin",
+    signIn: '/auth/signin',
+    error: '/auth/error',
   },
   secret: process.env.NEXTAUTH_SECRET,
-};
+}
 
-const handler = NextAuth(authOptions);
-
-export { handler as GET, handler as POST };
+const handler = NextAuth(authOptions)
+export { handler as GET, handler as POST }

@@ -16,7 +16,9 @@ model User {
   phone         String?
   address       String?
   role          Role           @default(CUSTOMER)
+  password      String?        // Tambahkan field password untuk login manual
   createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   accounts      Account[]
   notifications Notification[]
   orders        Order[]
@@ -58,6 +60,7 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+
 
 model Category {
   id          String    @id @default(uuid())

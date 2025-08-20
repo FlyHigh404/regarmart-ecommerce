@@ -221,12 +221,12 @@ const Navbar = () => {
                             </div>
                         ) : (
                             <>
-                                <Link href="/login" className="cursor-pointer font-medium text-sm transition-all duration-300 px-4 py-2 rounded-lg bg-gradient-to-r from-[#6EC568] to-[#26A81D] bg-clip-text text-transparent hover:opacity-80">
+                                <Link href="/auth/signin" className="cursor-pointer font-medium text-sm transition-all duration-300 px-4 py-2 rounded-lg bg-gradient-to-r from-[#6EC568] to-[#26A81D] bg-clip-text text-transparent hover:opacity-80">
                                     Log in
                                 </Link>
-                                <button className="cursor-pointer bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 hover:shadow-xl hover:scale-105">
+                                <Link href="/auth/signup" className="cursor-pointer bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 hover:shadow-xl hover:scale-105">
                                     Sign up
-                                </button>
+                                </Link>
                             </>
                         )}
                     </div>
