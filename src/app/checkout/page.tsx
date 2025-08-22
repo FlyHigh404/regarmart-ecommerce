@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { MapPin } from "lucide-react";
 import DaftarAlamat from "@/components/DaftarAlamat";
 import Footer from "@/components/Footer";
+import CheckoutNavbar from "@/components/NavCheckout";
 
 type Alamat = {
   id: number;
@@ -60,14 +61,8 @@ const CheckoutPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <header className="w-full h-18 bg-white -z-10">
-        <div className="max-w-6xl mx-auto flex items-center p-4">
-          <img src="Logo.png" alt="Regar Mart Logo" className="h-10 mr-2" />
-          <span className="border-l h-6 mx-2 border-green-500"></span>
-          <p className="text-green-600 font-semibold">Checkout</p>
-        </div>
-      </header>
+      {/* Navbar Checkout */}
+      <CheckoutNavbar />
 
       {/* Main Content */}
       <div className="p-6 max-w-6xl mx-auto">
