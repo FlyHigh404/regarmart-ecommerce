@@ -1,20 +1,45 @@
 "use client"
-import { useState, useEffect } from "react"
-import { Menu, X, ShoppingCart } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
+import { Menu, X, ShoppingCart, User, Settings, LogOut, ChevronDown } from "lucide-react"
 import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
+import { signOut, useSession } from "next-auth/react";
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
+    const [mounted, setMounted] = useState(false);
     const router = useRouter()
     const pathname = usePathname()
+    const { data: session, status } = useSession();
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const handleScroll = () => setIsScrolled(window.scrollY > 20)
-        window.addEventListener("scroll", handleScroll)
-        return () => window.removeEventListener("scroll", handleScroll)
-    }, [])
+        setMounted(true);
+    }, []);
+
+    useEffect(() => {
+        const handleScroll = () => setIsScrolled(window.scrollY > 20);
+        if (mounted) {
+            window.addEventListener("scroll", handleScroll);
+            return () => window.removeEventListener("scroll", handleScroll);
+        }
+    }, [mounted]);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsProfileDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     /* nav links */
     const navItems = [
@@ -30,6 +55,11 @@ const Navbar = () => {
         router.push(href)
     }
 
+    const handleSignOut = () => {
+        setIsProfileDropdownOpen(false);
+        signOut({ callbackUrl: "/" });
+    };
+
     return (
         <>
             <div className="fixed top-0 right-0 w-full h-24 bg-white -z-10" />
@@ -42,11 +72,11 @@ const Navbar = () => {
                     }`}
             >
                 <a
-                    href="/beranda"
+                    href="/"
                     className="group hover:scale-110 transition-all duration-300 hover:drop-shadow-lg"
                     onClick={(e) => {
                         e.preventDefault()
-                        handleNavClick("/beranda")
+                        handleNavClick("/")
                     }}
                 >
                     <div className="flex items-center">
@@ -60,7 +90,7 @@ const Navbar = () => {
 
                 <ul className="hidden md:flex items-center gap-10 lg:gap-12">
                     {navItems.map((item, i) => {
-                       const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+                        const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
                         return (
                             <li
                                 key={item.href}
@@ -70,7 +100,7 @@ const Navbar = () => {
                                 <a
                                     href={item.href}
                                     className={`relative transition-all duration-300 font-medium text-sm hover:scale-105 group 
-                                        ${isActive
+                        ${isActive
                                             ? "bg-gradient-to-r from-[#6EC568] to-[#26A81D] bg-clip-text text-transparent"
                                             : "text-gray-700 hover:bg-gradient-to-r hover:from-[#6EC568] hover:to-[#26A81D] hover:bg-clip-text hover:text-transparent"
                                         }`}
@@ -80,9 +110,12 @@ const Navbar = () => {
                                     }}
                                 >
                                     {item.label}
-                                    <span
-                                        className={`absolute -bottom-2 left-0 h-1 rounded-full transition-all duration-300 bg-gradient-to-r from-[#6EC568] to-[#26A81D] 
-                                            ${isActive ? "w-full" : "w-0 group-hover:w-full"}`}
+                                    <img
+                                        src="/Line 66.png"
+                                        alt="Active Line"
+                                        className={`absolute -bottom-2 left-0 transition-all duration-300 
+                            ${isActive ? "w-full" : "w-0 group-hover:w-full"}`}
+                                        style={{ width: isActive ? '100%' : '0' }}
                                     />
                                 </a>
                             </li>
@@ -92,22 +125,110 @@ const Navbar = () => {
 
                 <div className="hidden md:flex items-center gap-3 animate-fade-in-down" style={{ animationDelay: "0.5s" }}>
                     {/* Cart icon with badge */}
-                    <button className="cursor-pointer relative p-3 rounded-xl transition-all duration-300 hover:scale-105">
+                    <a href="/cart" className="cursor-pointer relative p-3 rounded-xl transition-all duration-300 hover:scale-105">
                         <ShoppingCart className="w-5 h-5 text-[#4BBF42]" />
                         <span className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
                             2
                         </span>
-                    </button>
+                    </a>
 
                     {/* Auth buttons */}
                     <div className="flex items-center gap-3 ml-2">
-                        <Link href={""} className="cursor-pointer font-medium text-sm transition-all duration-300 px-4 py-2 rounded-lg bg-gradient-to-r from-[#6EC568] to-[#26A81D] bg-clip-text text-transparent hover:opacity-80">
-                            Log in
-                        </Link>
+                        {session ? (
+                            <div className="relative" ref={dropdownRef}>
+                                <button
+                                    onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                                    className="flex items-center gap-2 cursor-pointer font-medium text-sm transition-all duration-300 px-4 py-2 rounded-lg hover:bg-white/60 hover:shadow-sm"
+                                >
+                                    <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-r from-[#6EC568] to-[#26A81D] p-[1px]">
+                                        {session.user?.image ? (
+                                            <img
+                                                src={session.user?.image}
+                                                alt="Profile"
+                                                className="w-full h-full rounded-full object-cover bg-white"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
+                                                <User className="w-4 h-4 text-gray-600" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <span className="text-gray-700 max-w-[100px] truncate">
+                                        {session.user?.name || session.user?.email?.split('@')[0] || 'User'}
+                                    </span>
+                                    <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180' : ''}`} />
+                                </button>
 
-                        <button className="cursor-pointer bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 hover:shadow-xl hover:scale-105">
-                            Sign in
-                        </button>
+                                {/* Profile Dropdown */}
+                                <div className={`absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 py-2 transition-all duration-200 ${isProfileDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
+                                    <div className="px-4 py-3 border-b border-gray-100">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-r from-[#6EC568] to-[#26A81D] p-[1px]">
+                                                {session.user?.image ? (
+                                                    <img
+                                                        src={session.user?.image}
+                                                        alt="Profile"
+                                                        className="w-full h-full rounded-full object-cover bg-white"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
+                                                        <User className="w-5 h-5 text-gray-600" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-semibold text-gray-900 truncate">
+                                                    {session.user?.name || 'User Name'}
+                                                </p>
+                                                <p className="text-xs text-gray-500 truncate">
+                                                    {session.user?.email}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="py-1">
+                                        <button
+                                            onClick={() => {
+                                                setIsProfileDropdownOpen(false);
+                                                router.push('/profile');
+                                            }}
+                                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors duration-200"
+                                        >
+                                            <User className="w-4 h-4" />
+                                            Profile
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setIsProfileDropdownOpen(false);
+                                                router.push('/settings');
+                                            }}
+                                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors duration-200"
+                                        >
+                                            <Settings className="w-4 h-4" />
+                                            Settings
+                                        </button>
+                                        <hr className="my-1 border-gray-100" />
+                                        <button
+                                            onClick={handleSignOut}
+                                            className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors duration-200"
+                                        >
+                                            <LogOut className="w-4 h-4" />
+                                            Log out
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <Link href="/auth/signin" className="cursor-pointer font-medium text-sm transition-all duration-300 px-4 py-2 rounded-lg bg-gradient-to-r from-[#6EC568] to-[#26A81D] bg-clip-text text-transparent hover:opacity-80">
+                                    Log in
+                                </Link>
+                                <Link href="/auth/signup" className="cursor-pointer bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 hover:shadow-xl hover:scale-105">
+                                    Sign up
+                                </Link>
+                            </>
+                        )}
                     </div>
                 </div>
 
@@ -143,6 +264,35 @@ const Navbar = () => {
                 </button>
 
                 <div className="p-6 pt-20">
+                    {/* User info for mobile when logged in */}
+                    {session && (
+                        <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-orange-50 rounded-xl">
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-r from-[#6EC568] to-[#26A81D] p-[1px]">
+                                    {session.user?.image ? (
+                                        <img
+                                            src={session.user.image}
+                                            alt="Profile"
+                                            className="w-full h-full rounded-full object-cover bg-white"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
+                                            <User className="w-6 h-6 text-gray-600" />
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-900 truncate">
+                                        {session.user?.name || 'User Name'}
+                                    </p>
+                                    <p className="text-xs text-gray-500 truncate">
+                                        {session.user?.email}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Mobile nav links */}
                     <ul className="space-y-3">
                         {navItems.map((item, i) => {
@@ -178,17 +328,42 @@ const Navbar = () => {
                             </span>
                         </button>
 
-                        {/* Auth buttons */}
-                        <Link
-                            href={""}
-                            className="block w-full text-center font-semibold text-sm px-4 py-3 rounded-lg bg-gradient-to-r from-[#6EC568] to-[#26A81D] bg-clip-text text-transparent hover:opacity-80"
-                        >
-                            Log in
-                        </Link>
-
-                        <button className="w-full cursor-pointer bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 hover:shadow-xl">
-                            Sign in
-                        </button>
+                        {/* Auth buttons for mobile */}
+                        {session ? (
+                            <div className="space-y-3">
+                                <button
+                                    onClick={() => {
+                                        setIsMobileMenuOpen(false);
+                                        router.push('/profile');
+                                    }}
+                                    className="w-full cursor-pointer border border-gray-300 text-gray-700 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 hover:border-green-500 hover:text-green-600 flex items-center justify-center gap-2"
+                                >
+                                    <User className="w-4 h-4" />
+                                    Profile
+                                </button>
+                                <button
+                                    onClick={handleSignOut}
+                                    className="w-full cursor-pointer bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 hover:shadow-xl flex items-center justify-center gap-2"
+                                >
+                                    <LogOut className="w-4 h-4" />
+                                    Log out
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <Link
+                                    href="/login"
+                                    className="block w-full text-center font-semibold text-sm px-4 py-3 rounded-lg bg-gradient-to-r from-[#6EC568] to-[#26A81D] bg-clip-text text-transparent hover:opacity-80"
+                                >
+                                    Log in
+                                </Link>
+                                <button
+                                    className="w-full cursor-pointer bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 hover:shadow-xl"
+                                >
+                                    Sign up
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

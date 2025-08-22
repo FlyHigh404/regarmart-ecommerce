@@ -12,6 +12,7 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
+
     <AdminLayout>
       {/* HEADER BAR */}
       <div className="flex items-center justify-between p-4 mb-6">
