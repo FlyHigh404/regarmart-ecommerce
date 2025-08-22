@@ -7,6 +7,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      colors: {
+      'custom-gray': '#8F8F8F'
+    },
       fontFamily: {
         jakarta: ['"Plus Jakarta Sans"', 'sans-serif'],
       },
