@@ -5,10 +5,10 @@ import { UserCircle2, MapPin, Notebook, Lock, LogOut } from 'lucide-react';
 import React from 'react';
 
 const navItems = [
-  { name: 'Profil Saya', href: '/profil', icon: UserCircle2 },
+  { name: 'Profil Saya', href: '/profil', icon: UserCircle2, children: ['/profil/editprofil'] },
   { name: 'Alamat', href: '/profil/alamat', icon: MapPin },
   { name: 'Riwayat Transaksi', href: '/profil/riwayat-transaksi', icon: Notebook },
-  { name: 'Ubah Password', href: '/profil/ubah-password', icon: Lock },
+  { name: 'Ubah Password', href: '/profil/ubah-password', icon: Lock, children: ['/profil/password-baru'] },
   { name: 'Log Out', href: '/logout', icon: LogOut },
 ];
 
@@ -22,16 +22,18 @@ export default function ProfilSide() {
         <nav>
           <ul className="space-y-4">
             {navItems.map((item) => {
-              const isActive = pathname === item.href;
+              const isActive =
+                pathname === item.href ||
+                item.children?.some((child) => pathname.startsWith(child));
+
               return (
                 <li key={item.name}>
                   <Link href={item.href}>
                     <div
-                      className={`
-                        flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-200
+                      className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-200
                         ${isActive 
-                           ? 'bg-[rgba(0,176,116,0.15)] font-semibold border-l-4 border-l-[#26A81D]' 
-                           : 'hover:bg-gray-100'
+                          ? 'bg-[rgba(0,176,116,0.15)] font-semibold border-l-4 border-l-[#26A81D]' 
+                          : 'hover:bg-gray-100'
                         }
                       `}
                     >
