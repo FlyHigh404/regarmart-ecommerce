@@ -6,9 +6,9 @@ const project = new Project({
   tsConfigFilePath: "tsconfig.json",
 });
 
-const apiDir = path.join(__dirname, "src/app/api"); 
+const apiDir = path.join(__dirname, "src/app/api");
 
-// Struktur dasar OpenAPI
+
 const openapi: any = {
   openapi: "3.0.0",
   info: {
@@ -36,8 +36,13 @@ project.getSourceFiles().forEach((file) => {
   const filePath = file.getFilePath();
   const relativePath = filePath
     .split("/api/")[1]
-    .replace(/\/route\.ts$/, "")
-    .replace(/\[([^\]]+)\]/g, "{$1}"); // convert dynamic route [id] → {id}
+    ?.replace(/\/route\.ts$/, "")
+    .replace(/\[([^\]]+)\]/g, "{$1}");
+
+  if (!relativePath) {
+    console.warn("⚠️ Skip file:", filePath);
+    return;
+  }
 
   const exportedFunctions = file.getFunctions();
   exportedFunctions.forEach((fn) => {

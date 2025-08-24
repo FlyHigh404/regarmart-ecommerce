@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import CartProduct from "@/components/CartProduct";
-import { Product } from "@/types";
+import { Product } from "@/types/product";
 import KategoriSide from "@/components/KategoriSide";
 import Pagination from "@/components/Pagination";
 
