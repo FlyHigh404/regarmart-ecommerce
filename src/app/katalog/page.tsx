@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import CartProduct from "@/components/CartProduct";
-import { Product } from "@/types/product";
 import KategoriSide from "@/components/KategoriSide";
 import Pagination from "@/components/Pagination";
+import Footer from "@/components/Footer";
 
  const products = Array.from({ length: 200 }, (_, i) => ({
     id: (i + 1).toString(),
@@ -150,6 +150,9 @@ export default function KatalogPage() {
           )}
         </main>
       </div>
+
+        {/* Footer */}
+         <Footer />
     </div>
   );
 }
