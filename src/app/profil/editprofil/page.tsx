@@ -30,7 +30,6 @@ export default function ProfilForm() {
 
   return (
     <div className="w-full max-w-[756px] bg-white p-8 rounded-xl shadow">
-      {/* Foto + Form sejajar */}
       <div className="flex gap-6">
         {/* Bagian Foto */}
         <div className="flex flex-col items-center w-[200px]">
@@ -115,7 +114,7 @@ export default function ProfilForm() {
         </div>
       </div>
 
-      {/* Tombol Simpan full width */}
+      {/* Tombol Simpan*/}
       <button
         onClick={handleSave}
         className="mt-6 w-full bg-green-600 text-white font-bold py-3 px-12 rounded-lg hover:bg-green-700"
