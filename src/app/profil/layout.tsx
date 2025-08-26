@@ -5,11 +5,14 @@ import { CircleChevronLeft } from "lucide-react"
 import ProfilNavbar from "@/components/NavProfil"
 import Sidebar from "@/components/ProfilSide"
 import Footer from "@/components/Footer"
+import AuthCheck from "@/components/AuthCheck"
+
 
 export default function ProfilLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
 
   return (
+    <AuthCheck role="CUSTOMER">
     <div className="min-w-screen min-h-screen mx-auto font-jakarta bg-gray-100 flex flex-col">
       {/* Navbar */}
       <ProfilNavbar />
@@ -39,5 +42,6 @@ export default function ProfilLayout({ children }: { children: React.ReactNode }
       {/* Footer */}
       <Footer />
     </div>
+    </AuthCheck>
   )
 }

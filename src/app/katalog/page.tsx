@@ -7,17 +7,16 @@ import KategoriSide from "@/components/KategoriSide";
 import Pagination from "@/components/Pagination";
 import Footer from "@/components/Footer";
 
- const products = Array.from({ length: 200 }, (_, i) => ({
-    id: (i + 1).toString(),
-    name: `Produk ${i + 1}`,
-    category: i % 2 === 0 ? "Sayur" : "Buah",
-    weight: `${(i % 5 + 1) * 250} gr`,
-    stock: Math.floor(Math.random() * 20) + 1,
-    description: `Deskripsi untuk produk ${i + 1}`,
-    price: `Rp ${(Math.floor(Math.random() * 10) + 5) * 1000}`,
-    image: "/susu.png",
-  }))
-
+const products = Array.from({ length: 200 }, (_, i) => ({
+  id: (i + 1).toString(),
+  name: `Produk ${i + 1}`,
+  category: i % 2 === 0 ? "Sayur" : "Buah",
+  weight: `${((i % 5) + 1) * 250} gr`,
+  stock: Math.floor(Math.random() * 20) + 1,
+  description: `Deskripsi untuk produk ${i + 1}`,
+  price: `Rp ${(Math.floor(Math.random() * 10) + 5) * 1000}`,
+  image: "/susu.png",
+}));
 
 const categories = ["Semua", "Sayur", "Buah", "Daging", "Ikan", "Rumah Tangga"];
 
@@ -28,7 +27,7 @@ export default function KatalogPage() {
 
   //state pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15; 
+  const itemsPerPage = 15;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -131,7 +130,9 @@ export default function KatalogPage() {
         {/* Product Grid */}
         <main className="flex-1">
           {currentProducts.length === 0 ? (
-            <p className="text-center text-gray-500">Produk tidak ditemukan 😢</p>
+            <p className="text-center text-gray-500">
+              Produk tidak ditemukan 😢
+            </p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
               {currentProducts.map((product, i) => (
@@ -151,8 +152,8 @@ export default function KatalogPage() {
         </main>
       </div>
 
-        {/* Footer */}
-         <Footer />
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

@@ -3,13 +3,13 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { UserCircle2, MapPin, Notebook, Lock, LogOut } from 'lucide-react';
 import React from 'react';
+import { signOut } from 'next-auth/react';
 
 const navItems = [
   { name: 'Profil Saya', href: '/profil', icon: UserCircle2, children: ['/profil/editprofil'] },
   { name: 'Alamat', href: '/profil/alamat', icon: MapPin },
   { name: 'Riwayat Transaksi', href: '/profil/riwayat-transaksi', icon: Notebook, children: ['/profil/riwayat-transaksi/transaksi-diproses', '/profil/riwayat-transaksi/transaksi-selesai']},
   { name: 'Ubah Password', href: '/profil/ubah-password', icon: Lock, children: ['/profil/password-baru'] },
-  { name: 'Log Out', href: '/logout', icon: LogOut },
 ];
 
 export default function ProfilSide() {
@@ -44,6 +44,19 @@ export default function ProfilSide() {
                 </li>
               );
             })}
+            <li>
+              <button
+                onClick={() => signOut({ callbackUrl: '/' })}
+                className="w-full text-left"
+              >
+                <div
+                  className="flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-red-200 bg-red-100 text-red-500 transition-colors duration-200"
+                >
+                  <LogOut className="h-6 w-6 text-red-500" />
+                  <span>Keluar</span>
+                </div>
+              </button>
+            </li>
           </ul>
         </nav>
       </div>
