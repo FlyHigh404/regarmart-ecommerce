@@ -109,7 +109,7 @@ export default function Register() {
         </div>
 
         {/* Register Form Container */}
-        <div className="relative z-10 flex items-center justify-center w-full h-full">
+        <div className="relative z-5 flex items-center justify-center w-full h-full">
           <div
             className="bg-white rounded-xl shadow-lg p-10 border border-gray-100"
             style={{ width: '500px', minHeight: 'auto' }}
