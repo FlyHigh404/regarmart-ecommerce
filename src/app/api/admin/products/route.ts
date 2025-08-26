@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
+
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
 
@@ -11,16 +12,25 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { name, description, price, stock, categoryId, imageUrl } =
+    const { name, description, price, stock, categoryId, imageUrls } =
       await request.json();
+
+    // Validate required fields
+    if (!name || !price || !stock || !categoryId || !imageUrls || imageUrls.length === 0) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
     const newProduct = await prisma.product.create({
       data: {
         name,
-        description,
-        price,
-        stock,
+        description: description || "",
+        price: parseFloat(price),
+        stock: parseInt(stock),
         categoryId,
-        imageUrl,
+        imageUrl: imageUrls, // This should be an array of strings
       },
       include: {
         category: true,
@@ -38,16 +48,20 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session || session.user?.role !== "ADMIN") {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   try {
     const products = await prisma.product.findMany({
-      include: {
-        category: true,
-      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        stock: true,
+        category: {
+          select: {
+            name: true,
+          },
+        },
+      }
     });
     return NextResponse.json(products);
   } catch (error) {

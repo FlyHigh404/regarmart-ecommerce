@@ -1,24 +1,70 @@
 "use client"
-import React, { useState } from "react"
+import { useState, useEffect } from "react"
 import AdminLayout from "../AdminLayout"
 import { Search, Plus, Edit, Trash2, Eye, X } from "lucide-react"
 
 const page = () => {
     const [searchTerm, setSearchTerm] = useState("")
     const [showAddModal, setShowAddModal] = useState(false)
+    const [formData, setFormData] = useState({name: '', description: ''});
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [categories, setCategories] = useState<Array<{id: number, name: string, description: string}>>([])
 
-    // Dummy data kategori
-    const categories = [
-        { id: 1, name: "Sembako", description: "Kebutuhan pokok sehari-hari" },
-        { id: 2, name: "Minuman", description: "Aneka minuman segar dan sehat" },
-        { id: 3, name: "Protein", description: "Sumber protein seperti telur, daging, ikan" },
-    ]
+    useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("/api/products/categories");
+        if (response.ok) {
+          const data = await response.json();
+          setCategories(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
 
     const filteredCategories = categories.filter(
         (cat) =>
             cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             cat.description.toLowerCase().includes(searchTerm.toLowerCase())
     )
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    }
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+
+        try {
+            const response = await fetch('/api/admin/categories', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || 'Failed to create category');
+            }
+
+            // Reset form or show success message
+            setFormData({name: '', description: ''});
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <AdminLayout>
@@ -99,15 +145,15 @@ const page = () => {
                             </button>
 
                             <h2 className="text-xl font-semibold mb-4">Tambah Kategori Baru</h2>
-                            <form className="space-y-4">
+                            <form className="space-y-4" onSubmit={handleSubmit}>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">Nama Kategori</label>
-                                    <input type="text" className="mt-1 p-2 border border-gray-300 rounded w-full" />
+                                    <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="mt-1 p-2 border border-gray-300 rounded w-full" />
                                 </div>
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">Deskripsi</label>
-                                    <textarea className="mt-1 p-2 border border-gray-300 rounded w-full" rows={3} />
+                                    <textarea name="description" value={formData.description} onChange={handleInputChange} className="mt-1 p-2 border border-gray-300 rounded w-full" rows={3} />
                                 </div>
 
                                 <button
