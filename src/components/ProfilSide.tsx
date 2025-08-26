@@ -7,7 +7,7 @@ import React from 'react';
 const navItems = [
   { name: 'Profil Saya', href: '/profil', icon: UserCircle2, children: ['/profil/editprofil'] },
   { name: 'Alamat', href: '/profil/alamat', icon: MapPin },
-  { name: 'Riwayat Transaksi', href: '/profil/riwayat-transaksi', icon: Notebook },
+  { name: 'Riwayat Transaksi', href: '/profil/riwayat-transaksi', icon: Notebook, children: ['/profil/riwayat-transaksi/transaksi-diproses', '/profil/riwayat-transaksi/transaksi-selesai']},
   { name: 'Ubah Password', href: '/profil/ubah-password', icon: Lock, children: ['/profil/password-baru'] },
   { name: 'Log Out', href: '/logout', icon: LogOut },
 ];
