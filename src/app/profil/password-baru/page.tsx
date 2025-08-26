@@ -57,7 +57,7 @@ export default function PasswordVerification() {
 
         {/* Tombol Konfirmasi */}
         <div className="flex justify-end mt-4">
-          <button className="bg-green-600 text-white font-bold py-2 px-6 rounded-lg">
+          <button className="bg-green-500 text-white font-bold hover:bg-green-700 py-2 px-6 rounded-lg">
             Konfirmasi
           </button>
         </div>
