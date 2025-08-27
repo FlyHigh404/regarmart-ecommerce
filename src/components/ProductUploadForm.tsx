@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, X, Plus, Loader2 } from "lucide-react";
+import { Upload, X, Loader2, Edit, DollarSign, Package } from "lucide-react";
 import FileDropzone from "./FileDropZone";
 
 interface Category {
@@ -146,179 +146,190 @@ export default function ProductUploadForm() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">Tambah Produk Baru</h1>
+    <div className="w-full max-w-2xl mx-auto">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Tambah Produk</h2>
+        <h3 className="text-lg font-medium text-gray-700 mb-6">Isi detail produk</h3>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Image Upload Section */}
+        <div className="mb-8">
+          {formData.imageUrls.length > 0 ? (
+            <div className="relative">
+              <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden border-2 border-dashed border-gray-300">
+                <img
+                  src={formData.imageUrls[0]}
+                  alt="Product preview"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              {/* Additional images thumbnails */}
+              {formData.imageUrls.length > 1 && (
+                <div className="flex gap-2 mt-3">
+                  {formData.imageUrls.slice(1).map((url, index) => (
+                    <div key={index + 1} className="relative group">
+                      <img
+                        src={url}
+                        alt={`Product image ${index + 2}`}
+                        className="w-16 h-16 object-cover rounded-lg border"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index + 1)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {/* Replace/Remove main image button */}
+              <div className="absolute top-3 right-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => removeImage(0)}
+                  className="bg-white/90 backdrop-blur-sm text-gray-700 rounded-full p-2 hover:bg-white shadow-sm"
+                  title="Hapus gambar"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="aspect-video bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center">
+              <div className="text-center py-12">
+                <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <p className="text-gray-500 mb-2">Klik untuk upload gambar</p>
+                <p className="text-sm text-gray-400">atau drag & drop di sini</p>
+              </div>
+              <FileDropzone
+                onFilesDrop={handleFilesDrop}
+                accept="image/*"
+                multiple={true}
+                label="Klik untuk upload gambar atau drag & drop di sini"
+                id="product-images-upload"
+              />
+            </div>
+          )}
+          
+          {uploadingImages && (
+            <div className="mt-3 flex items-center justify-center text-sm text-gray-600">
+              <Loader2 className="animate-spin mr-2" size={16} />
+              Mengupload gambar...
+            </div>
+          )}
+        </div>
+
         {/* Product Name */}
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-            Nama Produk *
+        <div className="relative">
+          <label className="block text-sm font-medium text-green-600 mb-2">
+            Nama produk
           </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            placeholder="Masukkan nama produk"
-          />
+          <div className="relative">
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-4 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
+              placeholder="Masukkan nama produk"
+            />
+            <Edit className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+          </div>
         </div>
 
-        {/* Description */}
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-            Deskripsi Produk
+        {/* Category */}
+        <div className="relative">
+          <label className="block text-sm font-medium text-gray-600 mb-2">
+            Kategori
           </label>
-          <textarea
-            id="description"
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            placeholder="Masukkan deskripsi produk"
-          />
+          <div className="relative">
+            <select
+              name="categoryId"
+              value={formData.categoryId}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-4 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 appearance-none bg-white"
+            >
+              <option value="">Pilih kategori</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+            <svg 
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" 
+              width="20" 
+              height="20" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2"
+            >
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </div>
         </div>
 
-        {/* Price and Stock */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
-              Harga (Rp) *
-            </label>
+        {/* Price */}
+        <div className="relative">
+          <label className="block text-sm font-medium text-green-600 mb-2">
+            Harga
+          </label>
+          <div className="relative">
             <input
               type="number"
-              id="price"
               name="price"
               value={formData.price}
               onChange={handleInputChange}
               required
               min="0"
               step="0.01"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              placeholder="0.00"
+              className="w-full px-4 py-4 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
+              placeholder="Rp"
             />
+            <DollarSign className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
           </div>
+        </div>
 
-          <div>
-            <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-2">
-              Stok *
-            </label>
+        {/* Stock */}
+        <div className="relative">
+          <label className="block text-sm font-medium text-green-600 mb-2">
+            Stok
+          </label>
+          <div className="relative">
             <input
               type="number"
-              id="stock"
               name="stock"
               value={formData.stock}
               onChange={handleInputChange}
               required
               min="0"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-4 py-4 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
               placeholder="0"
             />
+            <Package className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
           </div>
         </div>
 
-        {/* Category */}
-        <div>
-          <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-2">
-            Kategori *
-          </label>
-          <select
-            id="categoryId"
-            name="categoryId"
-            value={formData.categoryId}
-            onChange={handleInputChange}
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          >
-            <option value="">Pilih Kategori</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Image Upload */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Gambar Produk *
-          </label>
-          
-          {/* Image Preview */}
-          {formData.imageUrls.length > 0 && (
-            <div className="mb-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Gambar Terupload:</h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {formData.imageUrls.map((url, index) => (
-                  <div key={index} className="relative group">
-                    <img
-                      src={url}
-                      alt={`Product image ${index + 1}`}
-                      className="w-full h-32 object-cover rounded-md"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* File Dropzone */}
-          <FileDropzone
-            onFilesDrop={handleFilesDrop}
-            accept="image/*"
-            multiple={true}
-            label="Klik untuk upload gambar atau drag & drop di sini"
-            id="product-images-upload"
-          />
-          
-          {uploadingImages && (
-            <div className="mt-2 flex items-center text-sm text-gray-600">
-              <Loader2 className="animate-spin mr-2" size={16} />
-              Mengupload gambar...
-            </div>
-          )}
-          
-          <p className="mt-2 text-sm text-gray-500">
-            Format yang didukung: JPG, PNG. Maksimal 5MB per gambar.
-          </p>
-        </div>
-
         {/* Submit Button */}
-        <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
-          >
-            Batal
-          </button>
+        <div className="pt-8">
           <button
             type="submit"
             disabled={loading || formData.imageUrls.length === 0}
-            className="px-6 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            className="w-full bg-green-600 hover:bg-green-700 text-white py-4 px-6 rounded-lg font-medium text-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
             {loading ? (
               <>
-                <Loader2 className="animate-spin mr-2" size={16} />
+                <Loader2 className="animate-spin mr-2" size={20} />
                 Menyimpan...
               </>
             ) : (
-              <>
-                <Plus size={16} className="mr-2" />
-                Tambah Produk
-              </>
+              "Konfirmasi"
             )}
           </button>
         </div>
