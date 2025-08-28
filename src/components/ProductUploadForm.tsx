@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { X, Loader2, Edit, DollarSign, Package } from "lucide-react";
+import { X, Loader2, Edit, DollarSign, Package, Upload } from "lucide-react";
 import FileDropzone from "./FileDropZone";
 
 interface Category {
@@ -33,6 +33,8 @@ export default function ProductUploadForm() {
     categoryId: "",
     imageUrls: [],
   });
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
 
   // Fetch categories on component mount
   useEffect(() => {
@@ -62,38 +64,15 @@ export default function ProductUploadForm() {
     }));
   };
 
-  const handleFilesDrop = async (files: FileList) => {
-    setUploadingImages(true);
-    const uploadedUrls: string[] = [];
+  const handleFilesDrop = (files: FileList) => {
+    const arr = Array.from(files);
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      try {
-        const formData = new FormData();
-        formData.append("file", file);
+    // simpan file mentah
+    setPendingFiles((prev) => [...prev, ...arr]);
 
-        const response = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          uploadedUrls.push(data.url);
-        } else {
-          const errorData = await response.json();
-          console.error("Upload failed:", errorData.error);
-        }
-      } catch (error) {
-        console.error("Error uploading file:", error);
-      }
-    }
-
-    setFormData((prev) => ({
-      ...prev,
-      imageUrls: [...prev.imageUrls, ...uploadedUrls],
-    }));
-    setUploadingImages(false);
+    // bikin URL preview
+    const newPreviews = arr.map((f) => URL.createObjectURL(f));
+    setPreviewUrls((prev) => [...prev, ...newPreviews]);
   };
 
   const removeImage = (index: number) => {
@@ -108,39 +87,63 @@ export default function ProductUploadForm() {
     setLoading(true);
 
     try {
+      // 1. Upload semua gambar
+      const uploadedUrls: string[] = [];
+      for (const file of pendingFiles) {
+        const fd = new FormData();
+        fd.append("file", file);
+
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: fd,
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || "Upload failed");
+        }
+
+        const data = await res.json();
+        uploadedUrls.push(data.url);
+      }
+
+      // 2. Siapkan data produk
       const productData = {
         ...formData,
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock),
+        imageUrls: uploadedUrls,
       };
 
+      // 3. Simpan produk
       const response = await fetch("/api/admin/products", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(productData),
       });
 
-      if (response.ok) {
-        alert("Product created successfully!");
-        router.push("/admin/produk");
-        // Reset form
-        setFormData({
-          name: "",
-          description: "",
-          price: "",
-          stock: "",
-          categoryId: "",
-          imageUrls: [],
-        });
-      } else {
+      if (!response.ok) {
         const errorData = await response.json();
-        alert(`Error: ${errorData.error}`);
+        throw new Error(errorData.error || "Failed to create product");
       }
-    } catch (error) {
+
+      alert("Product created successfully!");
+      router.push("/admin/produk");
+
+      // reset form
+      setFormData({
+        name: "",
+        description: "",
+        price: "",
+        stock: "",
+        categoryId: "",
+        imageUrls: [],
+      });
+      setPendingFiles([]);
+      setPreviewUrls([]);
+    } catch (error: any) {
       console.error("Error creating product:", error);
-      alert("Failed to create product");
+      alert(error.message || "Failed to create product");
     } finally {
       setLoading(false);
     }
@@ -158,19 +161,19 @@ export default function ProductUploadForm() {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Image Upload Section */}
         <div className="mb-8">
-          {formData.imageUrls.length > 0 ? (
+          {previewUrls.length > 0 ? (
             <div className="relative">
               <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden border-2 border-dashed border-gray-300">
                 <img
-                  src={formData.imageUrls[0]}
+                  src={previewUrls[0]}
                   alt="Product preview"
                   className="w-full h-full object-cover"
                 />
               </div>
-              {/* Additional images thumbnails */}
-              {formData.imageUrls.length > 1 && (
+
+              {previewUrls.length > 1 && (
                 <div className="flex gap-2 mt-3">
-                  {formData.imageUrls.slice(1).map((url, index) => (
+                  {previewUrls.slice(1).map((url, index) => (
                     <div key={index + 1} className="relative group">
                       <img
                         src={url}
@@ -188,26 +191,22 @@ export default function ProductUploadForm() {
                   ))}
                 </div>
               )}
-              {/* Replace/Remove main image button */}
-              <div className="absolute top-3 right-3 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => removeImage(0)}
-                  className="bg-white/90 backdrop-blur-sm text-gray-700 rounded-full p-2 hover:bg-white shadow-sm"
-                  title="Hapus gambar"
-                >
-                  <X size={16} />
-                </button>
-              </div>
             </div>
           ) : (
-            <FileDropzone
-              onFilesDrop={handleFilesDrop}
-              accept="image/*"
-              multiple={true}
-              label="Klik untuk upload gambar atau drag & drop di sini"
-              id="product-images-upload"
-            />
+            <div className="aspect-video bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center">
+              <div className="text-center py-12">
+                <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <p className="text-gray-500 mb-2">Klik untuk upload gambar</p>
+                <p className="text-sm text-gray-400">atau drag & drop di sini</p>
+              </div>
+              <FileDropzone
+                onFilesDrop={handleFilesDrop}
+                accept="image/*"
+                multiple={true}
+                label="Klik untuk upload gambar atau drag & drop di sini"
+                id="product-images-upload"
+              />
+            </div>
           )}
 
           {uploadingImages && (
