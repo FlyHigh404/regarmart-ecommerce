@@ -1,13 +1,28 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Generated API Docs",
+    "title": "Regarmart Generated API Docs",
     "version": "1.0.0"
   },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api"
+    }
+  ],
   "paths": {
     "/products": {
       "get": {
         "summary": "Auto generated for GET /products",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/upload": {
+      "post": {
+        "summary": "Auto generated for POST /upload",
         "responses": {
           "200": {
             "description": "Success"
@@ -51,6 +66,14 @@
             "description": "Success"
           }
         }
+      },
+      "get": {
+        "summary": "Auto generated for GET /admin/products",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
       }
     },
     "/auth/signup": {
@@ -66,6 +89,26 @@
     "/products/{id}": {
       "get": {
         "summary": "Auto generated for GET /products/{id}",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/products/categories": {
+      "get": {
+        "summary": "Auto generated for GET /products/categories",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/products/search": {
+      "get": {
+        "summary": "Auto generated for GET /products/search",
         "responses": {
           "200": {
             "description": "Success"

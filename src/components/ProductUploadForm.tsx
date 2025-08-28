@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, X, Loader2, Edit, DollarSign, Package } from "lucide-react";
+import { X, Loader2, Edit, DollarSign, Package } from "lucide-react";
 import FileDropzone from "./FileDropZone";
 
 interface Category {
@@ -51,7 +51,9 @@ export default function ProductUploadForm() {
   }, []);
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -121,7 +123,6 @@ export default function ProductUploadForm() {
       });
 
       if (response.ok) {
-        const newProduct = await response.json();
         alert("Product created successfully!");
         router.push("/admin/produk");
         // Reset form
@@ -149,7 +150,9 @@ export default function ProductUploadForm() {
     <div className="w-full max-w-2xl mx-auto">
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Tambah Produk</h2>
-        <h3 className="text-lg font-medium text-gray-700 mb-6">Isi detail produk</h3>
+        <h3 className="text-lg font-medium text-gray-700 mb-6">
+          Isi detail produk
+        </h3>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -198,22 +201,15 @@ export default function ProductUploadForm() {
               </div>
             </div>
           ) : (
-            <div className="aspect-video bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center">
-              <div className="text-center py-12">
-                <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <p className="text-gray-500 mb-2">Klik untuk upload gambar</p>
-                <p className="text-sm text-gray-400">atau drag & drop di sini</p>
-              </div>
-              <FileDropzone
-                onFilesDrop={handleFilesDrop}
-                accept="image/*"
-                multiple={true}
-                label="Klik untuk upload gambar atau drag & drop di sini"
-                id="product-images-upload"
-              />
-            </div>
+            <FileDropzone
+              onFilesDrop={handleFilesDrop}
+              accept="image/*"
+              multiple={true}
+              label="Klik untuk upload gambar atau drag & drop di sini"
+              id="product-images-upload"
+            />
           )}
-          
+
           {uploadingImages && (
             <div className="mt-3 flex items-center justify-center text-sm text-gray-600">
               <Loader2 className="animate-spin mr-2" size={16} />
@@ -237,7 +233,10 @@ export default function ProductUploadForm() {
               className="w-full px-4 py-4 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
               placeholder="Masukkan nama produk"
             />
-            <Edit className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <Edit
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+              size={20}
+            />
           </div>
         </div>
 
@@ -261,16 +260,16 @@ export default function ProductUploadForm() {
                 </option>
               ))}
             </select>
-            <svg 
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" 
-              width="20" 
-              height="20" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
+            <svg
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
               strokeWidth="2"
             >
-              <path d="M6 9l6 6 6-6"/>
+              <path d="M6 9l6 6 6-6" />
             </svg>
           </div>
         </div>
@@ -292,7 +291,10 @@ export default function ProductUploadForm() {
               className="w-full px-4 py-4 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
               placeholder="Rp"
             />
-            <DollarSign className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <DollarSign
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+              size={20}
+            />
           </div>
         </div>
 
@@ -312,7 +314,10 @@ export default function ProductUploadForm() {
               className="w-full px-4 py-4 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
               placeholder="0"
             />
-            <Package className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <Package
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+              size={20}
+            />
           </div>
         </div>
 
