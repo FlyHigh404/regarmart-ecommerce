@@ -23,7 +23,6 @@ interface ProductFormData {
 export default function ProductUploadForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [uploadingImages, setUploadingImages] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [formData, setFormData] = useState<ProductFormData>({
     name: "",
@@ -206,13 +205,6 @@ export default function ProductUploadForm() {
                 label="Klik untuk upload gambar atau drag & drop di sini"
                 id="product-images-upload"
               />
-            </div>
-          )}
-
-          {uploadingImages && (
-            <div className="mt-3 flex items-center justify-center text-sm text-gray-600">
-              <Loader2 className="animate-spin mr-2" size={16} />
-              Mengupload gambar...
             </div>
           )}
         </div>
