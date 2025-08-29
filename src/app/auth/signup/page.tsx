@@ -134,29 +134,48 @@ export default function Register() {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Name Input */}
-                <div>
+                <div className="relative">
                   <input
                     type="text"
                     name="name"
-                    placeholder="Nama Lengkap"
-                    required
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full px-5 py-4 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all text-base"
+                    required
+                    className="peer w-full px-4 pt-6 pb-2 border border-gray-300 rounded-lg 
+    focus:ring-2 focus:ring-green-500 focus:outline-none text-gray-900"
+                    placeholder=""
                   />
+                  <label
+                    htmlFor="name"
+                    className="absolute left-4 top-2 text-xs text-gray-500 transition-all 
+    peer-focus:text-gray-500"
+                  >
+                    Nama Lengkap
+                  </label>
                 </div>
 
                 {/* Email Input */}
-                <div>
+                <div className="relative">
                   <input
                     type="email"
                     name="email"
-                    placeholder="Email"
-                    required
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-5 py-4 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all text-base"
+                    required
+                    className="peer w-full px-4 pt-6 pb-2 border border-gray-300 rounded-lg 
+    focus:ring-2 focus:ring-green-500 focus:outline-none text-gray-900"
+                    placeholder=""
                   />
+                  <label
+                    htmlFor="email"
+                    className="absolute left-4 top-2 text-xs text-gray-500 transition-all 
+    peer-focus:text-gray-500"
+                  >
+                    Email atau Nomor HP
+                  </label>
+                  <p className="text-sm text-gray-400 ml-1 mt-1">
+                    Contoh: email@regarmart.com
+                  </p>
                 </div>
 
                 {/* Password Input */}
@@ -164,27 +183,42 @@ export default function Register() {
                   <input
                     type={showPassword ? "text" : "password"}
                     name="password"
-                    placeholder="Password"
-                    required
                     value={formData.password}
                     onChange={handleChange}
-                    className="w-full px-5 py-4 pr-12 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all text-base"
+                    required
+                    className="peer w-full px-4 pt-6 pb-2 pr-12 border border-gray-300 rounded-lg 
+    focus:ring-2 focus:ring-green-500 focus:outline-none text-gray-900"
+                    placeholder=""
                   />
+                  <label
+                    htmlFor="password"
+                    className="absolute left-4 top-2 text-xs text-gray-500 transition-all 
+    peer-focus:text-gray-500"
+                  >
+                    Password
+                  </label>
+
+                  {/* Toggle show/hide */}
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      {showPassword ? (
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-                      ) : (
-                        <>
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </>
-                      )}
-                    </svg>
+                    {showPassword ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"
+                        />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
                   </button>
                 </div>
 
@@ -193,27 +227,42 @@ export default function Register() {
                   <input
                     type={showConfirmPassword ? "text" : "password"}
                     name="confirmPassword"
-                    placeholder="Konfirmasi Password"
-                    required
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className="w-full px-5 py-4 pr-12 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all text-base"
+                    required
+                    className="peer w-full px-4 pt-6 pb-2 pr-12 border border-gray-300 rounded-lg 
+    focus:ring-2 focus:ring-green-500 focus:outline-none text-gray-900"
+                    placeholder=""
                   />
+                  <label
+                    htmlFor="confirmPassword"
+                    className="absolute left-4 top-2 text-xs text-gray-500 transition-all 
+    peer-focus:text-gray-500"
+                  >
+                    Konfirmasi Password
+                  </label>
+
+                  {/* Toggle show/hide */}
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      {showConfirmPassword ? (
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-                      ) : (
-                        <>
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </>
-                      )}
-                    </svg>
+                    {showConfirmPassword ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"
+                        />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
                   </button>
                 </div>
 
