@@ -8,12 +8,21 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 
-export default function KategoriSide({ onSelectCategory }: { onSelectCategory: (category: string) => void }) {
+interface Category {
+  id: string;
+  name: string;
+}
+
+export default function KategoriSide({
+  categories,
+  onSelectCategory,
+}: {
+  categories: Category[];
+  onSelectCategory: (categoryId: string) => void;
+}) {
   const [openKategori, setOpenKategori] = useState(true);
   const [openHarga, setOpenHarga] = useState(true);
   const [openRating, setOpenRating] = useState(true);
-
-  const categories = ["Sembako", "Kebutuhan Rumah Tangga", "Sayuran"];
 
   return (
     <div className="w-64 bg-white rounded-lg shadow-md p-4 space-y-4">
@@ -38,11 +47,11 @@ export default function KategoriSide({ onSelectCategory }: { onSelectCategory: (
           <ul className="mt-3 space-y-3 text-sm text-gray-700">
             {categories.map((cat) => (
               <li
-                key={cat}
-                onClick={() => onSelectCategory(cat)}
+                key={cat.id}
+                onClick={() => onSelectCategory(cat.id)}
                 className="cursor-pointer hover:text-green-600 flex items-center justify-between transition-colors"
               >
-                <span>{cat}</span>
+                <span>{cat.name}</span>
                 <ChevronRight className="w-4 h-4 text-gray-400" />
               </li>
             ))}
