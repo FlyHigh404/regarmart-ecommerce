@@ -4,7 +4,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Upload, X, Loader2, DollarSign, Package, Plus } from "lucide-react"
+import { X, Loader2 } from "lucide-react"
 import FileDropzone from "./FileDropZone"
 
 interface Category {
