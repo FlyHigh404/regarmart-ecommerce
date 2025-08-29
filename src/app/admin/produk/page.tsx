@@ -184,7 +184,7 @@ const Products = () => {
             {/* Modal */}
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative border border-gray-200">
               <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl">
-                <h2 className="text-xl font-semibold text-gray-900">Tambah Produk Baru</h2>
+                <h2 className="text-xl font-semibold text-gray-900 text-center">Tambah Produk</h2>
                 <button
                   onClick={() => setShowAddModal(false)}
                   className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-colors"

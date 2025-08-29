@@ -1,76 +1,64 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { Upload } from "lucide-react";
+import type React from "react"
+import { useRef, useState } from "react"
 
 interface FileDropzoneProps {
-  onFilesDrop: (files: FileList) => void;
-  accept?: string;
-  multiple?: boolean;
-  label?: string;
-  id?: string;
+  onFilesDrop: (files: FileList) => void
+  accept?: string
+  multiple?: boolean
+  label: string
+  id: string
 }
 
-const FileDropzone: React.FC<FileDropzoneProps> = ({
-  onFilesDrop,
-  accept = "image/*",
-  multiple = true,
-  label = "Klik untuk upload atau drag & drop",
-  id = "file-uploader",
-}) => {
-  const [isDragging, setIsDragging] = useState(false);
+export default function FileDropzone({ onFilesDrop, accept = "*", multiple = false, label, id }: FileDropzoneProps) {
+  const [isDragOver, setIsDragOver] = useState(false)
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(true)
+  }
 
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(false)
+  }
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      onFilesDrop(e.dataTransfer.files);
-      e.dataTransfer.clearData();
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(false)
+
+    const files = e.dataTransfer.files
+    if (files.length > 0) {
+      onFilesDrop(files)
     }
-  };
+  }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      onFilesDrop(e.target.files);
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files && files.length > 0) {
+      onFilesDrop(files)
     }
-  };
+  }
 
   return (
     <div
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`border-2 border-dashed rounded-lg p-6 text-center hover:border-green-500 transition-colors ${
-        isDragging ? "border-green-500 bg-green-50" : "border-gray-300"
-      }`}
+      className={`absolute inset-0 rounded-lg cursor-pointer transition-all duration-200
+        ${isDragOver ? "bg-green-50 border-green-400 border-2 border-dashed" : ""}
+      `}
     >
+      {/* input file transparan menutupi seluruh area */}
       <input
-        type="file"
         id={id}
+        type="file"
         accept={accept}
         multiple={multiple}
-        onChange={handleFileChange}
-        className="hidden"
+        onChange={handleFileSelect}
+        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
       />
-      <label
-        htmlFor={id}
-        className="cursor-pointer flex flex-col items-center gap-2"
-      >
-        <Upload size={24} className="text-gray-400" />
-        <span className="text-sm text-gray-600">{label}</span>
-      </label>
     </div>
-  );
-};
-
-
-export default FileDropzone;
+  )
+}
