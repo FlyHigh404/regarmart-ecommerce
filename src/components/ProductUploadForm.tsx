@@ -1,11 +1,10 @@
 // components/ProductUploadForm.tsx
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Upload, X, Loader2, DollarSign, Package, Plus } from "lucide-react"
-import FileDropzone from "./FileDropZone"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Upload, X, Loader2, Edit, DollarSign, Package } from "lucide-react";
+import FileDropzone from "./FileDropZone";
 
 interface Category {
   id: string
@@ -33,11 +32,7 @@ export default function ProductUploadForm() {
     stock: "",
     categoryId: "",
     imageUrls: [],
-  })
-
-  // tambahan
-  const [pendingFiles, setPendingFiles] = useState<File[]>([])
-  const [previewUrls, setPreviewUrls] = useState<string[]>([])
+  });
 
   // Fetch categories
   useEffect(() => {
@@ -56,22 +51,50 @@ export default function ProductUploadForm() {
   }, [])
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-    }))
-  }
+    }));
+  };
 
-  // drop file (preview dulu, belum upload)
-  const handleFilesDrop = (files: FileList) => {
-    const arr = Array.from(files)
-    setPendingFiles((prev) => [...prev, ...arr])
-    const newPreviews = arr.map((f) => URL.createObjectURL(f))
-    setPreviewUrls((prev) => [...prev, ...newPreviews])
-  }
+  const handleFilesDrop = async (files: FileList) => {
+    setUploadingImages(true);
+    const uploadedUrls: string[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          uploadedUrls.push(data.url);
+        } else {
+          const errorData = await response.json();
+          console.error("Upload failed:", errorData.error);
+        }
+      } catch (error) {
+        console.error("Error uploading file:", error);
+      }
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      imageUrls: [...prev.imageUrls, ...uploadedUrls],
+    }));
+    setUploadingImages(false);
+  };
 
   const removeImage = (index: number) => {
     setPendingFiles((prev) => prev.filter((_, i) => i !== index))
@@ -83,37 +106,13 @@ export default function ProductUploadForm() {
     setLoading(true)
 
     try {
-      // upload semua pending files
-      setUploadingImages(true)
-      const uploadedUrls: string[] = []
-
-      for (const file of pendingFiles) {
-        const fd = new FormData()
-        fd.append("file", file)
-
-        const res = await fetch("/api/upload", {
-          method: "POST",
-          body: fd,
-        })
-
-        if (!res.ok) {
-          const err = await res.json()
-          throw new Error(err.error || "Upload failed")
-        }
-
-        const data = await res.json()
-        uploadedUrls.push(data.url)
-      }
-      setUploadingImages(false)
-
-      // simpan produk
       const productData = {
         ...formData,
-        price: Number.parseFloat(formData.price),
-        stock: Number.parseInt(formData.stock),
-        imageUrls: uploadedUrls,
-      }
+        price: parseFloat(formData.price),
+        stock: parseInt(formData.stock),
+      };
 
+      // 3. Simpan produk
       const response = await fetch("/api/admin/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -121,10 +120,10 @@ export default function ProductUploadForm() {
       })
 
       if (response.ok) {
-        alert("Product created successfully!")
-        router.push("/admin/produk")
-
-        // reset form
+        const newProduct = await response.json();
+        alert("Product created successfully!");
+        router.push("/admin/produk");
+        // Reset form
         setFormData({
           name: "",
           description: "",
@@ -132,16 +131,14 @@ export default function ProductUploadForm() {
           stock: "",
           categoryId: "",
           imageUrls: [],
-        })
-        setPendingFiles([])
-        setPreviewUrls([])
+        });
       } else {
-        const errorData = await response.json()
-        alert(`Error: ${errorData.error}`)
+        const errorData = await response.json();
+        alert(`Error: ${errorData.error}`);
       }
-    } catch (error: any) {
-      console.error("Error creating product:", error)
-      alert(error.message || "Failed to create product")
+    } catch (error) {
+      console.error("Error creating product:", error);
+      alert("Failed to create product");
     } finally {
       setLoading(false)
     }
@@ -149,78 +146,54 @@ export default function ProductUploadForm() {
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <div className="text-left mb-8">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Tambah Produk</h2>
         <h3 className="text-lg font-medium text-gray-700 mb-6">Isi detail produk</h3>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Image Upload Section */}
         <div className="mb-8">
-          {previewUrls.length > 0 ? (
-            <div>
-              {/* Preview Gambar Utama */}
-              <div className="relative">
-                <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden border-2 border-dashed border-gray-300">
-                  <img
-                    src={previewUrls[0]}
-                    alt="Product preview"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
-                {/* Thumbnail gambar tambahan */}
-                {previewUrls.length > 1 && (
-                  <div className="flex gap-2 mt-3 flex-wrap">
-                    {previewUrls.slice(1).map((url, index) => (
-                      <div key={index + 1} className="relative group">
-                        <img
-                          src={url}
-                          alt={`Product image ${index + 2}`}
-                          className="w-16 h-16 object-cover rounded-lg border"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index + 1)}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X size={12} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Hapus gambar utama */}
-                <div className="absolute top-3 right-3 flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => removeImage(0)}
-                    className="bg-white/90 backdrop-blur-sm text-gray-700 rounded-full p-2 hover:bg-white shadow-sm"
-                    title="Hapus gambar"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
+          {formData.imageUrls.length > 0 ? (
+            <div className="relative">
+              <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden border-2 border-dashed border-gray-300">
+                <img
+                  src={formData.imageUrls[0]}
+                  alt="Product preview"
+                  className="w-full h-full object-cover"
+                />
               </div>
-
-              <div className="mt-4">
-                <div className="relative border-2 border-dashed border-green-400 rounded-lg p-6 bg-white hover:bg-green-50 transition-colors">
-                  <div className="text-center">
-                    {/* Upload Icon hijau seperti dalam gambar */}
-                    <div className="w-12 h-12 mx-auto mb-3 text-green-500">
-                      <img src="/export.png" alt="" />
+              {/* Additional images thumbnails */}
+              {formData.imageUrls.length > 1 && (
+                <div className="flex gap-2 mt-3">
+                  {formData.imageUrls.slice(1).map((url, index) => (
+                    <div key={index + 1} className="relative group">
+                      <img
+                        src={url}
+                        alt={`Product image ${index + 2}`}
+                        className="w-16 h-16 object-cover rounded-lg border"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index + 1)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X size={12} />
+                      </button>
                     </div>
-                    <p className="text-gray-700 font-medium">Tambah gambar lain (klik/drag disini)</p>
-                  </div>
-                  <FileDropzone
-                    onFilesDrop={handleFilesDrop}
-                    accept="image/*"
-                    multiple={true}
-                    label="Tambah gambar lain"
-                    id="product-images-additional"
-
-                  />
+                  ))}
                 </div>
+              )}
+              {/* Replace/Remove main image button */}
+              <div className="absolute top-3 right-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => removeImage(0)}
+                  className="bg-white/90 backdrop-blur-sm text-gray-700 rounded-full p-2 hover:bg-white shadow-sm"
+                  title="Hapus gambar"
+                >
+                  <X size={16} />
+                </button>
               </div>
             </div>
           ) : (
@@ -264,13 +237,7 @@ export default function ProductUploadForm() {
         focus:ring-2 focus:ring-green-500 focus:outline-none text-gray-900"
               placeholder="Nama Produk"
             />
-            <label
-              htmlFor="name"
-              className="absolute left-4 top-1.5 text-sm text-green-600 transition-all 
-        peer-focus:text-green-600"
-            >
-              Nama produk
-            </label>
+            <Edit className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
           </div>
         </div>
 
@@ -321,14 +288,7 @@ export default function ProductUploadForm() {
         focus:ring-2 focus:ring-green-500 focus:outline-none text-gray-900"
               placeholder="Rp"
             />
-            <label
-              htmlFor="price"
-              className="absolute left-4 top-1.5 text-sm text-green-600 transition-all 
-        peer-focus:text-green-600"
-            >
-              Harga
-            </label>
-            <img src="/dollar-circle.png" className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <DollarSign className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
           </div>
         </div>
 
@@ -346,14 +306,7 @@ export default function ProductUploadForm() {
         focus:ring-2 focus:ring-green-500 focus:outline-none text-gray-900"
               placeholder="0"
             />
-            <label
-              htmlFor="stock"
-              className="absolute left-4 top-1.5 text-sm text-green-600 transition-all 
-        peer-focus:text-green-600"
-            >
-              Stok
-            </label>
-            <img src="/box.png" className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Package className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
           </div>
         </div>
 

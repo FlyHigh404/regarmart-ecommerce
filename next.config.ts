@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   images: {
     remotePatterns: [
       {
@@ -12,6 +11,11 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
       },
+
+      {
+        protocol: "https",
+        hostname: "3gi7b3ftalieze3z.public.blob.vercel-storage.com"
+      }
     ]
   }
 };
