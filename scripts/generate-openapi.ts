@@ -12,7 +12,7 @@ const apiDir = path.join(__dirname, "src/app/api");
 const openapi: any = {
   openapi: "3.0.0",
   info: {
-    title: "Generated API Docs",
+    title: "Regarmart Generated API Docs",
     version: "1.0.0",
   },
   paths: {},
@@ -54,5 +54,5 @@ project.getSourceFiles().forEach((file) => {
 });
 
 // Simpan jadi openapi.json
-fs.writeFileSync("openapi.json", JSON.stringify(openapi, null, 2));
+fs.writeFileSync("public/openapi.json", JSON.stringify(openapi, null, 2));
 console.log("✅ Generated openapi.json");

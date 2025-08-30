@@ -22,8 +22,8 @@ export async function GET() {
         p.price,
         p.stock,
         p."imageUrl",
-        COALESCE(SUM(oi.quantity), 0) AS "totalSold",
-        COALESCE(AVG(r.value), 0) AS "averageRating"
+        COALESCE(SUM(oi.quantity), 0)::int AS "totalSold",
+         COALESCE(AVG(r.value), 0)::float AS "averageRating"
       FROM "Product" p
       LEFT JOIN "OrderItem" oi ON p.id = oi."productId"
       LEFT JOIN "Order" o ON oi."orderId" = o.id AND o.status = 'COMPLETED'
