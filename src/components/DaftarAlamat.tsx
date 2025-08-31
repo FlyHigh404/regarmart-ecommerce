@@ -2,17 +2,9 @@
 import { useState } from "react"
 import { MapPin, X } from "lucide-react"
 import InputBox from "@/components/InputBox"
+import { Alamat } from "@/types/alamat";
 import TambahAlamat from "@/components/TambahAlamat"
 
-type Alamat = {
-  id: number
-  label?: string
-  nama: string
-  telp: string
-  alamat: string
-  catatan?: string
-  utama?: boolean
-}
 
 interface DaftarAlamatProps {
   open: boolean
@@ -40,10 +32,11 @@ export default function DaftarAlamat({ open, setOpen, onSelectAlamat }: DaftarAl
     {
       id: 2,
       label: "Kantor",
-      nama: "Team Genesis",
+      nama: "Team Zenith",
       telp: "0895360577489",
       alamat:
-        "Jl. Merpati No.40ab, Kepuh, Betro, Kec. Sedati, Kabupaten Sidoarjo, Jawa Timur 61253, Indonesia",
+        "Jl. Elang No.45, Rungkut,  Kabupaten Surabaya, Jawa Timur 61253, Indonesia",
+      utama: false,
     },
   ])
 
@@ -60,6 +53,16 @@ export default function DaftarAlamat({ open, setOpen, onSelectAlamat }: DaftarAl
       )
       setEditOpen(false)
     }
+  }
+
+  // ✅ Fungsi untuk menjadikan alamat sebagai utama
+  const setSebagaiUtama = (id: number) => {
+    setAlamatList((prev) =>
+      prev.map((a) => ({
+        ...a,
+        utama: a.id === id,
+      }))
+    )
   }
 
   return (
@@ -114,6 +117,18 @@ export default function DaftarAlamat({ open, setOpen, onSelectAlamat }: DaftarAl
                       </span>
                     )}
                   </div>
+                  {/* Tombol jadikan utama */}
+                  {!item.utama && (
+                    <button
+                      className="text-xs text-green-600 hover:underline"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setSebagaiUtama(item.id)
+                      }}
+                    >
+                      Jadikan Utama
+                    </button>
+                  )}
                 </div>
 
                 <div className="pl-8 mt-2">

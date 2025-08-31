@@ -242,13 +242,6 @@ export default function ProductUploadForm() {
               />
             </div>
           )}
-
-          {uploadingImages && (
-            <div className="mt-3 flex items-center justify-center text-sm text-gray-600">
-              <Loader2 className="animate-spin mr-2" size={16} />
-              Mengupload gambar...
-            </div>
-          )}
         </div>
 
         {/* Product Name */}

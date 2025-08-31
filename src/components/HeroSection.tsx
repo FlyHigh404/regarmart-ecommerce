@@ -107,8 +107,6 @@ const HeroSection = () => {
                     </p>
 
                     <ProductPopuler />
-
-
                 </div>
             </div>
         </section>

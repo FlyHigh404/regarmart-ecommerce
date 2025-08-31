@@ -37,7 +37,7 @@ const ActivityLogCard: React.FC = () => {
   return (
     <div className="activity-log-card">
       <div className="card-header">
-        <h2>Log Aktivitas Terakhir</h2>
+        <h2 >Log Aktivitas Terakhir</h2>
         <p>Ini adalah daftar aktivitas terbaru.</p>
       </div>
       <div className="card-body">

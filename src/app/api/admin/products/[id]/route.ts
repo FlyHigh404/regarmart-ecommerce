@@ -1,19 +1,23 @@
-import {prisma} from "@/lib/prisma";
-import {NextRequest, NextResponse} from "next/server";
-import {getServerSession} from "next-auth/next";
-import {authOptions} from "@/app/api/auth/[...nextauth]/route";
+import { prisma } from "@/lib/prisma";
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   const session = await getServerSession(authOptions);
   const { id } = params;
 
-  if (!session || !session.user?.isAdmin) {
+  if (!session || session.user?.role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const { name, description, price, stock, categoryId, imageUrl } = await request.json();
-    
+    const { name, description, price, stock, categoryId, imageUrl } =
+      await request.json();
+
     const updatedProduct = await prisma.product.update({
       where: { id },
       data: {
@@ -32,7 +36,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     return NextResponse.json(updatedProduct);
   } catch (error) {
     console.error("Error updating product:", error);
-    return NextResponse.json({ error: "Failed to update product" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to update product" },
+      { status: 500 }
+    );
   }
 }
 
@@ -40,7 +47,7 @@ export async function DELETE({ params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   const { id } = params;
 
-  if (!session || !session.user?.isAdmin) {
+  if (!session || session.user?.role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -49,10 +56,15 @@ export async function DELETE({ params }: { params: { id: string } }) {
       where: { id },
     });
 
-    return NextResponse.json({ message: "Product deleted successfully" }, { status: 200 });
+    return NextResponse.json(
+      { message: "Product deleted successfully" },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error deleting product:", error);
-    return NextResponse.json({ error: "Failed to delete product" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to delete product" },
+      { status: 500 }
+    );
   }
 }
-

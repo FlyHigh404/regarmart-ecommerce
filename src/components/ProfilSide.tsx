@@ -9,14 +9,14 @@ const navItems = [
   { name: 'Profil Saya', href: '/profil', icon: UserCircle2, children: ['/profil/editprofil'] },
   { name: 'Alamat', href: '/profil/alamat', icon: MapPin },
   { name: 'Riwayat Transaksi', href: '/profil/riwayat-transaksi', icon: Notebook, children: ['/profil/riwayat-transaksi/transaksi-diproses', '/profil/riwayat-transaksi/transaksi-selesai']},
-  { name: 'Ubah Password', href: '/profil/ubah-password', icon: Lock, children: ['/profil/password-baru'] },
+  { name: 'Ubah Password', href: '/profil/ubah-password', icon: Lock},
 ];
 
 export default function ProfilSide() {
   const pathname = usePathname();
 
   return (
-    <div className="w-[325px] h-[692px] flex-shrink-0">
+    <div className="sticky w-[325px] h-[692px] flex-shrink-0">
       <div className="bg-white rounded-2xl p-6 h-full font-jakarta text-[#464255] text-[18px] font-normal">
         <h2 className="text-xl font-bold mb-6">Profil Pengguna</h2>
         <nav>
