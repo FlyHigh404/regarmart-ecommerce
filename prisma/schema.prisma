@@ -103,7 +103,10 @@ model Rating {
   createdAt DateTime @default(now())
   product   Product  @relation(fields: [productId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([productId, userId]) // biar 1 user cuma bisa 1 rating per product
 }
+
 
 model Order {
   id            String        @id @default(uuid())

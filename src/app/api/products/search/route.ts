@@ -9,6 +9,7 @@ export async function GET(req: Request) {
     const categoryId = searchParams.get("categoryId") || ""
     const page = parseInt(searchParams.get("page") || "1")
     const limit = parseInt(searchParams.get("limit") || "10")
+    const price = searchParams.get("price") || ""
 
     const skip = (page - 1) * limit
 
