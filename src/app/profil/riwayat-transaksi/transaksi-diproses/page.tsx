@@ -1,10 +1,11 @@
-import CardOrder, { OrderProduct } from "@/components/CardOrder";
+import CardOrder from "@/components/CardOrder";
+import { PaymentMethod, OrderProduct, OrderStatus } from "@/types/order";
 import Link from "next/link";
 
 const ordersProcess = [
   {
     orderNumber: "#INV-0015",
-    status: "Sedang proses",
+    status: OrderStatus.SHIPPED,
     total: "Rp170.500",
     product: {
       id: "1",
@@ -13,8 +14,18 @@ const ordersProcess = [
       qty: 1,
       image: "/susu.png",
     } as OrderProduct,
+    paymentMethod: PaymentMethod.COD,
+    address: {
+      id: 1,
+      nama: "Rania",
+      telp: "08123456789",
+      alamat: "Jl. Merdeka No. 45, Jakarta 12345", 
+    },
+    contact: "08123456789",
   },
 ];
+
+
 
 export default function TransaksiDiprosesPage() {
   return (
@@ -41,12 +52,15 @@ export default function TransaksiDiprosesPage() {
       <div className="space-y-4">
         {ordersProcess.map((order, index) => (
           <CardOrder
-            key={order.product.id}
-            index={index}
-            orderNumber={order.orderNumber}
-            status={order.status}
-            total={order.total}
-            product={order.product}
+          key={order.product.id}
+          index={index}
+          orderNumber={order.orderNumber}
+          status={order.status}
+          total={order.total}
+          product={order.product}
+          paymentMethod={order.paymentMethod as any} 
+          address={order.address}
+          contact={order.contact}
           />
         ))}
       </div>

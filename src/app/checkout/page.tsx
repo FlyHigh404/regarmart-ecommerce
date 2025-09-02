@@ -2,26 +2,27 @@
 import React, { useState } from "react";
 import { MapPin } from "lucide-react";
 import DaftarAlamat from "@/components/DaftarAlamat";
+import { Alamat } from "@/types/alamat";
 import Footer from "@/components/Footer";
 import CheckoutNavbar from "@/components/NavCheckout";
-
-type Alamat = {
-  id: number;
-  nama: string;
-  telp: string;
-  alamat: string;
-  utama?: boolean;
-};
+import OrderConfirm from "@/components/OrderConfirm";
+import { OrderStatus, PaymentMethod } from "@/types/order";
 
 const CheckoutPage: React.FC = () => {
-  const [paymentMethod, setPaymentMethod] = useState("COD");
+  const [openOrderConfirm, setOpenOrderConfirm] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
+    PaymentMethod.COD
+  );
 
+  // 🟢 Alamat aktif cuma 1 (default pakai Rumah)
   const [alamatAktif, setAlamatAktif] = useState<Alamat>({
     id: 1,
+    label: "Rumah",
     nama: "Team Genesis",
     telp: "0895360577489",
     alamat:
-      "Jl. Merpati No.40ab, Kepuh, Betro, Kec. Sedati, Kabupaten Sidoarjo, Jawa Timur 61253",
+      "Jl. Merpati No.40ab, Kepuh, Betro, Kec. Sedati, Kabupaten Sidoarjo, Jawa Timur 61253, Indonesia",
+    catatan: "Dekat Masjid, Warna cat rumah hijau",
     utama: true,
   });
 
@@ -64,11 +65,10 @@ const CheckoutPage: React.FC = () => {
       {/* Navbar Checkout */}
       <CheckoutNavbar />
 
-      {/* Main Content */}
       <div className="p-6 max-w-6xl mx-auto">
         <h1 className="text-xl font-bold mb-4">Checkout Produk</h1>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* KIRI */}
+          {/* ==================== KIRI ==================== */}
           <div className="md:col-span-2 space-y-4">
             {/* Alamat Pengiriman */}
             <div className="bg-white shadow rounded-xl p-4">
@@ -131,12 +131,11 @@ const CheckoutPage: React.FC = () => {
             ))}
           </div>
 
-          {/* KANAN */}
+          {/* ==================== KANAN ==================== */}
           <div className="bg-white shadow rounded-xl p-4 space-y-4">
             <h2 className="font-semibold mb-2">Metode Pembayaran</h2>
-
+            {/* Payment Radio */}
             <div>
-              {/* QRIS */}
               <label className="flex items-center justify-between cursor-pointer py-2">
                 <div className="flex items-center gap-3">
                   <img src="/qris.svg" alt="QRIS" className="w-8 h-8 object-contain" />
@@ -145,16 +144,15 @@ const CheckoutPage: React.FC = () => {
                 <input
                   type="radio"
                   name="payment"
-                  value="QRIS"
-                  checked={paymentMethod === "QRIS"}
-                  onChange={() => setPaymentMethod("QRIS")}
+                  value={PaymentMethod.QRIS}
+                  checked={paymentMethod === PaymentMethod.QRIS}
+                  onChange={() => setPaymentMethod(PaymentMethod.QRIS)}
                   className="w-4 h-4 accent-green-600"
                 />
               </label>
 
               <hr className="border-gray-200 my-3" />
 
-              {/* COD */}
               <label className="flex items-center justify-between cursor-pointer py-2">
                 <div className="flex items-center gap-3">
                   <img src="/cod.svg" alt="COD" className="w-8 h-8 object-contain" />
@@ -163,14 +161,12 @@ const CheckoutPage: React.FC = () => {
                 <input
                   type="radio"
                   name="payment"
-                  value="COD"
-                  checked={paymentMethod === "COD"}
-                  onChange={() => setPaymentMethod("COD")}
+                  value={PaymentMethod.COD}
+                  checked={paymentMethod === PaymentMethod.COD}
+                  onChange={() => setPaymentMethod(PaymentMethod.COD)}
                   className="w-4 h-4 accent-green-600"
                 />
               </label>
-
-              <hr className="border-gray-200 border-dashed my-2" />
             </div>
 
             {/* Detail Pembayaran */}
@@ -194,7 +190,10 @@ const CheckoutPage: React.FC = () => {
               <span>Rp{totalPembayaran.toLocaleString("id-ID")}</span>
             </div>
 
-            <button className="w-full bg-green-600 text-white py-2 rounded-xl font-semibold">
+            <button
+              onClick={() => setOpenOrderConfirm(true)}
+              className="w-full bg-green-600 text-white py-2 rounded-xl font-semibold"
+            >
               Konfirmasi
             </button>
           </div>
@@ -205,10 +204,30 @@ const CheckoutPage: React.FC = () => {
       <DaftarAlamat
         open={openAlamat}
         setOpen={setOpenAlamat}
-        onSelectAlamat={(alamat: Alamat) => setAlamatAktif(alamat)}
+        onSelectAlamat={(alamat: Alamat) => {
+          setAlamatAktif(alamat); 
+        }}
       />
 
-      {/* Footer */}
+      {/* Order Confirm Modal */}
+      <OrderConfirm
+        orderNumber="#INV-0010"
+        status={OrderStatus.PROCESSING}
+        paymentMethod={paymentMethod}
+        products={orders.map((o) => ({
+          id: o.id.toString(),
+          name: o.name,
+          qty: o.qty,
+          price: `Rp${o.price.toLocaleString("id-ID")}`,
+          image: o.img,
+        }))}
+        total={`Rp${totalPembayaran.toLocaleString("id-ID")}`}
+        address={alamatAktif}
+        contact={`${alamatAktif.nama} | ${alamatAktif.telp}`}
+        open={openOrderConfirm}
+        onClose={() => setOpenOrderConfirm(false)}
+      />
+
       <Footer />
     </div>
   );

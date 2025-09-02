@@ -121,8 +121,8 @@ export default function ProductUploadForm() {
       })
 
       if (response.ok) {
-        alert("Product created successfully!")
-        router.push("/admin/produk")
+        
+         window.location.reload();
 
         // reset form
         setFormData({
@@ -263,6 +263,29 @@ export default function ProductUploadForm() {
         peer-focus:text-green-600"
             >
               Nama produk
+            </label>
+          </div>
+        </div>
+
+        {/* Description */}
+        <div className="relative">
+          <div className="relative">
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              required
+              rows={4}
+              className="peer w-full px-4 pt-6 pb-2 border border-gray-300 rounded-lg 
+      focus:ring-2 focus:ring-green-500 focus:outline-none text-gray-900 resize-none"
+              placeholder="Deskripsi produk"
+            />
+            <label
+              htmlFor="description"
+              className="absolute left-4 top-1.5 text-sm text-green-600 transition-all 
+      peer-focus:text-green-600"
+            >
+              Deskripsi Produk
             </label>
           </div>
         </div>

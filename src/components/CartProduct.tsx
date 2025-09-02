@@ -1,7 +1,7 @@
 import { Plus } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react';
-import { Product } from "@/types";
+import { Product } from "@/types/product";
 
 
 interface CartProductProps {
@@ -19,7 +19,7 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
             {/* 1. Gambar */}
             <div className="mb-4 bg-gray-50 rounded-xl overflow-hidden transform transition-transform duration-300 group-hover:scale-105">
                 <Image
-                    src={product.image || "/placeholder.svg"}
+                    src={product.imageUrl[0] || "/placeholder.svg"}
                     alt={product.name}
                     width={400}
                     height={250}

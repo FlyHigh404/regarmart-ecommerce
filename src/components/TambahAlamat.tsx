@@ -14,6 +14,7 @@ type Alamat = {
 }
 
 interface TambahAlamatProps {
+  id?: number
   isOpen: boolean
   onClose: () => void
   onSave: (alamat: Alamat) => void
