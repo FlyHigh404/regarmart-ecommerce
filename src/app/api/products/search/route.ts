@@ -9,9 +9,14 @@ export async function GET(req: Request) {
     const categoryId = searchParams.get("categoryId") || ""
     const page = parseInt(searchParams.get("page") || "1")
     const limit = parseInt(searchParams.get("limit") || "10")
-    const price = searchParams.get("price") || ""
+    const minPrice = searchParams.get("minPrice")
+    const maxPrice = searchParams.get("maxPrice")
 
     const skip = (page - 1) * limit
+
+    const priceFilter: any = {}
+    if (minPrice) priceFilter.gte = Number(minPrice)
+    if (maxPrice) priceFilter.lte = Number(maxPrice)
 
     const whereClause: any = {
       AND: [
@@ -24,6 +29,7 @@ export async function GET(req: Request) {
             }
           : {},
         categoryId ? { categoryId } : {},
+        (minPrice || maxPrice) ? { price: priceFilter } : {},
       ],
     }
 
