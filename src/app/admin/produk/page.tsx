@@ -41,135 +41,146 @@ const Products = () => {
   return (
     <AdminLayout>
       <main className="flex-1 p-8 bg-gray-50">
-        {/* Actions Bar */}
-        <div className="flex justify-between items-center mb-6 gap-4">
-          {/* Header */}
-          <div className="flex flex-col mb-1"> {/* Gunakan flex-col untuk susunan vertikal */}
-            <h1 className="text-3xl font-bold text-gray-900">Tabel produk</h1>
-            <p className="text-gray-500 mt-1">Ini adalah daftar produk terbaru</p>
-          </div>
-          {/* Search */}
-          <div className="relative flex-1 max-w-md">
-            <Search
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-              size={20}
-            />
-            <input
-              type="text"
-              placeholder="Search"
-              className="pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full bg-white"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+        {/* Main Container with shadow and rounded corners */}
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          {/* Header Section */}
+          <div className="px-6 pt-6 pb-3 bg-white">
+            <div className="flex justify-between items-center">
+              {/* Header Text */}
+              <div className="flex flex-col">
+                <h1 className="text-3xl font-bold text-gray-900">Tabel produk</h1>
+                <p className="text-gray-500 text-base mt-1">Ini adalah daftar produk terbaru</p>
+              </div>
 
-          <div className="flex gap-3">
-            {/* Filter Button */}
-            <div className="relative">
-              <button
-                onClick={() => setShowFilter(!showFilter)}
-                className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-3 rounded-lg flex items-center gap-2 transition-colors"
-              >
-                <Filter size={18} className="text-green-600" />
-                Filter
-                <ChevronDown size={16} />
-              </button>
-            </div>
+              {/* Actions */}
+              <div className="flex items-center gap-3">
+                {/* Search */}
+                <div className="relative">
+                  <Search
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+                    size={20}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Search"
+                    className="pl-12 pr-6 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none focus:border-transparent w-80 bg-white text-sm"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
 
-            {/* Add Product Button */}
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors font-medium"
-            >
-              <Plus size={18} />
-              Tambah Produk
-            </button>
-          </div>
-        </div>
+                {/* Filter Button */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowFilter(!showFilter)}
+                    className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-6 py-3 rounded-lg flex items-center gap-3 transition-colors text-sm"
+                  >
+                    <Filter size={18} className="text-green-600" />
+                    Filter
+                    <ChevronDown size={16} />
+                  </button>
+                </div>
 
-        {/* Products Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50/50 border-b border-gray-200">
-              <tr>
-                <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">
-                  NAMA
-                </th>
-                <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">
-                  KATEGORI
-                </th>
-                <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">
-                  HARGA
-                </th>
-                <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">
-                  STOK
-                </th>
-                <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">
-                  TINDAKAN
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {filteredProducts.map((product, index) => (
-                <tr
-                  key={product.id}
-                  className={`hover:bg-gray-50/50 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50/30"
-                    }`}
+                {/* Add Product Button */}
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg flex items-center gap-3 transition-colors font-medium text-sm"
                 >
-                  <td className="py-5 px-6">
-                    <div className="font-medium text-gray-900 text-sm">
-                      {product.name}
-                    </div>
-                  </td>
-                  <td className="py-5 px-6">
-                    <span className="text-gray-600 text-sm">
-                      {product.category.name}
-                    </span>
-                  </td>
-                  <td className="py-5 px-6">
-                    <span className="text-gray-900 font-medium text-sm">
-                      {product.price.toLocaleString("id-ID")}
-                    </span>
-                  </td>
-                  <td className="py-5 px-6">
-                    <span
-                      className={`font-medium text-sm ${product.stock === 0 ? "text-red-600" : "text-gray-900"
-                        }`}
-                    >
-                      {product.stock}
-                    </span>
-                  </td>
-                  <td className="py-5 px-6">
-                    <div className="flex items-center gap-2">
-                      <button
-                        className="p-2 text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-200"
-                        title="Edit"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button
-                        className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
-                        title="Delete"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                  <Plus size={18} />
+                  Tambah Produk
+                </button>
+              </div>
+            </div>
+          </div>
 
-              {filteredProducts.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="py-12 px-6 text-center">
-                    <div className="text-gray-500">
-                      <p className="text-lg font-medium">Tidak ada produk ditemukan</p>
-                      <p className="text-sm mt-1">Coba ubah kata kunci pencarian Anda</p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+          {/* Products Table */}
+          <div className="p-6">
+            <div className="overflow-x-auto rounded-lg">
+              <table className="w-full">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">
+                      NAMA
+                    </th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">
+                      KATEGORI
+                    </th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">
+                      HARGA
+                    </th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">
+                      STOK
+                    </th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">
+                      TINDAKAN
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredProducts.map((product, index) => (
+                    <tr
+                      key={product.id}
+                      className={`hover:bg-gray-100 transition-colors ${
+                        index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                      }`}
+                    >
+                      <td className="py-5 px-6">
+                        <div className="font-medium text-gray-900 text-sm">
+                          {product.name}
+                        </div>
+                      </td>
+                      <td className="py-5 px-6">
+                        <span className="text-gray-600 text-sm">
+                          {product.category.name}
+                        </span>
+                      </td>
+                      <td className="py-5 px-6">
+                        <span className="text-gray-900 font-medium text-sm">
+                          {product.price.toLocaleString("id-ID")}
+                        </span>
+                      </td>
+                      <td className="py-5 px-6">
+                        <span
+                          className={`font-medium text-sm ${
+                            product.stock === 0 ? "text-red-600" : "text-gray-900"
+                          }`}
+                        >
+                          {product.stock}
+                        </span>
+                      </td>
+                      <td className="py-5 px-6">
+                        <div className="flex items-center gap-2">
+                          <button
+                            className="p-2 text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-200"
+                            title="Edit"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
+                            title="Delete"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+
+                  {filteredProducts.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="py-12 px-6 text-center bg-white">
+                        <div className="text-gray-500">
+                          <p className="text-lg font-medium">Tidak ada produk ditemukan</p>
+                          <p className="text-sm mt-1">Coba ubah kata kunci pencarian Anda</p>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
         {/* Add Product Modal */}
@@ -182,7 +193,7 @@ const Products = () => {
             />
 
             {/* Modal */}
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative border border-gray-200">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
               <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl">
                 <h2 className="text-xl font-semibold text-gray-900 text-center">Tambah Produk</h2>
                 <button

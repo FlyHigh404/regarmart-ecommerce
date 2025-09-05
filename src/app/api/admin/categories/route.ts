@@ -12,11 +12,12 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { name, description } = await req.json();
+    const { name, description, imageUrl } = await req.json();
     const newCategory = await prisma.category.create({
       data: {
         name,
         description,
+        imageUrl
       },
     });
 
