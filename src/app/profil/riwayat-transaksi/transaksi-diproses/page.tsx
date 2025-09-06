@@ -17,9 +17,9 @@ const ordersProcess = [
     paymentMethod: PaymentMethod.COD,
     address: {
       id: 1,
-      nama: "Rania",
-      telp: "08123456789",
-      alamat: "Jl. Merdeka No. 45, Jakarta 12345", 
+      nama: "Team Genesis",
+      telp: "0895360577489",
+      alamat: "Jl. Merpati No.40ab, Kepuh, Betro, Kec. Sedati, Kabupaten Sidoarjo, Jawa Timur 61253, Indonesia", 
     },
     contact: "08123456789",
   },

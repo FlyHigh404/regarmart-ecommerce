@@ -29,16 +29,6 @@ const CardOrder: React.FC<CardOrderProps> = ({
 }) => {
   const [openConfirm, setOpenConfirm] = useState(false);
 
-  // DEBUGGING
-  console.log("👉 CardOrder props:", {
-    orderNumber,
-    status,
-    total,
-    product,
-    paymentMethod,
-    address,
-    contact,
-  });
 
   return (
     <>

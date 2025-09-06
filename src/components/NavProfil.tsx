@@ -3,7 +3,7 @@ import React from "react"
 
 export default function ProfilNavbar() {
   return (
-    <nav className="left-0 top-0 w-full sticky bg-white shadow-sm border-b border-gray-200 z-50">
+    <nav className="left-0 top-0 w-full sticky bg-white shadow-sm border-b border-gray-200 z-50 ">
       <div className="flex items-center justify-between px-10 h-20">
         
         {/* Logo dan Teks */}

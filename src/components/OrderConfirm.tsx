@@ -5,7 +5,6 @@ import { Truck, MapPin, Check, Clock } from "lucide-react";
 import { Alamat } from "@/types/alamat";
 import { PaymentMethod, OrderStatus } from "@/types/order";
 
-
 interface Product {
   id: string;
   name: string;
@@ -13,7 +12,6 @@ interface Product {
   qty: number;
   image: string;
 }
-
 
 export interface OrderConfirmProps {
   orderNumber: string;
@@ -43,17 +41,23 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 font-jakarta">
-      <div className="bg-white rounded-2xl w-[546px] shadow-[0_0_54px_rgba(0,0,0,0.3)] max-h-[90vh] overflow-y-auto">
-        
+      <div
+        className="
+          bg-white rounded-xl shadow-lg
+          w-[95%] sm:w-[650px] max-h-[85vh] overflow-y-auto
+          relative divide-y divide-gray-300
+        "
+      >
         {/* Header */}
         <div
-          className={`px-5 py-4 text-white flex justify-between items-center ${
-            status === "Selesai"
+          className={`
+            w-full flex justify-between items-center text-white rounded-t-xl
+            ${status === "Selesai"
               ? "bg-[linear-gradient(145deg,#6EC568_13.92%,#26A81D_87.84%)]"
-              : "bg-gradient-to-b from-[#FFA04F] to-[#FF8A25]"
-          }`}
+              : "bg-gradient-to-b from-[#FFA04F] to-[#FF8A25]"}
+          `}
         >
-          <div>
+          <div className="px-4 sm:px-6 py-3">
             {status === "Selesai" ? (
               <>
                 <h2 className="text-lg font-semibold">Pesanan selesai</h2>
@@ -66,133 +70,126 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
               </>
             )}
           </div>
-
-          {/* Icon status */}
-          <div className="w-13 h-13 flex items-center justify-center rounded-full bg-white/30">
+          <div className="w-7 h-7 flex items-center justify-center rounded-full bg-white/30 mr-4">
             {status === "Selesai" ? (
-              <Check className="w-13 h-13 text-white" strokeWidth={3} />
+              <Check className="w-7 h-7 text-white" strokeWidth={3} />
             ) : (
-              <Clock className="w-13 h-13 text-white" strokeWidth={3} />
+              <Clock className="w-7 h-7 text-white" strokeWidth={3} />
             )}
           </div>
         </div>
 
-        {/* Informasi Pesanan */}
-        <div className="p-3 mb-1 bg-white">
-          <h3 className="font-bold text-gray-800 text-sm">Informasi Pesanan</h3>
-
-          <div className="grid grid-cols-2 text-sm mt-1">
-            <span>No. Pesanan:</span>
-            <span className="text-right font-medium">{orderNumber}</span>
-          </div>
-
-          <div className="grid grid-cols-2 text-sm mt-1">
-            <span>Metode Pembayaran:</span>
-            <span className="text-right font-medium">{paymentMethod}</span>
-          </div>
-
-          <div className="flex justify-end items-center gap-2 text-green-600 text-sm mt-2">
-            {status === "Selesai" ? (
-              <div className="flex items-center gap-1 cursor-pointer">
-                <span>Pesanan tiba di alamat tujuan</span>
-                <span className="font-bold">{">"}</span>
-              </div>
-            ) : (
-              <>
-                <Truck className="w-4 h-4" />
-                <span>Estimasi waktu 1 jam</span>
-              </>
-            )}
-          </div>
-        </div>
-
-        <hr className="border-2 border-gray-100 my-2" />
-
-        {/* Alamat Pengiriman */}
-        <div className="bg-white p-4">
-          <h2 className="font-bold text-sm text-black mb-4">ALAMAT PENGIRIMAN</h2>
-          <div className="flex items-center gap-2">
-            <MapPin className="w-6 h-6 text-green-600" />
-            <p className="font-medium text-[15px] text-black">{address.nama}</p>
-            {address.utama && (
-              <span className="bg-green-100 text-green-600 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                Utama
-              </span>
-            )}
-          </div>
-          <div className="pl-8 mt-2">
-            <p className="font-medium text-sm text-black">
-              <span className="after:content-['|'] after:mx-2 text-[#8F8F8F]">
-                {address.nama}
-              </span>
-              <span className="font-medium text-[14px] text-[#8F8F8F]">{address.telp}</span>
-            </p>
-            <p className="font-normal text-[13px] text-[#8F8F8F]">{address.alamat}</p>
-          </div>
-        </div>
-
-        <hr className="border-2 border-gray-100 my-2" />
-
-        {/* Produk */}
-        <div className="mb-4 bg-white p-4">
-          {(showAll ? products : products.slice(0, 1)).map((p) => (
-            <div
-              key={p.id}
-              className="w-[475px] h-[85px] flex items-center justify-between border-b border-gray-100 py-2 last:border-none"
-            >
-              <div className="flex gap-3 items-center">
-               <div className="w-[60px] h-[60px] rounded-md overflow-hidden">
-                  <Image
-                    src={p.image}
-                    alt={p.name}
-                    width={60}
-                    height={60}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">{p.name}</p>
-                  <p className="text-xs text-gray-500">Qty: x{p.qty}</p>
-                </div>
-              </div>
-              <p className="text-sm font-semibold">{p.price}</p>
+      
+        <div className="p-4 sm:p-6">
+          {/* Informasi Pesanan */}
+          <div className="py-4">
+            <h3 className="font-bold text-gray-800 text-sm mb-2">Informasi Pesanan</h3>
+            <div className="grid grid-cols-2 text-sm">
+              <span>No. Pesanan:</span>
+              <span className="text-right font-medium">{orderNumber}</span>
             </div>
-          ))}
+            <div className="grid grid-cols-2 text-sm mt-1">
+              <span>Metode Pembayaran:</span>
+              <span className="text-right font-medium">{paymentMethod}</span>
+            </div>
 
-          {products.length > 1 && (
+            <div className="flex justify-end items-center gap-2 text-green-600 text-sm mt-2">
+              {status === "Selesai" ? (
+                <div className="flex items-center gap-1 cursor-pointer">
+                  <span>Pesanan tiba di alamat tujuan</span>
+                  <span className="font-bold">{">"}</span>
+                </div>
+              ) : (
+                <>
+                  <Truck className="w-4 h-4" />
+                  <span>Estimasi waktu 1 jam</span>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Alamat Pengiriman */}
+          <div className="py-4 border-t-2 border-gray-200">
+            <h2 className="font-bold text-sm text-black mb-3">ALAMAT PENGIRIMAN</h2>
+            <div className="flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-green-600" />
+              <p className="font-medium text-sm text-black">{address.nama}</p>
+              {address.utama && (
+                <span className="bg-green-100 text-green-600 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                  Utama
+                </span>
+              )}
+            </div>
+            <div className="pl-7 mt-2">
+              <p className="font-medium text-sm text-black">
+                {address.nama}
+                <span className="mx-2 text-[#8F8F8F]">|</span>
+                <span className="text-[#8F8F8F]">{address.telp}</span>
+              </p>
+              <p className="text-xs text-[#8F8F8F]">{address.alamat}</p>
+            </div>
+          </div>
+
+          {/* Produk */}
+          <div className="py-4 border-t-2 border-gray-200">
+            {(showAll ? products : products.slice(0, 1)).map((p) => (
+              <div
+                key={p.id}
+                className="flex items-center justify-between border-b border-gray-100 py-2 last:border-none"
+              >
+                <div className="flex gap-3 items-center">
+                  <div className="w-[60px] h-[60px] rounded-md overflow-hidden">
+                    <Image
+                      src={p.image}
+                      alt={p.name}
+                      width={60}
+                      height={60}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{p.name}</p>
+                    <p className="text-xs text-gray-500">Qty: x{p.qty}</p>
+                  </div>
+                </div>
+                <p className="text-sm font-semibold">{p.price}</p>
+              </div>
+            ))}
+
+            {products.length > 1 && (
+              <button
+                onClick={() => setShowAll(!showAll)}
+                className="text-blue-600 text-sm font-medium mt-2"
+              >
+                {showAll ? "Sembunyikan" : "Lihat selengkapnya"}
+              </button>
+            )}
+          </div>
+
+          {/* Total */}
+          <div className="py-4 flex justify-end text-sm gap-1">
+            <span className="text-black">Total pesanan :</span>
+            <span className="font-bold text-black">{total}</span>
+          </div>
+
+          {/* Tombol */}
+          <div className="text-[13px] sm:text-[16px] pt-4 flex gap-3">
             <button
-              onClick={() => setShowAll(!showAll)}
-              className="text-blue-600 text-sm font-medium mt-2"
+              onClick={onClose}
+              className="flex-1 bg-green-100 text-green-600 font-semibold rounded-lg h-10"
             >
-              {showAll ? "Sembunyikan" : "Lihat selengkapnya"}
+              Kembali beranda
             </button>
-          )}
-        </div>
-
-        {/* Total */}
-        <div className="flex items-center justify-end text-sm mb-5 px-5 gap-1">
-          <span className="text-black">Total pesanan :</span>
-          <span className="font-bold text-black">{total}</span>
-        </div>
-
-        {/* Tombol */}
-        <div className="flex justify-between px-5 pb-5">
-          <button
-            onClick={onClose}
-            className="bg-green-100 text-green-600 font-semibold rounded-lg w-[231px] h-10 flex items-center justify-center"
-          >
-            Kembali beranda
-          </button>
-
-          {status === "Selesai" ? (
-            <button className="bg-green-600 text-white font-semibold rounded-lg w-[231px] h-10 flex items-center justify-center">
-              Beli lagi
-            </button>
-          ) : (
-            <button className="bg-green-600 text-white font-semibold rounded-lg w-[231px] h-10 flex items-center justify-center">
-              Konfirmasi
-            </button>
-          )}
+            {status === "Selesai" ? (
+              <button className="flex-1 bg-green-600 text-white font-semibold rounded-lg h-10">
+                Beli lagi
+              </button>
+            ) : (
+              <button className="flex-1 bg-green-600 text-white font-semibold rounded-lg h-10">
+                Konfirmasi
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
