@@ -2,9 +2,8 @@
 import { useState } from "react"
 import { MapPin, X } from "lucide-react"
 import InputBox from "@/components/InputBox"
-import { Alamat } from "@/types/alamat";
+import { Alamat } from "@/types/alamat"
 import TambahAlamat from "@/components/TambahAlamat"
-
 
 interface DaftarAlamatProps {
   open: boolean
@@ -12,7 +11,11 @@ interface DaftarAlamatProps {
   onSelectAlamat?: (alamat: Alamat) => void
 }
 
-export default function DaftarAlamat({ open, setOpen, onSelectAlamat }: DaftarAlamatProps) {
+export default function DaftarAlamat({
+  open,
+  setOpen,
+  onSelectAlamat,
+}: DaftarAlamatProps) {
   const [selected, setSelected] = useState<number | null>(null)
   const [editOpen, setEditOpen] = useState(false)
   const [alamatEdit, setAlamatEdit] = useState<Alamat | null>(null)
@@ -32,10 +35,10 @@ export default function DaftarAlamat({ open, setOpen, onSelectAlamat }: DaftarAl
     {
       id: 2,
       label: "Kantor",
-      nama: "Team Zenith",
+      nama: "Team Genesis",
       telp: "0895360577489",
       alamat:
-        "Jl. Elang No.45, Rungkut,  Kabupaten Surabaya, Jawa Timur 61253, Indonesia",
+        "Jl. Merpati No.40ab, Kepuh, Betro, Kec. Sedati, Kabupaten Sidoarjo, Jawa Timur 61253, Indonesia",
       utama: false,
     },
   ])
@@ -55,7 +58,6 @@ export default function DaftarAlamat({ open, setOpen, onSelectAlamat }: DaftarAl
     }
   }
 
-  // ✅ Fungsi untuk menjadikan alamat sebagai utama
   const setSebagaiUtama = (id: number) => {
     setAlamatList((prev) =>
       prev.map((a) => ({
@@ -69,24 +71,25 @@ export default function DaftarAlamat({ open, setOpen, onSelectAlamat }: DaftarAl
     <>
       {/* Modal Daftar Alamat */}
       <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-        <div className="bg-white rounded-2xl shadow-lg w-[650px] max-h-[90vh] overflow-y-auto p-6 relative">
+        <div className="bg-white rounded-xl shadow-lg w-[95%] sm:w-[650px] max-h-[85vh] overflow-y-auto p-4 sm:p-6 relative">
+          {/* Tombol close */}
           <button
-            className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-xl"
+            className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-lg sm:text-xl"
             onClick={() => setOpen(false)}
           >
             ✕
           </button>
 
-          <h2 className="text-lg font-bold font-jakarta text-black mb-4 text-center">
+          <h2 className="text-base sm:text-lg font-bold font-jakarta text-black mb-4 text-center">
             Daftar Alamat
           </h2>
 
-          <hr className="border-gray-200 my-3" />
+          <hr className="border-gray-200 my-2 sm:my-3" />
 
           {/* Tambah Alamat */}
           <div className="w-full flex justify-center mb-4">
             <button
-              className="px-4 py-2 rounded-xl w-full bg-green-100 text-green-600 font-semibold hover:bg-green-200"
+              className="px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl w-full bg-green-100 text-green-600 text-sm sm:text-base font-semibold hover:bg-green-200"
               onClick={() => setTambahOpen(true)}
             >
               + Tambah Alamat
@@ -94,33 +97,32 @@ export default function DaftarAlamat({ open, setOpen, onSelectAlamat }: DaftarAl
           </div>
 
           {/* List Alamat */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {alamatList.map((item) => (
               <div
                 key={item.id}
                 onClick={() => setSelected(item.id)}
-                className={`bg-white shadow rounded-xl p-4 cursor-pointer transition border ${
+                className={`bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 cursor-pointer transition border ${
                   selected === item.id
-                    ? "border-green-500 shadow-[0_0_16px_rgba(38,168,29,0.32)]"
+                    ? "border-green-500 shadow-[0_0_10px_rgba(38,168,29,0.2)]"
                     : "border-gray-200"
                 }`}
               >
                 <div className="flex justify-between items-center w-full">
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-6 h-6 text-green-600" />
-                    <p className="font-medium text-[15px] font-jakarta text-[#8F8F8F]">
+                    <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
+                    <p className="font-medium text-sm sm:text-[15px] font-jakarta text-[#8F8F8F]">
                       {item.nama}
                     </p>
                     {item.utama && (
-                      <span className="bg-green-100 text-green-600 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                      <span className="bg-green-100 text-green-600 text-[10px] sm:text-xs font-medium px-2 py-0.5 rounded-full">
                         Utama
                       </span>
                     )}
                   </div>
-                  {/* Tombol jadikan utama */}
                   {!item.utama && (
                     <button
-                      className="text-xs text-green-600 hover:underline"
+                      className="text-[11px] sm:text-xs text-green-600 hover:underline"
                       onClick={(e) => {
                         e.stopPropagation()
                         setSebagaiUtama(item.id)
@@ -131,19 +133,19 @@ export default function DaftarAlamat({ open, setOpen, onSelectAlamat }: DaftarAl
                   )}
                 </div>
 
-                <div className="pl-8 mt-2">
-                  <p className="font-medium text-sm font-jakarta text-black">
+                <div className="pl-6 sm:pl-8 mt-1 sm:mt-2">
+                  <p className="font-medium text-xs sm:text-sm font-jakarta text-black">
                     {item.nama}
-                    <span className="after:content-['|'] after:mx-2 text-[#8F8F8F]"></span>
-                    <span className="font-medium text-[14px] font-jakarta text-[#8F8F8F]">
+                    <span className="after:content-['|'] after:mx-1 sm:after:mx-2 text-[#8F8F8F]"></span>
+                    <span className="font-medium text-[12px] sm:text-[14px] font-jakarta text-[#8F8F8F]">
                       {item.telp}
                     </span>
                   </p>
-                  <p className="font-normal text-[13px] font-jakarta text-[#8F8F8F]">
+                  <p className="font-normal text-[11px] sm:text-[13px] font-jakarta text-[#8F8F8F]">
                     {item.alamat}
                   </p>
 
-                  <div className="flex gap-2 mt-2 text-sm">
+                  <div className="flex gap-2 mt-1 sm:mt-2 text-[11px] sm:text-sm">
                     <button
                       className="text-green-600 hover:text-green-800 font-medium"
                       onClick={(e) => {
@@ -171,9 +173,9 @@ export default function DaftarAlamat({ open, setOpen, onSelectAlamat }: DaftarAl
           </div>
 
           {/* Konfirmasi Pilih Alamat */}
-          <div className="mt-6 flex justify-center">
+          <div className="mt-5 flex justify-center">
             <button
-              className="w-full bg-green-600 text-white px-10 py-3 rounded-xl font-semibold hover:bg-green-700"
+              className="w-full bg-green-600 text-white px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl text-sm sm:text-base font-semibold hover:bg-green-700"
               onClick={() => {
                 const alamatTerpilih = alamatList.find((a) => a.id === selected)
                 if (alamatTerpilih && onSelectAlamat) {
@@ -198,9 +200,15 @@ export default function DaftarAlamat({ open, setOpen, onSelectAlamat }: DaftarAl
       />
 
       {/* Modal Edit Alamat */}
-      {editOpen && alamatEdit && (
+     {editOpen && alamatEdit && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-          <div className="bg-white rounded-2xl shadow-lg w-[600px] max-h-[90vh] overflow-y-auto p-6 relative">
+          <div
+            className="
+             bg-white rounded-xl shadow-lg
+              w-[95%] sm:w-[650px] max-h-[85vh] overflow-y-auto
+              p-4 sm:p-6 relative     
+            "
+          >
             <button
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-xl"
               onClick={() => setEditOpen(false)}
@@ -208,7 +216,9 @@ export default function DaftarAlamat({ open, setOpen, onSelectAlamat }: DaftarAl
               <X size={20} />
             </button>
 
-            <h2 className="text-lg font-bold text-black mb-4 text-center">Ubah Alamat</h2>
+            <h2 className="text-md font-bold text-black mb-4 text-center">
+              Ubah Alamat
+            </h2>
             <hr className="border-gray-200 my-3" />
 
             <div className="space-y-4">
@@ -269,6 +279,7 @@ export default function DaftarAlamat({ open, setOpen, onSelectAlamat }: DaftarAl
           </div>
         </div>
       )}
+
     </>
   )
 }

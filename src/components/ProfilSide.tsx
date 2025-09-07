@@ -16,7 +16,7 @@ export default function ProfilSide() {
   const pathname = usePathname();
 
   return (
-    <div className="sticky w-[325px] h-[692px] flex-shrink-0">
+    <div className="w-[325px] h-[692px] flex-shrink-0">
       <div className="bg-white rounded-2xl p-6 h-full font-jakarta text-[#464255] text-[18px] font-normal">
         <h2 className="text-xl font-bold mb-6">Profil Pengguna</h2>
         <nav>
