@@ -121,8 +121,8 @@ export default function ProductUploadForm() {
       })
 
       if (response.ok) {
-        
-         window.location.reload();
+
+        window.location.reload();
 
         // reset form
         setFormData({
@@ -378,7 +378,7 @@ export default function ProductUploadForm() {
           <button
             type="submit"
             disabled={loading || previewUrls.length === 0}
-            className="w-full bg-green-600 hover:bg-green-700 text-white py-4 px-6 rounded-lg font-medium text-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            className="w-full bg-[#26A81D] hover:bg-[#21961A] text-white py-4 px-6 rounded-lg font-medium text-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
             {loading ? (
               <>
