@@ -59,19 +59,21 @@ const ActivityLogCard: React.FC = () => {
         {/* Log Entries */}
         <div className="space-y-3 sm:space-y-4">
           {activityLogs.map((log, index) => (
-            <div key={index} className="block lg:hidden bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow lg:bg-transparent lg:border-none lg:shadow-none lg:p-0 lg:hover:bg-gray-50 lg:hover:shadow-none">
-              {/* Mobile Card Layout */}
-              <div className="lg:hidden space-y-2">
-                <div className="flex justify-between items-start">
-                  <span className="text-xs text-gray-500 font-medium">{log.time}</span>
-                  <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${getTypeStyle(log.type)}`}>
-                    {log.type}
-                  </span>
+            <React.Fragment key={index}>
+              {/* Mobile Layout */}
+              <div className="block lg:hidden bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-start">
+                    <span className="text-xs text-gray-500 font-medium">{log.time}</span>
+                    <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${getTypeStyle(log.type)}`}>
+                      {log.type}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-900 leading-relaxed">{log.activity}</p>
                 </div>
-                <p className="text-sm text-gray-900 leading-relaxed">{log.activity}</p>
               </div>
 
-              {/* Desktop Table Layout */}
+              {/* Desktop Layout */}
               <div className="hidden lg:grid lg:grid-cols-12 lg:gap-4 lg:px-4 lg:py-4 lg:items-center lg:hover:bg-gray-50 lg:rounded-lg lg:transition-colors">
                 <div className="lg:col-span-2 text-sm text-gray-600">
                   {log.time}
@@ -85,7 +87,7 @@ const ActivityLogCard: React.FC = () => {
                   </span>
                 </div>
               </div>
-            </div>
+            </React.Fragment>
           ))}
         </div>
 

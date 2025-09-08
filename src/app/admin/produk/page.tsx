@@ -3,13 +3,18 @@ import { useState, useEffect } from "react";
 import AdminLayout from "../AdminLayout";
 import { Search, Plus, Edit, Trash2, Filter, ChevronDown, Menu } from "lucide-react";
 import ProductUploadForm from "@/components/ProductUploadForm";
+import axios from "axios"
+import Swal from "sweetalert2"
+import withReactContent from "sweetalert2-react-content"
+
 
 const Products = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any | null>(null);
   const [products, setProducts] = useState<Array<{
-    id: number;
+    id: string;
     name: string;
     description: string;
     category: { name: string };
@@ -31,6 +36,65 @@ const Products = () => {
     };
     fetchProducts();
   }, []);
+
+  async function DeleteProduct(product: { id: string, name: string }) {
+    const MySwal = withReactContent(Swal);
+
+    MySwal.fire({
+      title: 'Are you sure?',
+      text: `Do you really want to delete ${product.name}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel',
+      customClass: {
+        popup: 'rounded-xl',
+        confirmButton: 'rounded-lg px-4 py-2',
+        cancelButton: 'rounded-lg px-4 py-2'
+      }
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          // Change the axios.delete call to use a string id
+          await axios.delete(`/api/admin/products/${product.id}`);
+          await fetchProducts();
+          MySwal.fire({
+            title: 'Deleted!',
+            text: 'Product has been deleted successfully.',
+            icon: 'success',
+            customClass: {
+              popup: 'rounded-xl',
+              confirmButton: 'rounded-lg px-4 py-2'
+            }
+          });
+        } catch (error) {
+          MySwal.fire({
+            title: 'Error!',
+            text: 'Failed to delete product. Please try again.',
+            icon: 'error',
+            customClass: {
+              popup: 'rounded-xl',
+              confirmButton: 'rounded-lg px-4 py-2'
+            }
+          });
+        }
+      }
+    });
+  }
+
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch("/api/admin/products");
+      if (response.ok) {
+        const data = await response.json();
+        setProducts(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+    }
+  };
 
   const filteredProducts = products.filter(
     (product) =>
@@ -79,7 +143,7 @@ const Products = () => {
                     >
                       <Filter className="text-green-600 w-4 h-4 sm:w-5 sm:h-5" />
                       <span className="hidden sm:inline">Filter</span>
-                      <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4"  />
+                      <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
                   </div>
 
@@ -110,12 +174,14 @@ const Products = () => {
                     </div>
                     <div className="flex items-center gap-2 ml-3">
                       <button
+                        onClick={() => setEditingProduct(product)}
                         className="p-2 text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-200"
                         title="Edit"
                       >
-                        <Edit size={14} />
+                        <Edit size={16} />
                       </button>
                       <button
+                        onClick={() => DeleteProduct(product)}
                         className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
                         title="Delete"
                       >
@@ -128,9 +194,8 @@ const Products = () => {
                       Rp {product.price.toLocaleString("id-ID")}
                     </span>
                     <span
-                      className={`font-medium ${
-                        product.stock === 0 ? "text-red-600" : "text-gray-900"
-                      }`}
+                      className={`font-medium ${product.stock === 0 ? "text-red-600" : "text-gray-900"
+                        }`}
                     >
                       Stok: {product.stock}
                     </span>
@@ -172,9 +237,8 @@ const Products = () => {
                   {filteredProducts.map((product, index) => (
                     <tr
                       key={product.id}
-                      className={`hover:bg-gray-100 transition-colors ${
-                        index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                      }`}
+                      className={`hover:bg-gray-100 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                        }`}
                     >
                       <td className="py-5 px-6">
                         <div className="font-medium text-gray-900 text-sm">
@@ -193,9 +257,8 @@ const Products = () => {
                       </td>
                       <td className="py-5 px-6">
                         <span
-                          className={`font-medium text-sm ${
-                            product.stock === 0 ? "text-red-600" : "text-gray-900"
-                          }`}
+                          className={`font-medium text-sm ${product.stock === 0 ? "text-red-600" : "text-gray-900"
+                            }`}
                         >
                           {product.stock}
                         </span>
@@ -203,12 +266,14 @@ const Products = () => {
                       <td className="py-5 px-6">
                         <div className="flex items-center gap-2">
                           <button
+                            onClick={() => setEditingProduct(product)}
                             className="p-2 text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-200"
                             title="Edit"
                           >
                             <Edit size={16} />
                           </button>
                           <button
+                            onClick={() => DeleteProduct(product)}
                             className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
                             title="Delete"
                           >
@@ -259,7 +324,27 @@ const Products = () => {
               </div>
 
               <div className="p-4 sm:p-6">
-                <ProductUploadForm />
+                <ProductUploadForm onClose={() => setShowAddModal(false)} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {editingProduct && (
+          <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setEditingProduct(null)} />
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-4 rounded-t-xl">
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900 text-center">Edit Produk</h2>
+                <button
+                  onClick={() => setEditingProduct(null)}
+                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="p-4 sm:p-6">
+                <ProductUploadForm initialData={editingProduct} onClose={() => setEditingProduct(null)} />
               </div>
             </div>
           </div>

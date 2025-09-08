@@ -56,8 +56,10 @@ export async function GET(request: NextRequest) {
         description: true,
         price: true,
         stock: true,
+        imageUrl: true,
         category: {
           select: {
+            id: true, 
             name: true,
           },
         },

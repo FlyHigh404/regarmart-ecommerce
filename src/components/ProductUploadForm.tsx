@@ -18,10 +18,15 @@ interface ProductFormData {
   price: string
   stock: string
   categoryId: string
-  imageUrls: string[] // hasil upload ke server
+  imageUrl: string[] // hasil upload ke server
 }
 
-export default function ProductUploadForm() {
+interface ProductUploadFormProps {
+  initialData?: any; // data produk untuk edit
+  onClose?: () => void;
+}
+
+export default function ProductUploadForm({ initialData, onClose }: ProductUploadFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [uploadingImages, setUploadingImages] = useState(false)
@@ -32,7 +37,7 @@ export default function ProductUploadForm() {
     price: "",
     stock: "",
     categoryId: "",
-    imageUrls: [],
+    imageUrl: [],
   })
 
   // tambahan
@@ -54,6 +59,22 @@ export default function ProductUploadForm() {
     }
     fetchCategories()
   }, [])
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        name: initialData.name || "",
+        description: initialData.description || "",
+        price: initialData.price?.toString() || "",
+        stock: initialData.stock?.toString() || "",
+        categoryId: initialData.category?.id || "",
+        imageUrl: initialData.imageUrl || [], 
+      });
+
+      setPreviewUrls(initialData.imageUrl || []);
+
+    }
+  }, [initialData]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -79,73 +100,59 @@ export default function ProductUploadForm() {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault();
+    setLoading(true);
 
     try {
-      // upload semua pending files
-      setUploadingImages(true)
-      const uploadedUrls: string[] = []
+      // upload gambar baru kalau ada
+      const uploadedUrls: string[] = [...formData.imageUrl];
 
       for (const file of pendingFiles) {
-        const fd = new FormData()
-        fd.append("file", file)
+        const fd = new FormData();
+        fd.append("file", file);
 
-        const res = await fetch("/api/upload", {
-          method: "POST",
-          body: fd,
-        })
-
-        if (!res.ok) {
-          const err = await res.json()
-          throw new Error(err.error || "Upload failed")
-        }
-
-        const data = await res.json()
-        uploadedUrls.push(data.url)
+        const res = await fetch("/api/upload", { method: "POST", body: fd });
+        if (!res.ok) throw new Error("Upload failed");
+        const data = await res.json();
+        uploadedUrls.push(data.url);
       }
-      setUploadingImages(false)
 
-      // simpan produk
       const productData = {
         ...formData,
-        price: Number.parseFloat(formData.price),
-        stock: Number.parseInt(formData.stock),
-        imageUrls: uploadedUrls,
-      }
+        price: Number(formData.price),
+        stock: Number(formData.stock),
+        imageUrl: uploadedUrls,
+      };
 
-      const response = await fetch("/api/admin/products", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(productData),
-      })
+      let response;
+      if (initialData) {
+        response = await fetch(`/api/admin/products/${initialData.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(productData),
+        });
+      } else {
+        response = await fetch("/api/admin/products", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(productData),
+        });
+      }
 
       if (response.ok) {
-
         window.location.reload();
-
-        // reset form
-        setFormData({
-          name: "",
-          description: "",
-          price: "",
-          stock: "",
-          categoryId: "",
-          imageUrls: [],
-        })
-        setPendingFiles([])
-        setPreviewUrls([])
       } else {
-        const errorData = await response.json()
-        alert(`Error: ${errorData.error}`)
+        const errorData = await response.json();
+        alert(errorData.error || "Failed to save product");
       }
-    } catch (error: any) {
-      console.error("Error creating product:", error)
-      alert(error.message || "Failed to create product")
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
+
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -298,8 +305,7 @@ export default function ProductUploadForm() {
               value={formData.categoryId}
               onChange={handleInputChange}
               required
-              className="peer w-full px-4 pt-3 pb-3 pr-12 border border-gray-300 rounded-lg 
-        focus:ring-2 focus:ring-green-500 focus:outline-none text-gray-500 bg-white appearance-none"
+              className="peer w-full px-4 pt-3 pb-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none text-gray-500 bg-white appearance-none"
             >
               <option value="">Pilih kategori</option>
               {categories.map((category) => (
