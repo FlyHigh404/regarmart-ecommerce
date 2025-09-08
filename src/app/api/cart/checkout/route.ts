@@ -5,16 +5,15 @@ import { prisma } from "@/lib/prisma";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import midtransClient from "midtrans-client";
 
-
 const snap = new midtransClient.Snap({
-  isProduction: process.env.MIDTRANS_IS_PRODUCTION === "true",
+  isProduction: false,
   serverKey: process.env.MIDTRANS_SERVER_KEY!,
-  clientKey: process.env.MIDTRANS_CLIENT_KEY!
+  clientKey: process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY!,
 });
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
-  if (!session || !session.user?.id) {
+  if (!session || session.user?.role !== "CUSTOMER") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -67,7 +66,7 @@ export async function POST(req: Request) {
           gross_amount: Number(order.totalAmount),
         },
         payment_type: "qris",
-        qris: {},
+        qris: { acquirer: "gopay" },
         customer_details: {
           first_name: customerInfo.firstName || order.user.name || "Customer",
           email: customerInfo.email || order.user.email,
