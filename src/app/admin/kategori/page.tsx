@@ -1,18 +1,24 @@
+// components/Categories.tsx
 "use client";
 import { useState, useEffect } from "react";
 import AdminLayout from "../AdminLayout";
 import { Search, Plus, Edit, Trash2, X, Filter, ChevronDown } from "lucide-react";
+import CategoryUploadForm from "@/components/CategoryUploadForm";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
 
 const Categories = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [formData, setFormData] = useState({ name: "", description: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [categories, setCategories] = useState<
-    Array<{ id: number; name: string; description: string }>
+    Array<{ id: string; name: string; description: string; imageUrl: string | null }>
   >([]);
+  const [editingCategory, setEditingCategory] = useState<any | null>(null);
 
   // filter states
   const [filterOption, setFilterOption] = useState("Semua");
@@ -85,6 +91,59 @@ const Categories = () => {
     }
   };
 
+  const handleDeleteCategory = async (categoryId: string) => {
+    const MySwal = withReactContent(Swal);
+
+    MySwal.fire({
+      title: "Are you sure?",
+      text: "Do you really want to delete this category?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+      customClass: {
+        popup: "rounded-xl",
+        confirmButton: "rounded-lg px-4 py-2",
+        cancelButton: "rounded-lg px-4 py-2",
+      },
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const response = await fetch(`/api/admin/categories/${categoryId}`, {
+            method: "DELETE",
+          });
+
+          if (response.ok) {
+            setCategories((prev) => prev.filter((cat) => cat.id !== categoryId));
+            MySwal.fire({
+              title: "Deleted!",
+              text: "Category has been deleted successfully.",
+              icon: "success",
+              customClass: {
+                popup: "rounded-xl",
+                confirmButton: "rounded-lg px-4 py-2",
+              },
+            });
+          } else {
+            throw new Error("Failed to delete category");
+          }
+        } catch (error) {
+          MySwal.fire({
+            title: "Error!",
+            text: "Failed to delete category. Please try again.",
+            icon: "error",
+            customClass: {
+              popup: "rounded-xl",
+              confirmButton: "rounded-lg px-4 py-2",
+            },
+          });
+        }
+      }
+    });
+  };
+
   return (
     <AdminLayout>
       <main className="flex-1 bg-gray-50 pt-6">
@@ -149,7 +208,10 @@ const Categories = () => {
             {/* Mobile Card View */}
             <div className="block lg:hidden space-y-4">
               {filteredCategories.map((cat) => (
-                <div key={cat.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div
+                  key={cat.id}
+                  className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                >
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-gray-900 text-sm truncate">{cat.name}</h3>
@@ -159,12 +221,17 @@ const Categories = () => {
                     </div>
                     <div className="flex items-center gap-2 ml-3">
                       <button
+                        onClick={() => {
+                          setEditingCategory(cat);
+                          setShowEditModal(true);
+                        }}
                         className="p-2 text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-200"
                         title="Edit"
                       >
                         <Edit size={14} />
                       </button>
                       <button
+                        onClick={() => handleDeleteCategory(cat.id)}
                         className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
                         title="Delete"
                       >
@@ -215,12 +282,17 @@ const Categories = () => {
                       <td className="py-5 px-6">
                         <div className="flex items-center gap-2">
                           <button
+                            onClick={() => {
+                              setEditingCategory(cat);
+                              setShowEditModal(true);
+                            }}
                             className="p-2 text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-200"
                             title="Edit"
                           >
                             <Edit size={16} />
                           </button>
                           <button
+                            onClick={() => handleDeleteCategory(cat.id)}
                             className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
                             title="Delete"
                           >
@@ -269,63 +341,39 @@ const Categories = () => {
 
               <div className="p-4 sm:p-6">
                 {error && <div className="mb-3 text-red-600 text-sm">{error}</div>}
-
-                <div className="space-y-6">
-                  <div className="text-left">
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">
-                      Isi nama kategori
-                    </h3>
-
-                    {/* Category Name Input */}
-                    <div className="relative mb-6">
-                      <div className="relative">
-                        <input
-                          type="text"
-                          name="name"
-                          value={formData.name}
-                          onChange={handleInputChange}
-                          required
-                          className="peer w-full px-4 pt-6 pb-2 border border-gray-300 rounded-lg 
-                   focus:ring-2 focus:ring-green-500 focus:outline-none text-gray-900"
-                          placeholder="Rumah Tangga"
-                        />
-                        <label
-                          htmlFor="name"
-                          className="absolute left-4 top-1.5 text-sm text-green-600 transition-all 
-                   peer-focus:text-green-600"
-                        >
-                          Kategori
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-3 pt-4">
-                    <button
-                      type="button"
-                      onClick={() => setShowAddModal(false)}
-                      className="flex-1 py-3 px-6 text-[#26A81D] bg-[#E6FCF6] rounded-lg 
-               hover:bg-green-100 transition-colors font-medium"
-                    >
-                      Kembali
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleSubmit}
-                      disabled={loading}
-                      className="flex-1 py-3 px-6 bg-[#26A81D] text-white rounded-lg 
-               hover:bg-green-700 transition-colors font-medium 
-               disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {loading ? "Menyimpan..." : "Konfirmasi"}
-                    </button>
-                  </div>
-                </div>
+                <CategoryUploadForm onClose={() => setShowAddModal(false)} />
               </div>
             </div>
           </div>
         )}
+
+        {/* Edit Category Modal */}
+        {showEditModal && editingCategory && (
+          <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+            <div
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={() => setShowEditModal(false)}
+            />
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto relative">
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-4 rounded-t-xl">
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900 text-center">
+                  Edit Kategori
+                </h2>
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="p-4 sm:p-6">
+                <CategoryUploadForm initialData={editingCategory} onClose={() => setShowEditModal(false)} />
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* Filter Dropdown */}
         {showFilter && (
           <div className="fixed inset-0 z-40" onClick={() => setShowFilter(false)}>

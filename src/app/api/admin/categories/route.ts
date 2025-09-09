@@ -13,11 +13,14 @@ export async function POST(req: NextRequest) {
 
   try {
     const { name, description, imageUrl } = await req.json();
+
+    const imageUrlValue: string | null = typeof imageUrl === 'string' ? imageUrl : null;
+
     const newCategory = await prisma.category.create({
       data: {
         name,
         description,
-        imageUrl
+        imageUrl: imageUrlValue,
       },
     });
 
