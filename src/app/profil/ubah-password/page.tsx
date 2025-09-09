@@ -1,90 +1,108 @@
 "use client"
 import { useState } from "react"
-import { Eye, EyeOff } from "lucide-react"
-import Link from "next/link"
+import type React from "react"
 
-export default function PasswordVerification() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [showPassword1, setShowPassword1] = useState(false)
-  const [showPassword2, setShowPassword2] = useState(false)
-  const [password, setPassword] = useState("")
-  const [password1, setPassword1] = useState("")
-  const [password2, setPassword2] = useState("")
+import { Eye, EyeOff } from "lucide-react"
+
+export default function UbahPasswordPage() {
+  const [formData, setFormData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  })
+
+  const [showPassword, setShowPassword] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  })
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData({ ...formData, [name]: value })
+  }
+
+  const toggleShowPassword = (field: "current" | "new" | "confirm") => {
+    setShowPassword((prev) => ({ ...prev, [field]: !prev[field] }))
+  }
+
+  const handleSave = () => {
+    console.log("Password diubah:", formData)
+  }
 
   return (
-    <div className="flex h-auto font-jakarta">
-      <div className="bg-white rounded-2xl p-8 w-auto">
-        {/* Judul */}
-        <h3 className="text-[24px] font-semibold text-black mb-2">
-          Ubah Password Anda
-        </h3>
-        <p className="text-[16px] font-normal text-black mb-6">
-          Masukkan Password baru yang nanti akan anda gunakan untuk Log In 
-        </p>
+    <div className="w-full max-w-[756px] bg-white p-4 md:p-8 rounded-xl shadow font-jakarta">
+      <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-6">Ubah Password</h2>
 
-        {/* Input Password Lama*/}
-        <div className="relative mb-6">
+      <div className="space-y-4 md:space-y-6">
+        {/* Password Saat Ini */}
+        <div className="relative">
           <input
-            type={showPassword ? "text" : "password"}
-            placeholder="Password saat ini"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-[671px] h-[56px] rounded-lg border border-gray-300 px-4 pr-12 text-sm font-normal placeholder-[#8F8F8F] placeholder:text-[12px] placeholder:tracking-[-0.24px] focus:outline-none focus:ring-2 focus:ring-green-500"
+            type={showPassword.current ? "text" : "password"}
+            id="currentPassword"
+            name="currentPassword"
+            value={formData.currentPassword}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg p-3 pt-3 focus:border-green-600 text-sm md:text-base"
+            placeholder="Masukkan password saat ini"
           />
           <button
             type="button"
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"
-            onClick={() => setShowPassword(!showPassword)}
+            onClick={() => toggleShowPassword("current")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
           >
-            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            {showPassword.current ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
         </div>
 
-        {/* Input Password Baru */}
-        <div className="relative mb-6">
+        {/* Password Baru */}
+        <div className="relative">
           <input
-            type={showPassword1 ? "text" : "password"}
-            placeholder="Password Baru"
-            value={password1}
-            onChange={(e) => setPassword1(e.target.value)}
-            className="w-[671px] h-[56px] rounded-lg border border-gray-300 px-4 pr-12 text-sm font-normal placeholder-[#8F8F8F] placeholder:text-[12px] placeholder:tracking-[-0.24px] focus:outline-none focus:ring-2 focus:ring-green-500"
+            type={showPassword.new ? "text" : "password"}
+            id="newPassword"
+            name="newPassword"
+            value={formData.newPassword}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg p-3 pt-3 focus:border-green-600 text-sm md:text-base"
+            placeholder="Masukkan password baru"
           />
           <button
             type="button"
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"
-            onClick={() => setShowPassword1(!showPassword1)}
+            onClick={() => toggleShowPassword("new")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
           >
-            {showPassword1 ? <EyeOff size={20} /> : <Eye size={20} />}
+            {showPassword.new ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
         </div>
 
-        {/* Input Konfirmasi Password */}
-        <div className="relative mb-6">
+        {/* Konfirmasi Password Baru */}
+        <div className="relative">
           <input
-            type={showPassword2 ? "text" : "password"}
-            placeholder="Konfirmasi Password"
-            value={password2}
-            onChange={(e) => setPassword2(e.target.value)}
-            className="w-[671px] h-[56px] rounded-lg border border-gray-300 px-4 pr-12 text-sm font-normal placeholder-[#8F8F8F] placeholder:text-[12px] placeholder:tracking-[-0.24px] focus:outline-none focus:ring-2 focus:ring-green-500"
+            type={showPassword.confirm ? "text" : "password"}
+            id="confirmPassword"
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg p-3 pt-3 focus:border-green-600 text-sm md:text-base"
+            placeholder="Konfirmasi password baru"
           />
           <button
             type="button"
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"
-            onClick={() => setShowPassword2(!showPassword2)}
+            onClick={() => toggleShowPassword("confirm")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
           >
-            {showPassword2 ? <EyeOff size={20} /> : <Eye size={20} />}
+            {showPassword.confirm ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
-        </div>
-
-        {/* Tombol Konfirmasi */}
-        <div className="flex justify-end mt-4">
-        <Link href="/profil/password-baru">
-          <button className="bg-green-500 text-white font-bold hover:bg-green-700 py-2 px-6 rounded-lg">
-            Konfirmasi
-          </button>
-        </Link>
         </div>
       </div>
+
+      {/* Tombol Simpan */}
+      <button
+        onClick={handleSave}
+        className="mt-6 w-full bg-green-600 text-white font-bold py-3 px-6 md:px-12 rounded-lg hover:bg-green-700 text-sm md:text-base"
+      >
+        Ubah Password
+      </button>
     </div>
   )
 }

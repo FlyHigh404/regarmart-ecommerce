@@ -1,6 +1,6 @@
-import CardOrder from "@/components/CardOrder";
-import { PaymentMethod, OrderProduct, OrderStatus } from "@/types/order";
-import Link from "next/link";
+import CardOrder from "@/components/CardOrder"
+import { PaymentMethod, type OrderProduct, OrderStatus } from "@/types/order"
+import Link from "next/link"
 
 const ordersProcess = [
   {
@@ -19,51 +19,51 @@ const ordersProcess = [
       id: 1,
       nama: "Team Genesis",
       telp: "0895360577489",
-      alamat: "Jl. Merpati No.40ab, Kepuh, Betro, Kec. Sedati, Kabupaten Sidoarjo, Jawa Timur 61253, Indonesia", 
+      alamat: "Jl. Merpati No.40ab, Kepuh, Betro, Kec. Sedati, Kabupaten Sidoarjo, Jawa Timur 61253, Indonesia",
     },
     contact: "08123456789",
   },
-];
-
-
+]
 
 export default function TransaksiDiprosesPage() {
   return (
-    <div className="w-[756.65px] rounded-[15px] bg-white p-8 font-jakarta"
+    <div
+      className="w-full md:w-[756.65px] rounded-[15px] bg-white p-4 md:p-8 font-jakarta"
       style={{ boxShadow: "6px 6px 54px 0 rgba(0, 0, 0, 0.05)" }}
     >
-      {/* Tabs */}
-      <div className="flex w-full text-center p-3 border-b border-gray-200 mb-6">
-        <Link
-          href="/profil/riwayat-transaksi/transaksi-diproses"
-          className="px-6 py-2 text-sm font-semibold text-green-600 border-b-2 border-green-600"
-        >
-          Sedang proses
-        </Link>
-        <Link
-          href="/profil/riwayat-transaksi/transaksi-selesai"
-          className="px-6 py-2 text-sm font-semibold text-gray-400 text-center p-3 hover:text-gray-600"
-        >
-          Selesai
-        </Link>
-      </div>
+     {/* Tabs */}
+    <div className="flex w-full text-center p-2 md:p-3 mb-4 md:mb-6">
+      <Link
+        href="/profil/riwayat-transaksi/transaksi-diproses"
+        className="flex-1 py-2 text-xs md:text-sm font-semibold text-green-600 border-b-2 border-green-600"
+      >
+        Sedang proses
+      </Link>
+      <Link
+        href="/profil/riwayat-transaksi/transaksi-selesai"
+        className="flex-1 py-2 text-xs md:text-sm font-semibold text-gray-400 border-b-1 hover:text-gray-600"
+      >
+        Selesai
+      </Link>
+    </div>
+
 
       {/* List Order */}
       <div className="space-y-4">
         {ordersProcess.map((order, index) => (
           <CardOrder
-          key={order.product.id}
-          index={index}
-          orderNumber={order.orderNumber}
-          status={order.status}
-          total={order.total}
-          product={order.product}
-          paymentMethod={order.paymentMethod as any} 
-          address={order.address}
-          contact={order.contact}
+            key={order.product.id}
+            index={index}
+            orderNumber={order.orderNumber}
+            status={order.status}
+            total={order.total}
+            product={order.product}
+            paymentMethod={order.paymentMethod as any}
+            address={order.address}
+            contact={order.contact}
           />
         ))}
       </div>
     </div>
-  );
+  )
 }
