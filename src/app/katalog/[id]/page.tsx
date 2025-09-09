@@ -182,7 +182,7 @@ const ProductDetailPage = () => {
                 <div>
                   <span className="text-2xl font-bold text-gray-900">
                     {/* Sesuaikan dengan format dari CartProduct - kemungkinan price sudah dalam format string */}
-                    {product.price}
+                    {formatPrice(product.price)}
                   </span>
                 </div>
 
@@ -308,7 +308,7 @@ const ProductDetailPage = () => {
                 <div className="text-gray-500 text-xs">Total Harga</div>
                 <div className="font-bold text-green-600 text-sm">
                   {/* Tampilkan price langsung karena kemungkinan sudah dalam format yang benar */}
-                  {product.price}
+                  {formatPrice(product.price)}
                 </div>
               </div>
               <div className="flex items-center border border-gray-300 rounded-lg">
