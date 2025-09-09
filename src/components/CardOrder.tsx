@@ -35,10 +35,10 @@ const CardOrder: React.FC<CardOrderProps> = ({
       <div
         key={product.id}
         className="border border-gray-300 p-4 rounded-2xl relative
-                   hover:border-green-500 hover:shadow-sm
-                   focus-within:border-green-500 focus-within:shadow-md focus-within:shadow-green-200
-                   transition-all-duration-500 group animate-card-appear font-jakarta"
-        style={{ animationDelay: `${900 + index * 200}ms` }}
+                  hover:border-green-500 hover:shadow-sm
+                  active:border-green-500 active:shadow-md active:shadow-green-200
+                   transition-all-duration-300 group animate-card-appear font-jakarta"
+        style={{ animationDelay: `${700 + index * 200}ms` }}
       >
         {/* Nomor Pesanan + Status */}
         <div className="flex items-center justify-between mb-2">

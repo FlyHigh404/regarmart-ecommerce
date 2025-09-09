@@ -15,12 +15,16 @@ export async function PUT(
   }
 
   try {
-    const { name, description } = await req.json();
+    const { name, description, imageUrl } = await req.json();
+
+    const updatedImageUrl = imageUrl ? imageUrl : null;
+
     const updatedCategory = await prisma.category.update({
       where: { id },
       data: {
         name,
         description,
+        imageUrl: updatedImageUrl,
       },
     });
 
