@@ -10,6 +10,7 @@ const menuItems = [
   { name: "Managemen Produk", icon: List, path: "/admin/produk" },
   { name: "Managemen Kategori", icon: FileText, path: "/admin/kategori" },
   { name: "Managemen Pesanan", icon: Users, path: "/admin/pesanan" },
+  { name: "Managemen Pengguna", icon: Users, path: "/admin/pengguna" },
   { name: "Managemen Notifikasi", icon: BarChart2, path: "/admin/notifikasi" },
   { name: "Pengaturan", icon: Settings, path: "/admin/pengaturan" },
 ]
