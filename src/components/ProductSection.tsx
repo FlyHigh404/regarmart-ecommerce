@@ -1,7 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, X, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export default function ProductPopuler() {
   const [products, setProducts] = useState<any[]>([]);
@@ -10,6 +12,11 @@ export default function ProductPopuler() {
   const [categories, setCategories] = useState<any[]>([]);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [cartItems, setCartItems] = useState<number>(0);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [addingToCart, setAddingToCart] = useState<string | null>(null); // Track which product is being added
+  const { data: session } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -27,14 +34,105 @@ export default function ProductPopuler() {
         setLoading(false);
       }
     };
+
     fetchProducts();
   }, []);
+
+  const handleAddToCart = async (product: any) => {
+    // Cek apakah user sudah login
+    if (!session) {
+      setShowErrorModal(true);
+      return;
+    }
+
+    // Set loading state untuk produk yang sedang ditambahkan
+    setAddingToCart(product.id);
+
+    try {
+      const data = {
+        productId: product.id,
+        quantity: 1,
+        unitPrice: product.price,
+      };
+
+      const response = await fetch("/api/cart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        setCartItems(cartItems + 1);
+        console.log("Produk berhasil ditambahkan ke keranjang");
+      } else {
+        const result = await response.json();
+        console.error("Gagal menambahkan ke keranjang:", result.error);
+        
+        if (response.status === 401) {
+          setShowErrorModal(true);
+        }
+      }
+    } catch (error) {
+      console.error("Error terjadi:", error);
+    } finally {
+      // Reset loading state
+      setAddingToCart(null);
+    }
+  };
+
+  const handleLoginRedirect = () => {
+    setShowErrorModal(false);
+    router.push("/auth/signin");
+  };
+
+  const closeErrorModal = () => {
+    setShowErrorModal(false);
+  };
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
 
   return (
     <div>
+      {/* Error Modal */}
+      {showErrorModal && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl p-6 mx-4 max-w-sm w-full shadow-2xl animate-scale-in">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-800">
+                Login Diperlukan
+              </h3>
+              <button
+                onClick={closeErrorModal}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-gray-600 mb-6">
+              Anda harus login terlebih dahulu untuk menambahkan produk ke keranjang.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={closeErrorModal}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleLoginRedirect}
+                className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+              >
+                Login
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Search Bar */}
       <div className="relative max-w-xl mx-auto mb-5 px-2 sm:px-0 animate-fade-in-up animation-delay-400">
         <div className="relative">
@@ -114,9 +212,26 @@ export default function ProductPopuler() {
               </span>
 
               {/* 6. Button */}
-              <button className="w-full bg-green-500 hover:bg-green-600 text-white px-3 py-2 lg:px-2.5 lg:py-2 rounded-lg font-medium text-sm lg:text-sm transition-all duration-300 flex items-center justify-center gap-2 hover:shadow-lg transform hover:scale-105 active:scale-95">
-                <Plus className="w-4 h-4 lg:w-4 lg:h-4" />
-                Tambah ke Keranjang
+              <button
+                onClick={() => handleAddToCart(product)}
+                disabled={addingToCart === product.id}
+                className={`w-full px-3 py-2 lg:px-2.5 lg:py-2 rounded-lg font-medium text-sm lg:text-sm transition-all duration-300 flex items-center justify-center gap-2 transform active:scale-95 ${
+                  addingToCart === product.id
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-500 hover:bg-green-600 text-white hover:shadow-lg hover:scale-105"
+                }`}
+              >
+                {addingToCart === product.id ? (
+                  <>
+                    <Loader2 className="w-4 h-4 lg:w-4 lg:h-4 animate-spin" />
+                    Menambahkan...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4 lg:w-4 lg:h-4" />
+                    Tambah ke Keranjang
+                  </>
+                )}
               </button>
             </div>
           ))}
