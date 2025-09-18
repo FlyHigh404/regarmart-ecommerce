@@ -1,9 +1,8 @@
 "use client"
 import { useState } from "react"
 import AdminLayout from "../AdminLayout"
-import { Search, Trash2, Filter, ChevronDown, Eye, X, DollarSign, Calendar, User } from "lucide-react"
-import Swal from "sweetalert2"
-import withReactContent from "sweetalert2-react-content"
+import { Search, Filter, ChevronDown, Eye } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 const sampleOrders = [
   {
@@ -52,9 +51,8 @@ const Pesanan = () => {
   const [searchTerm, setSearchTerm] = useState("")
   const [showFilter, setShowFilter] = useState(false)
   const [orders, setOrders] = useState(sampleOrders)
-  const [showPreview, setShowPreview] = useState(false)
-  const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [filterStatus, setFilterStatus] = useState("Semua")
+  const router = useRouter()
 
   const getStatusBadge = (status: string) => {
     const statusStyles = {
@@ -85,13 +83,7 @@ const Pesanan = () => {
   })
 
   const handlePreviewOrder = (order: any) => {
-    setSelectedOrder(order)
-    setShowPreview(true)
-  }
-
-  const closePreview = () => {
-    setShowPreview(false)
-    setSelectedOrder(null)
+    router.push(`/pesanan/${order.id}`)
   }
 
   return (
@@ -160,7 +152,7 @@ const Pesanan = () => {
                       </div>
                       <p className="text-gray-500 text-xs mt-1">{order.date}</p>
                     </div>
-                    <div className="flex items-center gap-2 ml-3">
+                    <div className="flex items-center ml-3">
                       <button
                         onClick={() => handlePreviewOrder(order)}
                         className="p-2 text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
@@ -232,7 +224,7 @@ const Pesanan = () => {
                         <span className="text-gray-600 text-sm">{order.date}</span>
                       </td>
                       <td className="py-5 px-6">
-                        <div className="flex items-center gap-2 ml-4">
+                        <div className="flex items-center gap-2 ml-3">
                           <button
                             onClick={() => handlePreviewOrder(order)}
                             className="p-2 text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
@@ -298,102 +290,6 @@ const Pesanan = () => {
                     }}
                   >
                     Reset
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {showPreview && selectedOrder && (
-         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md">
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                <h2 className="text-xl font-semibold text-gray-900">Pesanan</h2>
-                <button
-                  onClick={closePreview}
-                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              <div className="p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Detail pesanan</h3>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-green-600 mb-1">ID</label>
-                    <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3">
-                      <span className="text-gray-900 font-medium">{selectedOrder.id}</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-green-600 mb-1">Pelanggan</label>
-                    <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 flex items-center gap-3">
-                      <img
-                        src={selectedOrder.customer.avatar || "/placeholder.svg"}
-                        alt={selectedOrder.customer.name}
-                        className="w-6 h-6 rounded-full object-cover"
-                      />
-                      <span className="text-gray-900 font-medium">{selectedOrder.customer.name}</span>
-                      <User className="w-4 h-4 text-gray-400 ml-auto" />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">Status</label>
-                    <div className="relative">
-                      <select
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:ring-2 focus:ring-green-500 focus:outline-none focus:border-transparent appearance-none bg-white"
-                        defaultValue={selectedOrder.status}
-                      >
-                        <option value="Menunggu">Menunggu</option>
-                        <option value="Sedang proses">Sedang proses</option>
-                        <option value="Dikirim">Dikirim</option>
-                        <option value="Pesanan selesai">Pesanan selesai</option>
-                      </select>
-                      <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-green-600 mb-1">Total</label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 pl-8 text-gray-900 focus:ring-2 focus:ring-green-500 focus:outline-none focus:border-transparent"
-                        defaultValue={selectedOrder.total.replace("Rp", "")}
-                        placeholder="0"
-                      />
-                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">
-                        Rp
-                      </span>
-                      <DollarSign className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-green-600 mb-1">Tanggal</label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 text-gray-900 focus:ring-2 focus:ring-green-500 focus:outline-none focus:border-transparent"
-                        defaultValue={selectedOrder.date}
-                        placeholder="-"
-                      />
-                      <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-6">
-                  <button
-                    onClick={closePreview}
-                    className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 transition-colors"
-                  >
-                    Kembali
                   </button>
                 </div>
               </div>

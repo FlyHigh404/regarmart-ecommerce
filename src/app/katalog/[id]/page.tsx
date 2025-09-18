@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Star,
@@ -8,9 +8,75 @@ import {
   Minus,
   ShoppingCart,
   Eye,
+  CheckCircle,
+  XCircle,
+  X,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { useSession } from "next-auth/react";
+
+// Toast Notification Component
+interface ToastProps {
+  type: 'success' | 'error';
+  message: string;
+  isVisible: boolean;
+  onClose: () => void;
+}
+
+const Toast = ({ type, message, isVisible, onClose }: ToastProps) => {
+  useEffect(() => {
+    if (isVisible) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 4000); // Auto close after 4 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [isVisible, onClose]);
+
+  if (!isVisible) return null;
+
+  return (
+    <div className="fixed top-4 right-4 z-[9999] animate-in slide-in-from-top-2">
+      <div
+        className={`
+          flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border backdrop-blur-sm
+          ${type === 'success' 
+            ? 'bg-green-50/95 border-green-200 text-green-800' 
+            : 'bg-red-50/95 border-red-200 text-red-800'
+          }
+          min-w-[320px] max-w-[400px]
+        `}
+      >
+        <div className="flex-shrink-0">
+          {type === 'success' ? (
+            <CheckCircle className="w-5 h-5 text-green-600" />
+          ) : (
+            <XCircle className="w-5 h-5 text-red-600" />
+          )}
+        </div>
+        
+        <div className="flex-1 text-sm font-medium">
+          {message}
+        </div>
+        
+        <button
+          onClick={onClose}
+          className={`
+            flex-shrink-0 p-1 rounded-full transition-colors
+            ${type === 'success' 
+              ? 'hover:bg-green-100 text-green-600' 
+              : 'hover:bg-red-100 text-red-600'
+            }
+          `}
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+};
 
 const ProductDetailPage = () => {
   const params = useParams();
@@ -20,19 +86,44 @@ const ProductDetailPage = () => {
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  
+  // Toast state
+  const [toast, setToast] = useState({
+    isVisible: false,
+    type: 'success' as 'success' | 'error',
+    message: ''
+  });
+
+  const router = useRouter();
+  const { data: session } = useSession();
+
+  // Show toast function
+  const showToast = (type: 'success' | 'error', message: string) => {
+    setToast({
+      isVisible: true,
+      type,
+      message
+    });
+  };
+
+  // Hide toast function
+  const hideToast = () => {
+    setToast(prev => ({ ...prev, isVisible: false }));
+  };
 
   useEffect(() => {
     if (!params?.id) return;
 
     const fetchProduct = async () => {
       try {
-        // Perbaikan: gunakan params.id
         const res = await fetch(`/api/products/${params.id}`);
         if (!res.ok) throw new Error("Gagal mengambil produk");
         const data = await res.json();
         setProduct(data);
       } catch (err: any) {
         setError(err.message);
+        showToast('error', 'Gagal memuat produk');
       } finally {
         setLoading(false);
       }
@@ -72,12 +163,93 @@ const ProductDetailPage = () => {
     window.history.back();
   };
 
+  const handleAddToCart = async () => {
+    if (!session) {
+      showToast('error', 'Silakan login terlebih dahulu');
+      setTimeout(() => {
+        router.push("/auth/signin");
+      }, 2000);
+      return;
+    }
+
+    setIsAddingToCart(true);
+
+    try {
+      const res = await fetch("/api/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: product.id,
+          quantity,
+          unitPrice: product.price,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Gagal menambahkan ke keranjang");
+      }
+
+      const data = await res.json();
+      console.log("Response:", data);
+      showToast('success', `${product.name} berhasil ditambahkan ke keranjang (${quantity} item)`);
+    } catch (error: any) {
+      console.error("Error:", error);
+      showToast('error', error.message || 'Terjadi kesalahan saat menambahkan produk');
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
+
+  const handleBuyNow = async () => {
+    if (!session) {
+      showToast('error', 'Silakan login terlebih dahulu');
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000);
+      return;
+    }
+
+    setIsAddingToCart(true);
+
+    try {
+      const res = await fetch("/api/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: product.id,
+          quantity,
+          unitPrice: product.price,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Gagal menambahkan ke keranjang");
+      }
+
+      showToast('success', 'Produk ditambahkan ke keranjang. Mengarahkan ke halaman keranjang...');
+      
+      setTimeout(() => {
+        router.push("/cart");
+      }, 1500);
+    } catch (error: any) {
+      console.error("Error:", error);
+      showToast('error', error.message || 'Terjadi kesalahan saat memproses pesanan');
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
+
   if (loading) {
     return (
       <>
         <Navbar />
         <div className="min-h-screen flex items-center justify-center">
-          <p>Loading...</p>
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
         </div>
         <Footer />
       </>
@@ -89,7 +261,18 @@ const ProductDetailPage = () => {
       <>
         <Navbar />
         <div className="min-h-screen flex items-center justify-center">
-          <p className="text-red-500">{error || "Produk tidak ditemukan"}</p>
+          <div className="text-center">
+            <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <p className="text-red-500 text-lg font-medium mb-2">
+              {error || "Produk tidak ditemukan"}
+            </p>
+            <button
+              onClick={() => router.back()}
+              className="text-green-600 hover:text-green-700 font-medium"
+            >
+              ← Kembali
+            </button>
+          </div>
         </div>
         <Footer />
       </>
@@ -99,6 +282,15 @@ const ProductDetailPage = () => {
   return (
     <>
       <Navbar />
+      
+      {/* Toast Notification */}
+      <Toast
+        type={toast.type}
+        message={toast.message}
+        isVisible={toast.isVisible}
+        onClose={hideToast}
+      />
+
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 py-6">
           {/* Product Detail Container */}
@@ -120,7 +312,6 @@ const ProductDetailPage = () => {
                 <div className="aspect-square relative bg-gray-50 rounded-xl overflow-hidden w-full max-w-[500px] max-h-[500px]">
                   <img
                     src={
-                      // Gunakan imageUrl yang sesuai dengan structure dari CartProduct
                       product.imageUrl?.[selectedImage] || "/placeholder.svg"
                     }
                     alt={product.name}
@@ -138,11 +329,10 @@ const ProductDetailPage = () => {
                     <button
                       key={index}
                       onClick={() => setSelectedImage(index)}
-                      className={`w-20 h-20 rounded-lg border-2 overflow-hidden transition-all ${
-                        selectedImage === index
-                          ? "border-green-500 ring-2 ring-green-200"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
+                      className={`w-20 h-20 rounded-lg border-2 overflow-hidden transition-all ${selectedImage === index
+                        ? "border-green-500 ring-2 ring-green-200"
+                        : "border-gray-200 hover:border-gray-300"
+                        }`}
                     >
                       <img
                         src={image || "/placeholder.svg"}
@@ -160,7 +350,6 @@ const ProductDetailPage = () => {
                   <h1 className="text-2xl font-bold text-gray-900 mb-3">
                     {product.name}
                   </h1>
-                  {/* Tampilkan weight jika ada */}
                   {product.weight && (
                     <p className="text-gray-600 mb-2">{product.weight}</p>
                   )}
@@ -181,7 +370,6 @@ const ProductDetailPage = () => {
 
                 <div>
                   <span className="text-2xl font-bold text-gray-900">
-                    {/* Sesuaikan dengan format dari CartProduct - kemungkinan price sudah dalam format string */}
                     {formatPrice(product.price)}
                   </span>
                 </div>
@@ -218,18 +406,37 @@ const ProductDetailPage = () => {
                 </div>
 
                 <div className="flex gap-4">
-                  <button 
-                    disabled={product.stock === 0}
-                    className="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-2 px-3 rounded-xl transition-colors"
+                  <button
+                    disabled={product.stock === 0 || isAddingToCart}
+                    onClick={handleBuyNow}
+                    className="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-2 px-3 rounded-xl transition-colors flex items-center justify-center gap-2"
                   >
-                    Beli Sekarang
+                    {isAddingToCart ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        Memproses...
+                      </>
+                    ) : (
+                      'Beli Sekarang'
+                    )}
                   </button>
-                  <button 
-                    disabled={product.stock === 0}
+
+                  <button
+                    disabled={product.stock === 0 || isAddingToCart}
+                    onClick={handleAddToCart}
                     className="flex-1 border-2 border-green-500 text-green-500 hover:bg-green-50 disabled:border-gray-300 disabled:text-gray-300 disabled:cursor-not-allowed font-medium py-2 px-4 rounded-xl transition-colors flex items-center justify-center gap-2"
                   >
-                    <ShoppingCart className="w-5 h-5" />
-                    Tambah Keranjang
+                    {isAddingToCart ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-500"></div>
+                        Menambah...
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart className="w-5 h-5" />
+                        Tambah Keranjang
+                      </>
+                    )}
                   </button>
                 </div>
 
@@ -237,13 +444,11 @@ const ProductDetailPage = () => {
                   <h3 className="font-semibold text-green-600 mb-3 text-sm">
                     Deskripsi Produk
                   </h3>
-                  
-                  {/* Tampilkan description - sesuaikan dengan struktur dari database */}
+
                   <div className="text-gray-700 mb-3 leading-relaxed text-sm">
                     {product.description}
                   </div>
 
-                  {/* Tampilkan informasi tambahan jika ada */}
                   {product.category && (
                     <div className="bg-gray-50 rounded-lg p-3 mb-3">
                       <div className="text-xs text-gray-600">
@@ -254,8 +459,7 @@ const ProductDetailPage = () => {
                       </div>
                     </div>
                   )}
-                  
-                  {/* Tampilkan informasi created/updated jika diperlukan */}
+
                   {product.createdAt && (
                     <div className="text-xs text-gray-500 mt-2">
                       Ditambahkan: {new Date(product.createdAt).toLocaleDateString('id-ID')}
@@ -288,9 +492,8 @@ const ProductDetailPage = () => {
 
         {/* Sticky Bar */}
         <div
-          className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg transition-transform duration-300 z-50 ${
-            showStickyBar ? "translate-y-0" : "translate-y-full"
-          }`}
+          className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg transition-transform duration-300 z-50 ${showStickyBar ? "translate-y-0" : "translate-y-full"
+            }`}
         >
           <div className="max-w-7xl mx-auto px-4 py-3">
             <div className="flex items-center gap-3">
@@ -307,7 +510,6 @@ const ProductDetailPage = () => {
                 </h3>
                 <div className="text-gray-500 text-xs">Total Harga</div>
                 <div className="font-bold text-green-600 text-sm">
-                  {/* Tampilkan price langsung karena kemungkinan sudah dalam format yang benar */}
                   {formatPrice(product.price)}
                 </div>
               </div>
@@ -332,16 +534,25 @@ const ProductDetailPage = () => {
               </div>
               <div className="flex gap-2">
                 <button 
-                  disabled={product.stock === 0}
-                  className="bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm whitespace-nowrap"
+                  disabled={product.stock === 0 || isAddingToCart}
+                  onClick={handleBuyNow}
+                  className="bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm whitespace-nowrap flex items-center gap-2"
                 >
+                  {isAddingToCart ? (
+                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                  ) : null}
                   Beli Sekarang
                 </button>
-                <button 
-                  disabled={product.stock === 0}
+                <button
+                  disabled={product.stock === 0 || isAddingToCart}
+                  onClick={handleAddToCart}
                   className="border border-green-500 text-green-500 hover:bg-green-50 disabled:border-gray-300 disabled:text-gray-300 disabled:cursor-not-allowed font-medium py-2 px-3 rounded-lg transition-colors flex items-center justify-center"
                 >
-                  <ShoppingCart className="w-4 h-4" />
+                  {isAddingToCart ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-500"></div>
+                  ) : (
+                    <ShoppingCart className="w-4 h-4" />
+                  )}
                   <span className="sr-only">Tambah Keranjang</span>
                 </button>
               </div>
