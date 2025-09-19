@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react"
-import { ArrowLeft, ChevronDown, Phone, MapPin, Check } from "lucide-react"
+import { ArrowLeft, Phone, MapPin, Truck } from "lucide-react"
 import { useRouter } from "next/navigation"
 import AdminLayout from "../../AdminLayout"
 
@@ -27,158 +27,135 @@ const orderData = {
       method: "COD",
       total: "Rp292.500",
     },
-    timeline: [
-      { status: "Pesanan telah tiba dan diterima pembeli", time: "09:25 WIB", completed: true },
-      { status: "Pesanan dikirim oleh kurir", time: "09:15 WIB", completed: true },
-      { status: "Pesanan diproses", time: "09:08 WIB", completed: true },
-      { status: "Menunggu pesanan disiapkan", time: "08:55 WIB", completed: true },
-    ],
     date: "14-07-2025 | 08:55",
   },
 }
 
 const PesananDetailPage = () => {
   const router = useRouter()
-  const [selectedStatus, setSelectedStatus] = useState("Dikirim")
-
   // Langsung ambil order pertama untuk preview
   const order = orderData["#INV-0015"]
 
   return (
     <AdminLayout>
       <main className="flex-1 bg-gray-50 pt-4 px-4">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
+        <div className="max-w-6xl mx-auto">
+          {/* Header dengan tombol Kembali */}
           <div className="flex items-center gap-3 mb-6">
-            <button onClick={() => router.back()} className="w-10 h-10 border-2 border-green-500 rounded-full flex items-center justify-center hover:bg-green-50 transition-colors">
+            <button className="w-10 h-10 border-2 border-green-500 rounded-full flex items-center justify-center hover:bg-green-50 transition-colors">
               <ArrowLeft size={18} className="text-green-500" />
             </button>
             <h1 className="text-lg font-medium text-green-600">Kembali</h1>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left Column - Order Details */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Order Info */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-6">Pesanan (3)</h2>
-                <h3 className="text-base font-semibold text-gray-900 mb-4">No Pesanan : {order.id}</h3>
+          {/* Main Content */}
+          <div className="space-y-6">
+            {/* Detail Pesanan */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Pesanan (3)</h2>
+              <p className="text-base font-medium text-gray-700 mb-6">No Pesanan : {order.id}</p>
 
-                {/* Order Items */}
-                <div className="space-y-4">
-                  {order.items.map((item, index) => (
-                    <div key={index} className="flex gap-4 py-4 border-b border-gray-100 last:border-b-0">
+              {/* Order Items */}
+              <div className="space-y-4">
+                {order.items.map((item, index) => (
+                  <div key={index} className="flex gap-4 py-4 border-b border-gray-100 last:border-b-0">
+                    <div className="w-16 h-16 bg-gray-200 rounded-lg flex-shrink-0 flex items-center justify-center">
                       <img
                         src={item.image || "/placeholder.svg"}
                         alt={item.name}
-                        className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+                        className="w-full h-full object-cover rounded-lg"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = 'none';
+                        }}
                       />
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-gray-900 text-base mb-2 leading-snug">{item.name}</h4>
-                        <p className="text-sm text-gray-600 mb-3">ID : {item.id}</p>
-                        <div className="flex justify-between items-center">
-                          <span className="text-lg font-semibold text-gray-900">{item.price}</span>
-                          <span className="text-sm text-gray-500">Qty : x{item.quantity}</span>
-                        </div>
+                      <div className="w-8 h-8 bg-yellow-400 rounded"></div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-gray-900 text-sm mb-1 leading-tight">{item.name}</h4>
+                      <p className="text-xs text-gray-500 mb-2">ID : {item.id}</p>
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold text-gray-900">{item.price}</span>
+                        <span className="text-xs text-gray-500">Qty : x{item.quantity}</span>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Detail Pembayaran */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">Detail pembayaran</h2>
+                <p className="text-sm text-gray-500">{order.date}</p>
               </div>
 
-              {/* Payment Details */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Detail pembayaran</h2>
-                <p className="text-sm text-gray-500 mb-6">{order.date}</p>
-
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-700">Sub total</span>
-                    <span className="font-medium text-gray-900">{order.payment.subtotal}</span>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">Sub total</span>
+                  <span className="font-medium text-gray-900">{order.payment.subtotal}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">Potongan Diskon</span>
+                  <span className="font-medium text-green-600">{order.payment.discount}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">Ongkos kirim</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-400 line-through">Rp22.500</span>
+                    <span className="font-medium text-gray-900">{order.payment.shipping}</span>
                   </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">Metode pembayaran</span>
+                  <span className="font-medium text-gray-900">{order.payment.method}</span>
+                </div>
+                <div className="border-t border-gray-200 pt-3 mt-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-700">Potongan Diskon</span>
-                    <span className="font-medium text-green-600">{order.payment.discount}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-700">Ongkos kirim</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-400 line-through">Rp22.500</span>
-                      <span className="font-medium text-gray-900">{order.payment.shipping}</span>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-700">Metode pembayaran</span>
-                    <span className="font-medium text-gray-900">{order.payment.method}</span>
-                  </div>
-                  <div className="border-t border-gray-200 pt-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-semibold text-gray-900">Total pembayaran</span>
-                      <span className="text-lg font-semibold text-gray-900">{order.payment.total}</span>
-                    </div>
+                    <span className="text-lg font-semibold text-gray-900">Total pembayaran</span>
+                    <span className="text-lg font-semibold text-gray-900">{order.payment.total}</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Right Column - Status & Customer */}
-            <div className="space-y-6">
-              {/* Delivery Status */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <div className="bg-orange-400 text-white text-center py-4 px-4 rounded-lg mb-6">
-                  <div className="font-semibold text-base">DIKIRIM KURIR</div>
-                  <div className="text-sm mt-1">Estimasi Tiba 8 - 10 Menit</div>
-                </div>
-
-                {/* Timeline */}
-                <div className="space-y-4 mb-6">
-                  {order.timeline.map((item, index) => (
-                    <div key={index} className="flex gap-3">
-                      <div className="flex flex-col items-center">
-                        <div
-                          className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            item.completed ? "bg-green-500" : "bg-gray-300"
-                          }`}
-                        >
-                          {item.completed && <Check size={12} className="text-white" />}
-                        </div>
-                        {index < order.timeline.length - 1 && (
-                          <div className="w-0.5 h-6 bg-gray-200 mt-2 flex-shrink-0"></div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 leading-tight">{item.status}</p>
-                        <p className="text-xs text-gray-500 mt-1">{item.time}</p>
-                      </div>
+            {/* Bottom Section - Status dan Customer Info */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Box Status dan Button Tugaskan Kurir */}
+              <div className="bg-white rounded-lg shadow-sm p-6 lg:pt-16 space-y-4">
+                {/* Box Sedang Proses */}
+                <div className="bg-yellow-300 text-center py-6 px-4 rounded-2xl relative">
+                  <div className="flex items-center justify-center">
+                    <span className="font-bold text-xl text-white">SEDANG PROSES</span>
+                  </div>
+                  {/* Clock Icon */}
+                  <div className="absolute right-6 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-yellow-200 bg-opacity-50 rounded-full flex items-center justify-center">
+                    <div className="w-8 h-8 border-4 border-white rounded-full relative">
+                      <div className="absolute top-1 left-1/2 w-0.5 h-2 bg-white transform -translate-x-1/2"></div>
+                      <div className="absolute top-1/2 left-1/2 w-1.5 h-0.5 bg-white transform -translate-x-1/2 -translate-y-1/2"></div>
                     </div>
-                  ))}
+                  </div>
                 </div>
 
-                {/* Status Dropdown */}
-                <div className="relative">
-                  <select
-                    value={selectedStatus}
-                    onChange={(e) => setSelectedStatus(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none focus:border-transparent appearance-none bg-white pr-10"
-                  >
-                    <option value="Status">Status</option>
-                    <option value="Menunggu">Menunggu</option>
-                    <option value="Sedang proses">Sedang proses</option>
-                    <option value="Dikirim">Dikirim</option>
-                    <option value="Pesanan selesai">Pesanan selesai</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                </div>
+                {/* Button Tugaskan Kurir */}
+                <button className="w-full border-2 border-green-500 hover:bg-green-50 text-green-500 font-semibold py-4 px-4 rounded-2xl transition-colors">
+                  Tugaskan kurir
+                </button>
               </div>
 
-              {/* Customer Info */}
+              {/* Detail Pelanggan */}
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <div className="flex items-center gap-4 mb-6">
-                  <img
-                    src={order.customer.avatar || "/placeholder.svg"}
-                    alt={order.customer.name}
-                    className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-                  />
+                  <div className="w-12 h-12 bg-gray-200 rounded-full flex-shrink-0 overflow-hidden">
+                    <img
+                      src={order.customer.avatar || "/placeholder.svg"}
+                      alt={order.customer.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                      }}
+                    />
+                  </div>
                   <div className="min-w-0 flex-1">
                     <h3 className="font-semibold text-gray-900 text-base">{order.customer.name}</h3>
                     <p className="text-sm text-gray-600">Pelanggan</p>

@@ -1,7 +1,7 @@
 "use client"
 import { useState } from "react"
 import AdminLayout from "../AdminLayout"
-import { Search, Trash2, Filter, ChevronDown, Eye, X, Phone, MapPin, User } from "lucide-react"
+import { Filter, ChevronDown, ReceiptText } from "lucide-react"
 import Swal from "sweetalert2"
 import withReactContent from "sweetalert2-react-content"
 
@@ -84,14 +84,9 @@ const Pengguna = () => {
     setShowPreview(true)
   }
 
-  const closePreview = () => {
-    setShowPreview(false)
-    setSelectedCustomer(null)
-  }
-
   return (
     <AdminLayout>
-      <main className="flex-1 bg-gray-50 pt-6">
+      <main className="flex-1 bg-gray-50 pt-3">
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="p-4 sm:pt-6 sm:pb-0 bg-white">
             <div className="flex flex-col space-y-4 lg:flex-row lg:justify-between lg:items-center lg:space-y-0">
@@ -100,21 +95,7 @@ const Pengguna = () => {
                 <p className="text-gray-500 text-sm sm:text-base mt-1">Ini adalah daftar data customers</p>
               </div>
 
-              <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3">
-                <div className="relative order-1 sm:order-1">
-                  <Search
-                    className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-                    size={18}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Search"
-                    className="pl-10 sm:pl-12 pr-4 sm:pr-6 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none focus:border-transparent w-full sm:w-64 lg:w-80 bg-white text-sm"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-
+              <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3 mr-3">
                 <div className="relative order-2 sm:order-2">
                   <button
                     onClick={() => setShowFilter(!showFilter)}
@@ -157,7 +138,7 @@ const Pengguna = () => {
                         className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-all duration-200"
                         title="View"
                       >
-                        <img src="/receipt-item.png" alt="receipt" />
+                        <ReceiptText />
                       </button>
                     </div>
                   </div>
@@ -219,7 +200,7 @@ const Pengguna = () => {
                             className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-all duration-200"
                             title="View"
                           >
-                            <img src="/receipt-item.png" alt="receipt" />
+                            <ReceiptText />
                           </button>
                         </div>
                       </td>
@@ -271,76 +252,6 @@ const Pengguna = () => {
                     onClick={() => setShowFilter(false)}
                   >
                     Reset
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {showPreview && selectedCustomer && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                <h2 className="text-xl font-semibold text-gray-900">Customer</h2>
-                <button
-                  onClick={closePreview}
-                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              <div className="p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Detail customer</h3>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-green-600 mb-1">Nama</label>
-                    <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 flex items-center gap-3">
-                      <img
-                        src={selectedCustomer.avatar || "/placeholder.svg"}
-                        alt={selectedCustomer.name}
-                        className="w-6 h-6 rounded-full object-cover"
-                      />
-                      <span className="text-gray-900 font-medium">{selectedCustomer.name}</span>
-                      <User className="w-4 h-4 text-gray-400 ml-auto" />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-green-600 mb-1">Alamat</label>
-                    <div className="relative">
-                      <textarea
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 text-gray-900 focus:ring-2 focus:ring-green-500 focus:outline-none focus:border-transparent resize-none"
-                        rows={3}
-                        defaultValue={selectedCustomer.address}
-                        readOnly
-                      />
-                      <MapPin className="absolute right-3 top-3 w-4 h-4 text-gray-400" />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-green-600 mb-1">No Telpon</label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 text-gray-900 focus:ring-2 focus:ring-green-500 focus:outline-none focus:border-transparent"
-                        defaultValue={selectedCustomer.phone}
-                        readOnly
-                      />
-                      <Phone className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-6">
-                  <button
-                    onClick={closePreview}
-                    className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 transition-colors"
-                  >
-                    Kembali
                   </button>
                 </div>
               </div>

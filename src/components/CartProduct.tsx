@@ -1,7 +1,7 @@
-"use client"
-import { Plus, X } from 'lucide-react';
-import Image from 'next/image';
-import React, { useState } from 'react';
+"use client";
+import { Plus, X } from "lucide-react";
+import Image from "next/image";
+import React, { useState } from "react";
 import { Product } from "@/types/product";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -15,11 +15,19 @@ interface CartProductProps {
 const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const { data: session } = useSession();
   const router = useRouter();
 
   const handleAddToCart = async (product: Product) => {
     if (!session) {
+      setErrorMessage("Anda harus login terlebih dahulu untuk menambahkan produk ke keranjang.");
+      setShowErrorModal(true);
+      return;
+    }
+
+    if (session.user?.role === "ADMIN") {
+      setErrorMessage("Akun admin tidak dapat menambahkan produk ke keranjang.");
       setShowErrorModal(true);
       return;
     }
@@ -33,17 +41,17 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
         unitPrice: product.price,
       };
 
-      const response = await fetch('/api/cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
 
       if (!response.ok) {
-        console.error('Gagal menambahkan ke keranjang');
+        console.error("Gagal menambahkan ke keranjang");
       }
     } catch (error: any) {
-      console.error('Error terjadi:', error);
+      console.error("Error terjadi:", error);
     } finally {
       setIsAddingToCart(false);
     }
@@ -66,7 +74,7 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
           <div className="bg-white rounded-2xl p-6 mx-4 max-w-sm w-full shadow-2xl animate-scale-in">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-gray-800">
-                Login Diperlukan
+                Tidak Dapat Menambahkan
               </h3>
               <button
                 onClick={closeErrorModal}
@@ -76,21 +84,23 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
               </button>
             </div>
             <p className="text-gray-600 mb-6">
-              Anda harus login terlebih dahulu untuk menambahkan produk ke keranjang.
+              {errorMessage}
             </p>
             <div className="flex gap-3">
               <button
                 onClick={closeErrorModal}
                 className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                Batal
+                Tutup
               </button>
-              <button
-                onClick={handleLoginRedirect}
-                className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-              >
-                Login
-              </button>
+              {!session && (
+                <button
+                  onClick={handleLoginRedirect}
+                  className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                >
+                  Login
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -152,20 +162,20 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
               transition-all duration-300 flex items-center justify-center gap-1 
               transform active:scale-95
               ${isAddingToCart
-                ? 'bg-gray-400 cursor-not-allowed'
+                ? "bg-gray-400 cursor-not-allowed"
                 : product.stock === 0
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-green-500 hover:bg-green-600 text-white hover:shadow-lg hover:scale-105'
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-green-500 hover:bg-green-600 text-white hover:shadow-lg hover:scale-105"
               }
             `}
           >
             {isAddingToCart ? (
               <>
                 <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                <span className="ml-1">Loading...</span>
+                <span className="ml-1">Menambahkan...</span>
               </>
             ) : product.stock === 0 ? (
-              'Stok Habis'
+              "Stok Habis"
             ) : (
               <>
                 <Plus className="w-3 h-3 sm:w-4 sm:h-4" />

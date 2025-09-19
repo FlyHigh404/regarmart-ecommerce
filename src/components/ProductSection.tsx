@@ -14,7 +14,8 @@ export default function ProductPopuler() {
   const [searchQuery, setSearchQuery] = useState("");
   const [cartItems, setCartItems] = useState<number>(0);
   const [showErrorModal, setShowErrorModal] = useState(false);
-  const [addingToCart, setAddingToCart] = useState<string | null>(null); // Track which product is being added
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [addingToCart, setAddingToCart] = useState<string | null>(null);
   const { data: session } = useSession();
   const router = useRouter();
 
@@ -34,51 +35,49 @@ export default function ProductPopuler() {
         setLoading(false);
       }
     };
-
     fetchProducts();
   }, []);
 
   const handleAddToCart = async (product: any) => {
-    // Cek apakah user sudah login
+    // Cek login
     if (!session) {
+      setErrorMessage("Anda harus login terlebih dahulu.");
       setShowErrorModal(true);
       return;
     }
 
-    // Set loading state untuk produk yang sedang ditambahkan
+    // Cek role user
+    if (session.user?.role === "ADMIN") {
+      setErrorMessage("Akun admin tidak dapat menambahkan produk ke keranjang.");
+      setShowErrorModal(true);
+      return;
+    }
+
     setAddingToCart(product.id);
-
     try {
-      const data = {
-        productId: product.id,
-        quantity: 1,
-        unitPrice: product.price,
-      };
-
       const response = await fetch("/api/cart", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: product.id,
+          quantity: 1,
+          unitPrice: product.price,
+        }),
         credentials: "include",
       });
 
       if (response.ok) {
         setCartItems(cartItems + 1);
-        console.log("Produk berhasil ditambahkan ke keranjang");
       } else {
         const result = await response.json();
-        console.error("Gagal menambahkan ke keranjang:", result.error);
-        
-        if (response.status === 401) {
-          setShowErrorModal(true);
-        }
+        setErrorMessage(result.error || "Gagal menambahkan ke keranjang.");
+        setShowErrorModal(true);
       }
     } catch (error) {
       console.error("Error terjadi:", error);
+      setErrorMessage("Terjadi kesalahan saat menambahkan ke keranjang.");
+      setShowErrorModal(true);
     } finally {
-      // Reset loading state
       setAddingToCart(null);
     }
   };
@@ -86,10 +85,6 @@ export default function ProductPopuler() {
   const handleLoginRedirect = () => {
     setShowErrorModal(false);
     router.push("/auth/signin");
-  };
-
-  const closeErrorModal = () => {
-    setShowErrorModal(false);
   };
 
   if (loading) return <div>Loading...</div>;
@@ -102,32 +97,27 @@ export default function ProductPopuler() {
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
           <div className="bg-white rounded-2xl p-6 mx-4 max-w-sm w-full shadow-2xl animate-scale-in">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">
-                Login Diperlukan
-              </h3>
-              <button
-                onClick={closeErrorModal}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
+              <h3 className="text-lg font-semibold text-gray-800"> Tidak Dapat Menambahkan</h3>
+              <button onClick={() => setShowErrorModal(false)} className="text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <p className="text-gray-600 mb-6">
-              Anda harus login terlebih dahulu untuk menambahkan produk ke keranjang.
-            </p>
+            <p className="text-gray-600 mb-6">{errorMessage}</p>
             <div className="flex gap-3">
               <button
-                onClick={closeErrorModal}
+                onClick={() => setShowErrorModal(false)}
                 className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                Batal
+                Tutup
               </button>
-              <button
-                onClick={handleLoginRedirect}
-                className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-              >
-                Login
-              </button>
+              {!session && (
+                <button
+                  onClick={handleLoginRedirect}
+                  className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                >
+                  Login
+                </button>
+              )}
             </div>
           </div>
         </div>

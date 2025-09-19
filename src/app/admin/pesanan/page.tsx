@@ -88,7 +88,7 @@ const Pesanan = () => {
 
   return (
     <AdminLayout>
-      <main className="flex-1 bg-gray-50 pt-6">
+      <main className="flex-1 bg-gray-50 pt-3">
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="p-4 sm:pt-6 sm:pb-0 bg-white">
             <div className="flex flex-col space-y-4 lg:flex-row lg:justify-between lg:items-center lg:space-y-0">
@@ -98,20 +98,6 @@ const Pesanan = () => {
               </div>
 
               <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3">
-                <div className="relative order-1 sm:order-1">
-                  <Search
-                    className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-                    size={18}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Search"
-                    className="pl-10 sm:pl-12 pr-4 sm:pr-6 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none focus:border-transparent w-full sm:w-64 lg:w-80 bg-white text-sm"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-
                 <div className="relative order-2 sm:order-2">
                   <button
                     onClick={() => setShowFilter(!showFilter)}

@@ -146,7 +146,7 @@ const Categories = () => {
 
   return (
     <AdminLayout>
-      <main className="flex-1 bg-gray-50 pt-6">
+      <main className="flex-1 bg-gray-50 pt-3">
         {/* Main Container with shadow and rounded corners */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           {/* Header Section */}
@@ -160,21 +160,6 @@ const Categories = () => {
 
               {/* Actions */}
               <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3">
-                {/* Search */}
-                <div className="relative order-1 sm:order-1">
-                  <Search
-                    className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-                    size={18}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Cari kategori..."
-                    className="pl-10 sm:pl-12 pr-4 sm:pr-6 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none focus:border-transparent w-full sm:w-64 lg:w-80 bg-white text-sm"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-
                 {/* Filter and Add buttons container */}
                 <div className="flex space-x-2 sm:space-x-3 order-2 sm:order-2">
                   {/* Filter Button */}

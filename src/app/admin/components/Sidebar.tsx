@@ -1,16 +1,16 @@
 "use client"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, List, FileText, Users, BarChart2, Settings, LogOut, X } from "lucide-react"
+import { Home, List, FileText, Users, BarChart2, Settings, LogOut, X, ShoppingBag, User } from "lucide-react"
 import { signOut } from "next-auth/react"
 
-// Menu items array
+// Menu items array dengan icon yang disesuaikan
 const menuItems = [
   { name: "Dashboard", icon: Home, path: "/admin/dashboard" },
-  { name: "Managemen Produk", icon: List, path: "/admin/produk" },
-  { name: "Managemen Kategori", icon: FileText, path: "/admin/kategori" },
-  { name: "Managemen Pesanan", icon: Users, path: "/admin/pesanan" },
-  { name: "Managemen Pengguna", icon: Users, path: "/admin/pengguna" },
+  { name: "Managemen Produk", icon: ShoppingBag, path: "/admin/produk" },
+  { name: "Managemen Kategori", icon: List, path: "/admin/kategori" },
+  { name: "Managemen Pesanan", icon: FileText, path: "/admin/pesanan" },
+  { name: "Managemen Pengguna", icon: User, path: "/admin/pengguna" },
   { name: "Managemen Notifikasi", icon: BarChart2, path: "/admin/notifikasi" },
   { name: "Pengaturan", icon: Settings, path: "/admin/pengaturan" },
 ]
@@ -19,7 +19,7 @@ interface SidebarProps {
   isOpen?: boolean;
   onClose?: () => void;
   onToggle?: () => void;
-  style?: React.CSSProperties;  // Tambahkan properti style
+  style?: React.CSSProperties;
 }
 
 export default function Sidebar({ isOpen = false, onClose, onToggle, style }: SidebarProps) {
@@ -28,9 +28,9 @@ export default function Sidebar({ isOpen = false, onClose, onToggle, style }: Si
   return (
     <>
       {/* Desktop Sidebar */}
-      <div className="hidden lg:flex min-h-screen w-64 bg-white shadow-md flex-col z-50" style={style}>
+      <div className="hidden lg:flex min-h-screen w-64 bg-white shadow-md flex-col z-50 relative" style={style}>
         {/* Logo & Judul */}
-        <div className="flex items-center gap-3 p-6 border-b">
+        <div className="flex items-center gap-3 p-6">
           <div className="flex items-center">
             <img
               src="/LogoAdmin.png"
@@ -41,41 +41,45 @@ export default function Sidebar({ isOpen = false, onClose, onToggle, style }: Si
         </div>
 
         {/* Menu */}
-        <nav className="flex flex-col p-4 gap-2 flex-1">
+        <nav className="flex flex-col p-4 gap-2 flex-1 relative">
           {menuItems.map((item) => {
-            const isActive = pathname === item.path
+            const isActive = pathname.startsWith(item.path)
             const Icon = item.icon
 
             return (
-              <Link
-                key={item.name}
-                href={item.path}
-                className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all relative ${
-                  isActive ? "bg-green-100 text-green-700 font-semibold" : "text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-green-600 rounded-r-full" />}
-                <Icon className="w-5 h-5" />
-                <span className="text-sm">{item.name}</span>
-              </Link>
+              <div key={item.name} className="relative">
+                {/* Garis hijau terpisah di sisi kiri sidebar */}
+                {isActive && (
+                  <div className="absolute -left-4 top-0 bottom-0 w-1 bg-green-600 rounded-r-full" />
+                )}
+                <Link
+                  href={item.path}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all relative ${isActive
+                      ? "bg-green-100 text-green-700 font-medium"
+                      : "text-gray-700 hover:bg-gray-50"
+                    }`}
+                >
+                  <Icon className={`w-5 h-5 ${isActive ? "text-green-700" : "text-gray-600"}`} />
+                  <span className="text-sm font-medium">{item.name}</span>
+                </Link>
+              </div>
             )
           })}
           <button
             onClick={() => signOut({ callbackUrl: "/admin-login" })}
-            className="flex items-center gap-3 px-4 py-2 rounded-lg transition-all bg-red-100 text-red-700 font-semibold hover:bg-red-200 mt-auto"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all bg-red-50 text-red-600 font-medium hover:bg-red-100 mt-auto"
           >
-            <LogOut className="w-5 h-5" />
-            <span className="text-sm">Logout</span>
+            <LogOut className="w-5 h-5 text-red-600" />
+            <span className="text-sm font-medium">Logout</span>
           </button>
         </nav>
       </div>
 
       {/* Mobile Sidebar */}
-      <div className={`lg:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${
-        isOpen ? 'translate-x-0' : '-translate-x-full'
-      }`} style={style}>
+      <div className={`lg:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`} style={style}>
         {/* Header with Close Button */}
-        <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center justify-between p-4">
           <img
             src="/LogoAdmin.png"
             alt="RegarMart Admin Logo"
@@ -90,32 +94,37 @@ export default function Sidebar({ isOpen = false, onClose, onToggle, style }: Si
         </div>
 
         {/* Menu */}
-        <nav className="flex flex-col p-4 gap-2 flex-1">
+        <nav className="flex flex-col p-4 gap-2 flex-1 relative">
           {menuItems.map((item) => {
-            const isActive = pathname === item.path
+            const isActive = pathname.startsWith(item.path)
             const Icon = item.icon
 
             return (
-              <Link
-                key={item.name}
-                href={item.path}
-                onClick={onClose}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all relative ${
-                  isActive ? "bg-green-100 text-green-700 font-semibold" : "text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-green-600 rounded-r-full" />}
-                <Icon className="w-5 h-5" />
-                <span className="text-sm">{item.name}</span>
-              </Link>
+              <div key={item.name} className="relative">
+                {/* Garis hijau terpisah di sisi kiri sidebar untuk mobile */}
+                {isActive && (
+                  <div className="absolute -left-4 top-0 bottom-0 w-1 bg-green-600 rounded-r-full" />
+                )}
+                <Link
+                  href={item.path}
+                  onClick={onClose}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all relative ${isActive
+                      ? "bg-green-100 text-green-700 font-medium"
+                      : "text-gray-700 hover:bg-gray-50"
+                    }`}
+                >
+                  <Icon className={`w-5 h-5 ${isActive ? "text-green-700" : "text-gray-600"}`} />
+                  <span className="text-sm font-medium">{item.name}</span>
+                </Link>
+              </div>
             )
           })}
           <button
             onClick={() => signOut({ callbackUrl: "/admin-login" })}
-            className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all bg-red-100 text-red-700 font-semibold hover:bg-red-200 mt-8"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all bg-red-50 text-red-600 font-medium hover:bg-red-100 mt-8"
           >
-            <LogOut className="w-5 h-5" />
-            <span className="text-sm">Logout</span>
+            <LogOut className="w-5 h-5 text-red-600" />
+            <span className="text-sm font-medium">Logout</span>
           </button>
         </nav>
       </div>

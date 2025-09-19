@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Trash2, Minus, Plus, CheckCircle, XCircle, X } from "lucide-react";
+import { Trash2, Minus, Plus, CheckCircle, XCircle, X, AlertTriangle } from "lucide-react";
 import Footer from "@/components/Footer";
 import NavKeranjang from "@/components/NavKeranjang";
 
@@ -67,6 +67,73 @@ const Toast = ({ type, message, isVisible, onClose }: ToastProps) => {
   );
 };
 
+// Confirmation Modal Component
+interface ConfirmationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  title: string;
+  message: string;
+  isLoading?: boolean;
+}
+
+const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, isLoading = false }: ConfirmationModalProps) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center">
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      
+      {/* Modal */}
+      <div className="relative bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-6 animate-in fade-in-0 zoom-in-95">
+        {/* Icon */}
+        <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
+          <AlertTriangle className="w-6 h-6 text-red-600" />
+        </div>
+
+        {/* Content */}
+        <div className="text-center mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            {title}
+          </h3>
+          <p className="text-gray-600">
+            {message}
+          </p>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            disabled={isLoading}
+            className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-colors"
+          >
+            Batal
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isLoading}
+            className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 disabled:bg-red-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+          >
+            {isLoading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Menghapus...
+              </>
+            ) : (
+              'Hapus'
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 interface CartItem {
   id: string;
   name: string;
@@ -83,6 +150,16 @@ const CartPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [deletingItems, setDeletingItems] = useState<string[]>([]);
   const [updatingItems, setUpdatingItems] = useState<string[]>([]);
+
+  // Confirmation modal state
+  const [confirmationModal, setConfirmationModal] = useState({
+    isOpen: false,
+    type: 'single' as 'single' | 'multiple',
+    itemId: '',
+    itemName: '',
+    selectedCount: 0,
+    isLoading: false
+  });
 
   // Toast state
   const [toast, setToast] = useState({
@@ -103,6 +180,35 @@ const CartPage = () => {
   // Hide toast function
   const hideToast = () => {
     setToast(prev => ({ ...prev, isVisible: false }));
+  };
+
+  // Show confirmation modal for single item
+  const showSingleDeleteConfirmation = (itemId: string, itemName: string) => {
+    setConfirmationModal({
+      isOpen: true,
+      type: 'single',
+      itemId,
+      itemName,
+      selectedCount: 0,
+      isLoading: false
+    });
+  };
+
+  // Show confirmation modal for multiple items
+  const showMultipleDeleteConfirmation = (selectedCount: number) => {
+    setConfirmationModal({
+      isOpen: true,
+      type: 'multiple',
+      itemId: '',
+      itemName: '',
+      selectedCount,
+      isLoading: false
+    });
+  };
+
+  // Hide confirmation modal
+  const hideConfirmationModal = () => {
+    setConfirmationModal(prev => ({ ...prev, isOpen: false, isLoading: false }));
   };
 
   useEffect(() => {
@@ -246,6 +352,7 @@ const CartPage = () => {
     const item = cartItems.find(item => item.id === id);
     if (!item) return;
 
+    setConfirmationModal(prev => ({ ...prev, isLoading: true }));
     setDeletingItems(prev => [...prev, id]);
 
     try {
@@ -261,27 +368,25 @@ const CartPage = () => {
       // Hapus dari state jika berhasil
       setCartItems((items) => items.filter((item) => item.id !== id));
       showToast('success', `${item.name} berhasil dihapus dari keranjang`);
+      hideConfirmationModal();
     } catch (error: any) {
       console.error("Error deleting item:", error);
       showToast('error', error.message || 'Terjadi kesalahan saat menghapus item');
+      hideConfirmationModal();
     } finally {
       setDeletingItems(prev => prev.filter(itemId => itemId !== id));
     }
   };
 
-  const handleDeleteItem = (id: string) => {
-    deleteItem(id);
-  };
-
-  const handleDeleteSelected = async () => {
+  const deleteSelectedItems = async () => {
     const selectedIds = cartItems.filter(item => item.selected).map(item => item.id);
-    const selectedNames = cartItems.filter(item => item.selected).map(item => item.name);
     
     if (selectedIds.length === 0) {
       showToast('error', 'Tidak ada produk yang dipilih');
       return;
     }
 
+    setConfirmationModal(prev => ({ ...prev, isLoading: true }));
     setDeletingItems(prev => [...prev, ...selectedIds]);
 
     try {
@@ -301,11 +406,34 @@ const CartPage = () => {
       setCartItems(items => items.filter(item => !selectedIds.includes(item.id)));
       
       showToast('success', `${selectedIds.length} produk berhasil dihapus dari keranjang`);
+      hideConfirmationModal();
     } catch (error: any) {
       console.error("Error deleting selected items:", error);
       showToast('error', error.message || 'Terjadi kesalahan saat menghapus produk');
+      hideConfirmationModal();
     } finally {
       setDeletingItems(prev => prev.filter(id => !selectedIds.includes(id)));
+    }
+  };
+
+  const handleDeleteItem = (id: string, name: string) => {
+    showSingleDeleteConfirmation(id, name);
+  };
+
+  const handleDeleteSelected = () => {
+    const selectedCount = cartItems.filter(item => item.selected).length;
+    if (selectedCount === 0) {
+      showToast('error', 'Tidak ada produk yang dipilih');
+      return;
+    }
+    showMultipleDeleteConfirmation(selectedCount);
+  };
+
+  const handleConfirmDelete = () => {
+    if (confirmationModal.type === 'single') {
+      deleteItem(confirmationModal.itemId);
+    } else {
+      deleteSelectedItems();
     }
   };
 
@@ -322,6 +450,20 @@ const CartPage = () => {
         message={toast.message}
         isVisible={toast.isVisible}
         onClose={hideToast}
+      />
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmationModal.isOpen}
+        onClose={hideConfirmationModal}
+        onConfirm={handleConfirmDelete}
+        title={confirmationModal.type === 'single' ? 'Hapus Produk' : 'Hapus Produk Terpilih'}
+        message={
+          confirmationModal.type === 'single' 
+            ? `Apakah Anda yakin ingin menghapus "${confirmationModal.itemName}" dari keranjang?`
+            : `Apakah Anda yakin ingin menghapus ${confirmationModal.selectedCount} produk yang dipilih dari keranjang?`
+        }
+        isLoading={confirmationModal.isLoading}
       />
 
       <div className="bg-gray-50 pt-6 md:pt-10 pb-6 md:pb-10">
@@ -426,7 +568,7 @@ const CartPage = () => {
                                   <div className="flex items-center gap-2">
                                     {/* Delete */}
                                     <button
-                                      onClick={() => handleDeleteItem(item.id)}
+                                      onClick={() => handleDeleteItem(item.id, item.name)}
                                       disabled={isDeleting || isUpdating}
                                       className="w-6 h-6 md:w-7 md:h-7 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
                                     >
