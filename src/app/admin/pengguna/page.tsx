@@ -138,7 +138,8 @@ const Pengguna = () => {
                         className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-all duration-200"
                         title="View"
                       >
-                        <ReceiptText />
+                        {/* <ReceiptText /> */}
+
                       </button>
                     </div>
                   </div>
@@ -200,7 +201,9 @@ const Pengguna = () => {
                             className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-all duration-200"
                             title="View"
                           >
-                            <ReceiptText />
+                            {/* <ReceiptText /> */}
+                            <img src="/receipt-item.png" alt="" className="" width="30"/>
+
                           </button>
                         </div>
                       </td>
