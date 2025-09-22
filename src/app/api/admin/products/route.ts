@@ -12,11 +12,11 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { name, description, price, stock, categoryId, imageUrls } =
+    const { name, description, price, stock, categoryId, imageUrl } =
       await request.json();
 
     // Validate required fields
-    if (!name || !price || !stock || !categoryId || !imageUrls || imageUrls.length === 0) {
+    if (!name || !price || !stock || !categoryId || !imageUrl || imageUrl.length === 0) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
         price: parseFloat(price),
         stock: parseInt(stock),
         categoryId,
-        imageUrl: imageUrls, // This should be an array of strings
+        imageUrl, 
       },
       include: {
         category: true,

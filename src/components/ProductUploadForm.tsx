@@ -68,11 +68,10 @@ export default function ProductUploadForm({ initialData, onClose }: ProductUploa
         price: initialData.price?.toString() || "",
         stock: initialData.stock?.toString() || "",
         categoryId: initialData.category?.id || "",
-        imageUrl: initialData.imageUrl || [], 
+        imageUrl: initialData.imageUrl || [],  // Pastikan ini memperbarui gambar yang ada di awal
       });
 
       setPreviewUrls(initialData.imageUrl || []);
-
     }
   }, [initialData]);
 
@@ -95,16 +94,30 @@ export default function ProductUploadForm({ initialData, onClose }: ProductUploa
   }
 
   const removeImage = (index: number) => {
-    setPendingFiles((prev) => prev.filter((_, i) => i !== index))
-    setPreviewUrls((prev) => prev.filter((_, i) => i !== index))
-  }
+    // Hapus gambar dari pendingFiles dan previewUrls
+    const newPendingFiles = pendingFiles.filter((_, i) => i !== index);
+    const newPreviewUrls = previewUrls.filter((_, i) => i !== index);
+
+    // Jika gambar yang dihapus adalah gambar yang sudah diupload sebelumnya, hapus juga dari formData.imageUrl
+    if (index < formData.imageUrl.length) {
+      const newImageUrls = formData.imageUrl.filter((_, i) => i !== index);
+      setFormData((prev) => ({
+        ...prev,
+        imageUrl: newImageUrls,
+      }));
+    }
+
+    // Perbarui state untuk pendingFiles dan previewUrls
+    setPendingFiles(newPendingFiles);
+    setPreviewUrls(newPreviewUrls);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // upload gambar baru kalau ada
+      // Upload gambar baru jika ada
       const uploadedUrls: string[] = [...formData.imageUrl];
 
       for (const file of pendingFiles) {
@@ -114,7 +127,7 @@ export default function ProductUploadForm({ initialData, onClose }: ProductUploa
         const res = await fetch("/api/upload", { method: "POST", body: fd });
         if (!res.ok) throw new Error("Upload failed");
         const data = await res.json();
-        uploadedUrls.push(data.url);
+        uploadedUrls.push(data.url);  // Tambahkan URL gambar yang baru
       }
 
       const productData = {
@@ -152,7 +165,6 @@ export default function ProductUploadForm({ initialData, onClose }: ProductUploa
       setLoading(false);
     }
   };
-
 
   return (
     <div className="w-full max-w-2xl mx-auto">

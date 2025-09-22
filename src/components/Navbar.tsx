@@ -14,6 +14,7 @@ const Navbar = () => {
     const pathname = usePathname()
     const { data: session, status } = useSession();
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const [cartCount, setCartCount] = useState(0);
 
     useEffect(() => {
         setMounted(true);
@@ -40,6 +41,30 @@ const Navbar = () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
+
+useEffect(() => {
+    const fetchCart = async () => {
+      try {
+        const res = await fetch("/api/cart");
+        if (!res.ok) {
+          console.error("Gagal fetch cart");
+          return;
+        }
+        const data = await res.json();
+        setCartCount(data?.orderItems?.length || 0);
+      } catch (error) {
+        console.error("Error fetching cart:", error);
+      }
+    };
+
+    // ✅ hanya fetch jika ada session DAN bukan admin
+    if (session && session.user?.role !== "ADMIN") {
+      fetchCart();
+    } else {
+      // ✅ kalau admin atau belum login, jangan tampilkan badge
+      setCartCount(0);
+    }
+  }, [session]);
 
     /* nav links */
     const navItems = [
@@ -128,7 +153,7 @@ const Navbar = () => {
                     <a href="/cart" className="cursor-pointer relative p-3 rounded-xl transition-all duration-300 hover:scale-105">
                         <ShoppingCart className="w-5 h-5 text-[#4BBF42]" />
                         <span className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                            2
+                            {cartCount}
                         </span>
                     </a>
 
@@ -324,7 +349,7 @@ const Navbar = () => {
                             <ShoppingCart className="w-5 h-5 text-[#4BBF42] mr-2" />
                             <span className="text-sm font-semibold">Keranjang</span>
                             <span className="absolute top-2 right-4 w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                                2
+                                {cartCount}
                             </span>
                         </button>
 

@@ -4,15 +4,46 @@
     "title": "Regarmart Generated API Docs",
     "version": "1.0.0"
   },
-  "servers": [
-    {
-      "url": "http://localhost:3000/api"
-    }
-  ],
   "paths": {
+    "/cart": {
+      "get": {
+        "summary": "Auto generated for GET /cart",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "post": {
+        "summary": "Auto generated for POST /cart",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/products": {
       "get": {
         "summary": "Auto generated for GET /products",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/profile": {
+      "get": {
+        "summary": "Auto generated for GET /profile",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "put": {
+        "summary": "Auto generated for PUT /profile",
         "responses": {
           "200": {
             "description": "Success"
@@ -86,6 +117,26 @@
         }
       }
     },
+    "/cart/{itemId}": {
+      "delete": {
+        "summary": "Auto generated for DELETE /cart/{itemId}",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/cart/checkout": {
+      "post": {
+        "summary": "Auto generated for POST /cart/checkout",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/products/{id}": {
       "get": {
         "summary": "Auto generated for GET /products/{id}",
@@ -109,6 +160,16 @@
     "/products/search": {
       "get": {
         "summary": "Auto generated for GET /products/search",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/profile/password": {
+      "put": {
+        "summary": "Auto generated for PUT /profile/password",
         "responses": {
           "200": {
             "description": "Success"
@@ -145,6 +206,66 @@
       },
       "delete": {
         "summary": "Auto generated for DELETE /admin/products/{id}",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/products/{id}/ratings": {
+      "get": {
+        "summary": "Auto generated for GET /products/{id}/ratings",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "post": {
+        "summary": "Auto generated for POST /products/{id}/ratings",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "put": {
+        "summary": "Auto generated for PUT /products/{id}/ratings",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Auto generated for DELETE /products/{id}/ratings",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/products/{id}/review": {
+      "get": {
+        "summary": "Auto generated for GET /products/{id}/review",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "post": {
+        "summary": "Auto generated for POST /products/{id}/review",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Auto generated for DELETE /products/{id}/review",
         "responses": {
           "200": {
             "description": "Success"

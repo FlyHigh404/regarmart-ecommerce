@@ -21,3 +21,31 @@ export async function DELETE(
     return NextResponse.json({ error: "Failed to delete item" }, { status: 500 });
   }
 }
+
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: { itemId: string } }
+) {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user?.role !== "CUSTOMER") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const { quantity } = await req.json(); // Get quantity from the request body
+
+    if (quantity <= 0) {
+      return NextResponse.json({ error: "Quantity must be greater than 0" }, { status: 400 });
+    }
+
+    // Update the cart item quantity
+    const updatedItem = await prisma.orderItem.update({
+      where: { id: params.itemId },
+      data: { quantity },
+    });
+
+    return NextResponse.json({ message: "Item updated", item: updatedItem });
+  } catch (error) {
+    return NextResponse.json({ error: "Failed to update item" }, { status: 500 });
+  }
+}

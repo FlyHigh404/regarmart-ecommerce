@@ -43,7 +43,7 @@ export async function PUT(
   }
 }
 
-export async function DELETE({ params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   const { id } = params;
 
@@ -55,16 +55,9 @@ export async function DELETE({ params }: { params: { id: string } }) {
     await prisma.product.delete({
       where: { id },
     });
-
-    return NextResponse.json(
-      { message: "Product deleted successfully" },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: "Product deleted successfully" });
   } catch (error) {
     console.error("Error deleting product:", error);
-    return NextResponse.json(
-      { error: "Failed to delete product" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to delete product" }, { status: 500 });
   }
 }

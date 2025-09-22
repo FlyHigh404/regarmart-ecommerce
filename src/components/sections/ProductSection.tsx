@@ -1,7 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, X, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export default function ProductPopuler() {
   const [products, setProducts] = useState<any[]>([]);
@@ -10,6 +12,12 @@ export default function ProductPopuler() {
   const [categories, setCategories] = useState<any[]>([]);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [cartItems, setCartItems] = useState<number>(0);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [addingToCart, setAddingToCart] = useState<string | null>(null);
+  const { data: session } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -30,11 +38,91 @@ export default function ProductPopuler() {
     fetchProducts();
   }, []);
 
+  const handleAddToCart = async (product: any) => {
+    // Cek login
+    if (!session) {
+      setErrorMessage("Anda harus login terlebih dahulu.");
+      setShowErrorModal(true);
+      return;
+    }
+
+    // Cek role user
+    if (session.user?.role === "ADMIN") {
+      setErrorMessage("Akun admin tidak dapat menambahkan produk ke keranjang.");
+      setShowErrorModal(true);
+      return;
+    }
+
+    setAddingToCart(product.id);
+    try {
+      const response = await fetch("/api/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: product.id,
+          quantity: 1,
+          unitPrice: product.price,
+        }),
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        setCartItems(cartItems + 1);
+      } else {
+        const result = await response.json();
+        setErrorMessage(result.error || "Gagal menambahkan ke keranjang.");
+        setShowErrorModal(true);
+      }
+    } catch (error) {
+      console.error("Error terjadi:", error);
+      setErrorMessage("Terjadi kesalahan saat menambahkan ke keranjang.");
+      setShowErrorModal(true);
+    } finally {
+      setAddingToCart(null);
+    }
+  };
+
+  const handleLoginRedirect = () => {
+    setShowErrorModal(false);
+    router.push("/auth/signin");
+  };
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
 
   return (
     <div>
+      {/* Error Modal */}
+      {showErrorModal && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl p-6 mx-4 max-w-sm w-full shadow-2xl animate-scale-in">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-800"> Tidak Dapat Menambahkan</h3>
+              <button onClick={() => setShowErrorModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-gray-600 mb-6">{errorMessage}</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowErrorModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Tutup
+              </button>
+              {!session && (
+                <button
+                  onClick={handleLoginRedirect}
+                  className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                >
+                  Login
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Search Bar */}
       <div className="relative max-w-xl mx-auto mb-5 px-2 sm:px-0 animate-fade-in-up animation-delay-400">
         <div className="relative">
@@ -114,9 +202,26 @@ export default function ProductPopuler() {
               </span>
 
               {/* 6. Button */}
-              <button className="w-full bg-green-500 hover:bg-green-600 text-white px-3 py-2 lg:px-2.5 lg:py-2 rounded-lg font-medium text-sm lg:text-sm transition-all duration-300 flex items-center justify-center gap-2 hover:shadow-lg transform hover:scale-105 active:scale-95">
-                <Plus className="w-4 h-4 lg:w-4 lg:h-4" />
-                Tambah ke Keranjang
+              <button
+                onClick={() => handleAddToCart(product)}
+                disabled={addingToCart === product.id}
+                className={`w-full px-3 py-2 lg:px-2.5 lg:py-2 rounded-lg font-medium text-sm lg:text-sm transition-all duration-300 flex items-center justify-center gap-2 transform active:scale-95 ${
+                  addingToCart === product.id
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-500 hover:bg-green-600 text-white hover:shadow-lg hover:scale-105"
+                }`}
+              >
+                {addingToCart === product.id ? (
+                  <>
+                    <Loader2 className="w-4 h-4 lg:w-4 lg:h-4 animate-spin" />
+                    Menambahkan...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4 lg:w-4 lg:h-4" />
+                    Tambah ke Keranjang
+                  </>
+                )}
               </button>
             </div>
           ))}
