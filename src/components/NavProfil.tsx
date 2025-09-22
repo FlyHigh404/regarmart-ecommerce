@@ -18,7 +18,7 @@ export default function ProfilNavbar() {
             <hr className="border-gray-200 my-3" />
           </Link>
           <div className="h-10 w-px bg-gray-300 mx-2"></div>
-          <h1 className="text-xl font-normal text-green-600">Profil pengguna</h1>
+          <h1 className="text-green-600 font-medium text-base sm:text-xl">Profil pengguna</h1>
         </div>
         
       </div>

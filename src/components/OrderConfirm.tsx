@@ -82,7 +82,7 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
       
         <div className="p-4 sm:p-6">
           {/* Informasi Pesanan */}
-          <div className="py-4">
+          <div className="py-2">
             <h3 className="font-bold text-gray-800 text-sm mb-2">Informasi Pesanan</h3>
             <div className="grid grid-cols-2 text-sm">
               <span>No. Pesanan:</span>
@@ -109,8 +109,8 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
           </div>
 
           {/* Alamat Pengiriman */}
-          <div className="py-4 border-t-2 border-gray-200">
-            <h2 className="font-bold text-sm text-black mb-3">ALAMAT PENGIRIMAN</h2>
+          <div className="py-4 border-t-6 border-gray-100">
+            <h2 className="font-bold text-sm text-black mb-3">Alamat Pengiriman</h2>
             <div className="flex items-center gap-2">
               <MapPin className="w-5 h-5 text-green-600" />
               <p className="font-medium text-sm text-black">{address.nama}</p>
@@ -131,7 +131,7 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
           </div>
 
           {/* Produk */}
-          <div className="py-4 border-t-2 border-gray-200">
+          <div className="py-4 border-t-6 border-gray-100">
             {(showAll ? products : products.slice(0, 1)).map((p) => (
               <div
                 key={p.id}

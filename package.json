@@ -17,6 +17,7 @@
     "@types/bcryptjs": "^2.4.6",
     "@vercel/blob": "^1.1.1",
     "bcryptjs": "^3.0.2",
+    "keen-slider": "^6.8.6",
     "lucide-react": "^0.539.0",
     "midtrans-client": "^1.4.3",
     "nanoid": "^5.1.5",

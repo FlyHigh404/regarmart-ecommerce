@@ -294,7 +294,7 @@ const CheckoutPage: React.FC = () => {
         </div>
         <button
           onClick={() => setOpenOrderConfirm(true)}
-          className="bg-green-600 text-white px-4 h-11 rounded-lg text-medium font-semibold flex-1"
+          className="bg-green-600 text-white px-4 h-11 rounded-lg text-medium font-semibold w-[160px]"
         >
           Konfirmasi
         </button>

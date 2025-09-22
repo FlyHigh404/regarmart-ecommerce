@@ -11,7 +11,7 @@ const NavKeranjang = () => {
         <div className="h-8 md:h-12 w-px bg-gray-300 mx-4 md:mx-8"></div>
 
         <div className="flex items-center">
-          <h1 className="text-green-600 font-medium text-lg md:text-xl">Keranjang Belanja</h1>
+          <h1 className="text-green-600 font-medium text-base sm:text-xl">Keranjang Belanja</h1>
         </div>
       </div>
     </nav>

@@ -1,6 +1,6 @@
 
 import { Banknote, Package, BadgeCheck, HandHeart, LockKeyhole, Clock3 } from "lucide-react"
-import ProductPopuler from "./ProductSection"
+import ProductPopuler from "@/components/sections/ProductSection"
 
 const HeroSection = () => {
     
