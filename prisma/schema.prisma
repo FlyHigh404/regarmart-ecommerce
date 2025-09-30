@@ -25,6 +25,23 @@ model User {
   ratings       Rating[]
   reviews       Review[]
   sessions      Session[]
+  Address       Address[]
+}
+
+model Address {
+  id            String  @id @default(cuid())
+  userId        String
+  recipientName String
+  phoneNumber   String
+  label         String
+  fullAddress   String
+  note          String?
+  isPrimary     Boolean @default(false)
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Account {
@@ -107,7 +124,6 @@ model Rating {
 
   @@unique([productId, userId]) // biar 1 user cuma bisa 1 rating per product
 }
-
 
 model Order {
   id            String        @id @default(uuid())
