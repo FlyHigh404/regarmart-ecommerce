@@ -11,9 +11,10 @@ export async function PUT(req: NextRequest) {
     }
     try {
         const { currentPassword, newPassword } = await req.json();
-        if (!currentPassword || !newPassword) {
-            return NextResponse.json({ error: "All fields are required" }, { status: 400 });
+        if (!newPassword) {
+            return NextResponse.json({ error: "Password baru tidak boleh kosong" }, { status: 400 });
         }
+
         const user = await prisma.user.findUnique({
             where: { id: session.user.id },
             select: { password: true },
@@ -21,25 +22,25 @@ export async function PUT(req: NextRequest) {
         if (!user) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
+
         if (!user.password) {
-            // User registered via OAuth and does not have a password set
-            if (!currentPassword) {
-            // Allow setting password for the first time
             const hashedPassword = await bcrypt.hash(newPassword, 10);
             await prisma.user.update({
                 where: { id: session.user.id },
                 data: { password: hashedPassword },
             });
             return NextResponse.json({ message: "Password set successfully" });
-            } else {
-            // User tries to provide currentPassword but doesn't have one
-            return NextResponse.json({ error: "No existing password. Please leave current password empty to set a new one." }, { status: 400 });
-            }
         }
+
+        if (!currentPassword) {
+            return NextResponse.json({ error: "Current password is required" }, { status: 400 });
+        }
+
         const isMatch = await bcrypt.compare(currentPassword, user.password);
         if (!isMatch) {
             return NextResponse.json({ error: "Current password is incorrect" }, { status: 400 });
         }
+
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         await prisma.user.update({
             where: { id: session.user.id },

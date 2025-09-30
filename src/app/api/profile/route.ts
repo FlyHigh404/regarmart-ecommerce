@@ -26,7 +26,7 @@ export async function GET() {
         console.error("Error fetching profile:", error);
         return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });
     }
-  
+
 }
 
 export async function PUT(req: NextRequest) {
@@ -34,18 +34,22 @@ export async function PUT(req: NextRequest) {
     if (!session || session.user?.role !== "CUSTOMER") {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
     try {
-        const { name, phone, address } = await req.json();
-        if (!name || !phone || !address) {
-            return NextResponse.json({ error: "All fields are required" }, { status: 400 });
+        const { name, phone, address = "", image = "" } = await req.json();
+
+        if (!name || !phone) {
+            return NextResponse.json({ error: "Name and phone are required" }, { status: 400 });
         }
+
         const updatedProfile = await prisma.user.update({
             where: { id: session.user.id },
-            data: { name, phone, address },
+            data: { name, phone, address, image },
         });
+
         return NextResponse.json(updatedProfile);
     } catch (error) {
         console.error("Error updating profile:", error);
         return NextResponse.json({ error: "Failed to update profile" }, { status: 500 });
-    }   
+    }
 }

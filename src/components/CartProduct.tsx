@@ -66,6 +66,16 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
     setShowErrorModal(false);
   };
 
+  const formatPrice = (price: string | number) => {
+    const numericPrice = Number(price); 
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(numericPrice);
+  };
+
+
   return (
     <>
       {/* Error Modal */}
@@ -146,7 +156,7 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
 
           {/* Harga */}
           <span className="block text-sm sm:text-base lg:text-sm font-bold text-gray-800 mb-1.5">
-            {product.price}
+            {formatPrice(product.price)}
           </span>
 
           {/* Button */}

@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { CircleChevronLeft, Menu, X } from "lucide-react"
+import { ChevronLeft, Menu, X } from "lucide-react"
 import ProfilNavbar from "@/components/NavProfil"
 import Sidebar from "@/components/ProfilSide"
 import Footer from "@/components/Footer"
@@ -21,14 +21,16 @@ export default function ProfilLayout({ children }: { children: React.ReactNode }
         <ProfilNavbar />
 
         {/* Tombol kembali */}
-        <div className="px-4 md:px-10 mt-4">
+        <div className="px-8 pl-12 md:px-16 md:pl-20 mt-8 mb-2">
           <div className="flex items-center justify-between">
             <button
               onClick={() => router.back()}
-              className="flex items-center gap-2 text-green-500 hover:text-green-700 font-medium"
+              className="flex items-center gap-3 text-green-600 hover:text-green-700 transition-colors duration-200"
             >
-              <CircleChevronLeft size={28} />
-              <span>Kembali</span>
+              <div className="w-8 h-8 rounded-full border-2 border-green-500 flex items-center justify-center hover:bg-green-50 transition-all duration-200">
+                <ChevronLeft size={20} className="text-green-500" />
+              </div>
+              <span className="text-lg font-medium text-green-600">Kembali</span>
             </button>
 
             <button
@@ -56,7 +58,7 @@ export default function ProfilLayout({ children }: { children: React.ReactNode }
         )}
 
         {/* Wrapper untuk konten */}
-        <div className="mt-6 px-4 md:px-10 pb-20">
+        <div className="mt-6 px-8 pl-12 md:px-16 md:pl-20 pb-20">
           <div className="flex flex-col md:flex-row gap-6 md:gap-12">
             <div className="hidden md:block">
               <Sidebar />
