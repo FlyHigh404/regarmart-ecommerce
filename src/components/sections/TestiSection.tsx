@@ -15,6 +15,7 @@ const testimonials = [
 export default function TestiSection() {
   return (
     <section
+      id="testimoni"
       className="w-full py-16 px-6 font-jakarta relative overflow-hidden bg-gradient-to-b from-green-50/30 to-white"
       style={{
         backgroundImage: 'url("/bgtesti_beranda.png")',

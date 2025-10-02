@@ -1,24 +1,52 @@
-interface CardCategoryProps {
+import React from 'react';
+
+interface Category {
   title: string
   description: string
   image: string
+  circleBgColor: string
 }
 
-export default function CardCategory({ title, description, image }: CardCategoryProps) {
+interface CardCategoryProps extends Category {
+  index: number
+  isActive: boolean 
+}
+
+export default function CardCategory({ title, description, image, index, circleBgColor, isActive }: CardCategoryProps) {
+  const isEven = index % 2 === 1
+
   return (
     <div
-      className="bg-white rounded-full shadow-lg flex flex-col items-center text-center px-6 py-10 h-full
-                 transition-all duration-300 hover:bg-green-200 hover:shadow-xl cursor-pointer"
+      className={`group bg-white rounded-full py-4 flex flex-col items-center text-center shadow-md transition duration-200 
+      ${isEven ? "translate-y-[-15px]" : ""} 
+      `}
+      style={{
+        width: "170px",
+        height: "300px",
+        flexShrink: 0,
+      }}
     >
-      <div className="w-24 h-24 flex items-center justify-center mb-4">
+      {/* Icon bulat dengan background gambar */}
+      <div
+        className="w-[130px] h-[130px] rounded-full flex items-center justify-center mb-3 bg-cover bg-center"
+        style={{ backgroundImage: `url(${circleBgColor})` }}
+      >
         <img
           src={image}
           alt={title}
-          className="w-20 h-20 object-contain"
+          className={`w-[95px] h-[95px] rounded-full transition-all duration-300 transform 
+            ${
+                isActive 
+                    ? "scale-120 -translate-y-10" 
+                    : "scale-100"
+            }
+          `}
         />
       </div>
-      <h3 className="text-lg font-semibold text-gray-800 mb-2">{title}</h3>
-      <p className="text-sm text-gray-700 leading-relaxed">{description}</p>
+
+      {/* Judul dan deskripsi */}
+      <h3 className={`font-bold text-lg mb-2 ${isActive ? "text-green-900" : "text-green-700"}`}>{title}</h3>
+      <p className="text-gray-600 text-sm leading-relaxed">{description}</p>
     </div>
   )
 }

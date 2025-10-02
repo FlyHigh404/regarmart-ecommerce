@@ -58,7 +58,7 @@ const ReasonSection: React.FC = () => {
             <img
               src="/buahwhy.png"
               alt="Buah Why"
-              className="relative z-10 w-[160px] sm:w-[220px] md:w-[380px] animate-float-left mt-16 md:mt-20"
+              className="relative z-10 w-[160px] sm:w-[220px] md:w-[380px] animate-float-left mt-18 md:mt-45"
             />
           </div>
 

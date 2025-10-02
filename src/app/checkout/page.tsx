@@ -72,7 +72,7 @@ const CheckoutPage: React.FC = () => {
           {/* ==================== KIRI ==================== */}
           <div className="md:col-span-2 space-y-3">
             {/* Alamat Pengiriman */}
-            <div className="bg-white shadow rounded-xl p-4 max-sm:shadow-none max-sm:rounded-none max-sm:border-b border-gray-200">
+            <div className="bg-white shadow rounded-xl p-4 max-sm:shadow-none max-sm:rounded-none max-sm:border-b border-gray-200 relative overflow-hidden">
               <h2 className="font-bold text-xs text-[#8F8F8F] mb-2">
                 ALAMAT PENGIRIMAN
               </h2>
@@ -104,7 +104,24 @@ const CheckoutPage: React.FC = () => {
                 </p>
                 <p className="text-[11px] text-[#8F8F8F]">{alamatAktif.alamat}</p>
               </div>
-            </div>
+
+              {/* Strip Hijau-Oren di bawah */}
+              <div
+                className="absolute bottom-0 left-0 w-full h-1 rounded-b-xl"
+                style={{
+                   backgroundImage: `
+                    repeating-linear-gradient(
+                      90deg,
+                      #F97316 0 18px,     
+                      white 18px 20px,    
+                      #22C55E 20px 38px,  
+                      white 38px 40px     
+                    )
+                  `,
+                      }}
+                  />
+              </div>
+
 
             {/* Pesanan */}
             {orders.map((item, idx) => (

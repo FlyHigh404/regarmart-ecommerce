@@ -3,6 +3,7 @@ import Image from "next/image"
 export default function AboutSection() {
   return (
     <section
+      id="about"
       className="w-full py-8 md:py-16 px-4 md:px-6 relative"
       style={{
         backgroundImage: 'url("/bgabt_beranda.png")',

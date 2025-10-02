@@ -68,10 +68,10 @@ useEffect(() => {
 
     /* nav links */
     const navItems = [
-        { href: "/", label: "Beranda" },
+        { href: "#beranda", label: "Beranda" },
         { href: "/katalog", label: "Katalog" },
-        { href: "/tentang-kami", label: "Tentang Kami" },
-        { href: "/testimoni", label: "Testimoni" },
+        { href: "#about", label: "Tentang Kami" },
+        { href: "#testimoni", label: "Testimoni" },
     ]
 
     /* smooth scroll helper */
