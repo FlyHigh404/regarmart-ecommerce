@@ -57,7 +57,6 @@ export async function POST(req: Request) {
       });
     }
 
-    
     const existingItem = await prisma.orderItem.findFirst({
       where: {
         orderId: order.id,
@@ -95,8 +94,7 @@ export async function POST(req: Request) {
       0
     );
 
-    const ongkir = 20000// contoh logika ongkir
-    const totalWithOngkir = total + ongkir;
+    const totalWithOngkir = total + 20000;
 
     await prisma.order.update({
       where: { id: order.id },

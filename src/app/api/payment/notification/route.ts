@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import midtransClient from "midtrans-client";
 
-// Setup Midtrans CoreAPI
+
 
 
 export async function POST(req: Request) {

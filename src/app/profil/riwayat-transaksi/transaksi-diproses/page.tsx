@@ -1,31 +1,30 @@
+"use client"
 import CardOrder from "@/components/CardOrder"
-import { PaymentMethod, type OrderProduct, OrderStatus } from "@/types/order"
 import Link from "next/link"
-
-const ordersProcess = [
-  {
-    orderNumber: "#INV-0015",
-    status: OrderStatus.SHIPPED,
-    total: "Rp170.500",
-    product: {
-      id: "1",
-      name: "Beras Raja Platinum | Beras Slyp Super Quality | 10 Kilogram",
-      price: "Rp168.500",
-      qty: 1,
-      image: "/susu.png",
-    } as OrderProduct,
-    paymentMethod: PaymentMethod.COD,
-    address: {
-      id: 1,
-      nama: "Team Genesis",
-      telp: "0895360577489",
-      alamat: "Jl. Merpati No.40ab, Kepuh, Betro, Kec. Sedati, Kabupaten Sidoarjo, Jawa Timur 61253, Indonesia",
-    },
-    contact: "08123456789",
-  },
-]
+import { useState, useEffect } from "react"
 
 export default function TransaksiDiprosesPage() {
+  const [orders, setOrders] = useState<any[]>([]);
+  const [userAddress, setUserAddress] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const [ordersRes, addressRes] = await Promise.all([
+          fetch('/api/profile/riwayat-transaksi', { cache: 'no-store' }),
+          fetch('/api/profile/address-primary', { cache: 'no-store' })
+        ]);
+        const ordersData = await ordersRes.json();
+        const addressData = await addressRes.json();
+        setOrders(ordersData);
+        setUserAddress(addressData ? `${addressData.street}, ${addressData.city}, ${addressData.province}, ${addressData.zipCode}` : null);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      }
+    }
+    fetchOrders();
+  }, []);
+  
   return (
     <div
       className="w-full md:w-[756.65px] rounded-[15px] bg-white p-4 md:p-8 font-jakarta"
@@ -50,17 +49,16 @@ export default function TransaksiDiprosesPage() {
 
       {/* List Order */}
       <div className="space-y-4">
-        {ordersProcess.map((order, index) => (
+        {orders.map((order) => (
           <CardOrder
-            key={order.product.id}
-            index={index}
-            orderNumber={order.orderNumber}
+            key={order.id}
+            orderNumber={order.id}
             status={order.status}
-            total={order.total}
-            product={order.product}
+            total={order.totalAmount}
+            product={order.orderItems[0]}
             paymentMethod={order.paymentMethod as any}
-            address={order.address}
-            contact={order.contact}
+            address={ userAddress || "Alamat belum diatur"}
+            contact={order.user.phone || "No. HP belum diatur"}
           />
         ))}
       </div>

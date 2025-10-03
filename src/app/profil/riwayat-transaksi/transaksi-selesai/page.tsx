@@ -1,4 +1,3 @@
-"use client"
 import CardOrder from "@/components/CardOrder"
 import { PaymentMethod, type OrderProduct, OrderStatus } from "@/types/order"
 import Link from "next/link"

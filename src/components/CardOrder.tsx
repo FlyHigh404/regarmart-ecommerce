@@ -6,18 +6,9 @@ import { Alamat } from "@/types/alamat";
 import OrderConfirm from "./OrderConfirm"; 
 import { OrderStatus, PaymentMethod, OrderProduct } from "@/types/order";
 
-interface CardOrderProps {
-  index: number;
-  orderNumber: string;
-  status: OrderStatus;
-  total: string;
-  product: OrderProduct;
-  paymentMethod: PaymentMethod;
-  address: Alamat;   
-  contact: string;
-}
 
-const CardOrder: React.FC<CardOrderProps> = ({
+
+const CardOrder: React.FC<any> = ({
   index,
   orderNumber,
   status,
@@ -63,9 +54,9 @@ const CardOrder: React.FC<CardOrderProps> = ({
             <div className="text-[14px] font-medium text-black">
               {product.name}
             </div>
-            <div className="mt-1 text-[12px] text-gray-500">Qty: x{product.qty}</div>
+            <div className="mt-1 text-[12px] text-gray-500">Qty: x{product.quantity}</div>
           </div>
-          <div className="text-[14px] font-medium text-black">{product.price}</div>
+          <div className="text-[14px] font-medium text-black">{product.unitPrice}</div>
         </div>
 
         <hr className="my-3 border-gray-200" />
