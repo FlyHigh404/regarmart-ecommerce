@@ -95,9 +95,12 @@ export async function POST(req: Request) {
       0
     );
 
+    const ongkir = 20000// contoh logika ongkir
+    const totalWithOngkir = total + ongkir;
+
     await prisma.order.update({
       where: { id: order.id },
-      data: { totalAmount: total },
+      data: { totalAmount: totalWithOngkir },
     });
 
     return NextResponse.json({ message: "Added to cart" });

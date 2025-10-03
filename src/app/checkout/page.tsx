@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { MapPin } from "lucide-react";
 import DaftarAlamat from "@/components/DaftarAlamat";
 import { Alamat } from "@/types/alamat";
@@ -14,45 +14,71 @@ const CheckoutPage: React.FC = () => {
     PaymentMethod.COD
   );
 
-  const [alamatAktif, setAlamatAktif] = useState<Alamat>({
-    id: 1,
-    label: "Rumah",
-    nama: "Team Genesis",
-    telp: "0895360577489",
-    alamat:
-      "Jl. Merpati No.40ab, Kepuh, Betro, Kec. Sedati, Kabupaten Sidoarjo, Jawa Timur 61253, Indonesia",
-    catatan: "Dekat Masjid, Warna cat rumah hijau",
-    utama: true,
-  });
+  const [alamatAktif, setAlamatAktif] = useState<any>({ id: 0, nama: "Pilih Alamat", telp: "", alamat: "", utama: false });
+
+  const [orders, setOrders] = useState<any[]>([]);
+
+  const [loading, setLoading] = useState(true);
 
   const [openAlamat, setOpenAlamat] = useState(false);
 
-  const orders = [
-    {
-      id: 1,
-      name: "Beras Raja Platinum | Beras Slyp Super Quality | 10 Kilogram",
-      price: 168500,
-      qty: 1,
-      stock: 29,
-      img: "/susu.png",
-    },
-    {
-      id: 2,
-      name: "Beras Fortune | Beras Premium | 5 Kilogram",
-      price: 73500,
-      qty: 1,
-      stock: 120,
-      img: "/susu.png",
-    },
-    {
-      id: 3,
-      name: "Beras Sania | Beras Premium | 3 Kilogram",
-      price: 75000,
-      qty: 1,
-      stock: 100,
-      img: "/susu.png",
-    },
-  ];
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/cart");
+        const data = await res.json();
+        console.log("Pending Order:", data);
+        setOrders(data?.orderItems || []);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching pending order:", err);
+        setLoading(false);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchOrders();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+
+
+  // const orders = [
+  //   {
+  //     id: 1,
+  //     name: "Beras Raja Platinum | Beras Slyp Super Quality | 10 Kilogram",
+  //     price: 168500,
+  //     qty: 1,
+  //     stock: 29,
+  //     img: "/susu.png",
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Beras Fortune | Beras Premium | 5 Kilogram",
+  //     price: 73500,
+  //     qty: 1,
+  //     stock: 120,
+  //     img: "/susu.png",
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Beras Sania | Beras Premium | 3 Kilogram",
+  //     price: 75000,
+  //     qty: 1,
+  //     stock: 100,
+  //     img: "/susu.png",
+  //   },
+  // ];
+
+
 
   const totalHarga = orders.reduce((acc, item) => acc + item.price * item.qty, 0);
   const diskon = 4500;
@@ -80,9 +106,9 @@ const CheckoutPage: React.FC = () => {
                 <div className="flex items-center gap-1">
                   <MapPin className="w-4 h-4 text-green-600" />
                   <p className="font-medium text-xs text-[#8F8F8F]">
-                    {alamatAktif.nama}
+                    {alamatAktif.reciptName}
                   </p>
-                  {alamatAktif.utama && (
+                  {alamatAktif.isPrimaary && (
                     <span className="bg-green-100 text-green-600 text-[10px] font-medium px-2 py-0.5 rounded-full">
                       Utama
                     </span>
@@ -98,11 +124,11 @@ const CheckoutPage: React.FC = () => {
 
               <div className="pl-6 mt-1">
                 <p className="font-medium text-xs text-black">
-                  {alamatAktif.nama}
+                  {alamatAktif.reciptName}
                   <span className="after:content-['|'] after:mx-1 text-[#8F8F8F]"></span>
-                  <span className="text-[#8F8F8F]">{alamatAktif.telp}</span>
+                  <span className="text-[#8F8F8F]">{alamatAktif.phoneNumber}</span>
                 </p>
-                <p className="text-[11px] text-[#8F8F8F]">{alamatAktif.alamat}</p>
+                <p className="text-[11px] text-[#8F8F8F ]">{alamatAktif.fullAdress}</p>
               </div>
             </div>
 
@@ -115,18 +141,18 @@ const CheckoutPage: React.FC = () => {
                 <h3 className="text-xs font-semibold mb-2">Pesanan {idx + 1}</h3>
                 <div className="flex items-center gap-2">
                   <img
-                    src={item.img}
-                    alt={item.name}
+                    src={item.product.imageUrl[0]}
+                    alt={item.product.name}
                     className="w-12 h-12 rounded object-cover"
                   />
                   <div className="flex-1">
-                    <p className="font-medium text-xs">{item.name}</p>
+                    <p className="font-medium text-xs">{item.product.name}</p>
                     <p className="text-green-600 text-[10px]">
-                      qty: {item.qty}
+                      qty: {item.quantity}
                     </p>
                   </div>
                   <p className="font-semibold text-xs">
-                    {item.qty} x Rp{item.price.toLocaleString("id-ID")}
+                    {item.quantity} x Rp{item.product.price.toLocaleString("id-ID")}
                   </p>
                 </div>
               </div>

@@ -18,10 +18,10 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { paymentMethod, customerInfo } = await req.json();
+    const { paymentMethod } = await req.json();
 
     // Validasi input
-    if (!paymentMethod || !customerInfo) {
+    if (!paymentMethod) {
       return NextResponse.json(
         { error: "Payment method and customer info are required" },
         { status: 400 }
@@ -53,8 +53,7 @@ export async function POST(req: Request) {
     await prisma.order.update({
       where: { id: order.id },
       data: {
-        paymentMethod: paymentMethod as any,
-        status: "PROCESSING",
+        paymentMethod: paymentMethod as any
       },
     });
 
@@ -62,15 +61,15 @@ export async function POST(req: Request) {
       // Generate Midtrans Snap transaction for QRIS
       const parameter = {
         transaction_details: {
-          order_id: `ORDER-${order.id}-${Date.now()}`,
+          order_id: order.id,
           gross_amount: Number(order.totalAmount),
         },
         payment_type: "qris",
         qris: { acquirer: "gopay" },
         customer_details: {
-          first_name: customerInfo.firstName || order.user.name || "Customer",
-          email: customerInfo.email || order.user.email,
-          phone: customerInfo.phone || undefined,
+          name: order.user.name || "Customer",
+          email: order.user.email || "regarmart@gmail.com",
+          phone: order.user.phone || "000",
         },
         item_details: order.orderItems.map((item: any) => ({
           id: item.product.id,
@@ -80,7 +79,6 @@ export async function POST(req: Request) {
         })),
       };
 
-      // Create transaction with Midtrans
       const midtransResponse = await snap.createTransaction(parameter);
 
       return NextResponse.json({
@@ -98,7 +96,7 @@ export async function POST(req: Request) {
       // Untuk COD, langsung update status ke SHIPPED
       await prisma.order.update({
         where: { id: order.id },
-        data: { status: "SHIPPED" },
+        data: { status: "PROCESSING" },
       });
 
       return NextResponse.json({

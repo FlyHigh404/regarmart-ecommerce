@@ -20,28 +20,26 @@ model User {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   accounts      Account[]
+  Address       Address[]
   notifications Notification[]
   orders        Order[]
   ratings       Rating[]
   reviews       Review[]
   sessions      Session[]
-  Address       Address[]
 }
 
 model Address {
-  id            String  @id @default(cuid())
+  id            String   @id @default(cuid())
   userId        String
   recipientName String
   phoneNumber   String
   label         String
   fullAddress   String
   note          String?
-  isPrimary     Boolean @default(false)
-
-  user User @relation(fields: [userId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isPrimary     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id])
 }
 
 model Account {
@@ -122,7 +120,7 @@ model Rating {
   product   Product  @relation(fields: [productId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
 
-  @@unique([productId, userId]) // biar 1 user cuma bisa 1 rating per product
+  @@unique([productId, userId])
 }
 
 model Order {
