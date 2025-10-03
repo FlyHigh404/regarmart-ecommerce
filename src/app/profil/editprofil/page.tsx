@@ -187,7 +187,7 @@ export default function ProfilForm() {
 
     if (loading) {
         return (
-                <div className="w-full max-w-[756px] bg-white p-4 md:p-8 rounded-xl shadow -mt-3">
+                <div className="w-full max-w-[756px] bg-white p-4 md:p-8 rounded-xl shadow">
                     <div className="flex flex-col justify-center items-center h-32 gap-3">
                         <Loader2 className="w-8 h-8 text-green-600 animate-spin" />
                         <div className="text-gray-500">Memuat data profil...</div>
@@ -197,7 +197,7 @@ export default function ProfilForm() {
     }
 
     return (
-            <div className="w-full max-w-[756px] bg-white p-4 md:p-8 rounded-xl shadow-md -mt-3">
+            <div className="w-full max-w-[756px] bg-white p-4 md:p-8 rounded-xl shadow-md">
                 {/* Error Alert */}
                 {error && (
                     <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">

@@ -3,21 +3,22 @@ import React, { useState } from "react"
 import InputBox from "@/components/InputBox"
 import { User, Smartphone, Home, MapPin, ClipboardList } from "lucide-react"
 
-type Alamat = {
-  id: number
-  label?: string
-  nama: string
-  telp: string
-  alamat: string
-  catatan?: string
-  utama?: boolean
+type Address = {
+  id: string
+  userId?: string
+  recipientName: string
+  phoneNumber: string
+  label: string
+  fullAddress: string
+  note?: string
+  isPrimary: boolean
 }
 
-interface TambahAlamatProps {
-  id?: number
+interface AddAddressProps {
+  id?: string
   isOpen: boolean
   onClose: () => void
-  onSave: (alamat: Alamat) => void
+  onSave: (address: Address) => void
 }
 
 const Checkbox = ({
@@ -45,55 +46,67 @@ const Checkbox = ({
   </label>
 )
 
-const TambahAlamat: React.FC<TambahAlamatProps> = ({ isOpen, onClose, onSave }) => {
-  const [nama, setNama] = useState("")
-  const [noHp, setNoHp] = useState("")
-  const [labelAlamat, setLabelAlamat] = useState("")
-  const [alamat, setAlamat] = useState("")
-  const [catatan, setCatatan] = useState("")
-  const [jadikanUtama, setJadikanUtama] = useState(false)
-  const [setuju, setSetuju] = useState(false)
+const AddAddress: React.FC<AddAddressProps> = ({ isOpen, onClose, onSave }) => {
+  const [recipientName, setRecipientName] = useState("")
+  const [phoneNumber, setPhoneNumber] = useState("")
+  const [labelAddress, setLabelAddress] = useState("")
+  const [fullAddress, setFullAddress] = useState("")
+  const [note, setNote] = useState("")
+  const [isPrimary, setIsPrimary] = useState(false)
+  const [agree, setAgree] = useState(false)
 
   if (!isOpen) return null
 
-  const handleSave = () => {
-    if (!nama || !noHp || !alamat || !setuju) {
-      alert("Harap isi semua kolom wajib dan setujui syarat & ketentuan.")
+  const handleSave = async () => {
+    if (!recipientName || !phoneNumber || !fullAddress || !agree) {
+      alert("Please fill in all required fields and agree to the Terms & Conditions.")
       return
     }
 
-    const alamatBaru: Alamat = {
-      id: Date.now(),
-      nama,
-      telp: noHp,
-      alamat,
-      label: labelAlamat || undefined,
-      catatan: catatan || undefined,
-      utama: jadikanUtama,
+    const newAddress: Address = {
+      id: Date.now().toString(),
+      recipientName,
+      phoneNumber,
+      label: labelAddress,
+      fullAddress,
+      note: note || undefined,
+      isPrimary,
     }
-    onSave(alamatBaru)
-    setNama("")
-    setNoHp("")
-    setAlamat("")
-    setLabelAlamat("")
-    setCatatan("")
-    setJadikanUtama(false)
-    setSetuju(false)
-    onClose()
+
+    try {
+      // API call
+      const response = await fetch("/api/profile/address", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newAddress),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        onSave(newAddress)
+        setRecipientName("")
+        setPhoneNumber("")
+        setLabelAddress("")
+        setFullAddress("")
+        setNote("")
+        setIsPrimary(false)
+        setAgree(false)
+        onClose()
+      } else {
+        alert(data.message || "Failed to save address.")
+      }
+    } catch (error) {
+      alert("An error occurred while saving the address.")
+      console.error(error)
+    }
   }
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 font-jakarta px-3 sm:px-0">
-      <div
-        className="
-          bg-white 
-          w-full sm:w-[650px] 
-          max-h-[90vh] sm:max-h-[150vh] 
-          rounded-xl sm:rounded-2xl 
-          p-4 sm:p-6 
-          relative overflow-hidden
-        "
-      >
+      <div className="bg-white w-full sm:w-[650px] max-h-[90vh] sm:max-h-[150vh] rounded-xl sm:rounded-2xl p-4 sm:p-6 relative overflow-hidden">
         {/* Header */}
         <div className="relative flex items-center border-b border-gray-200 pb-2 sm:pb-3 mb-4">
           <h2 className="text-lg sm:text-2xl font-bold text-gray-800 text-center w-full">
@@ -112,37 +125,37 @@ const TambahAlamat: React.FC<TambahAlamatProps> = ({ isOpen, onClose, onSave }) 
           <p className="font-semibold text-gray-800 text-sm sm:text-base">Isi detail alamat</p>
           <InputBox
             label="Nama Penerima"
-            value={nama}
-            onChange={(e) => setNama(e.target.value)}
+            value={recipientName}
+            onChange={(e) => setRecipientName(e.target.value)}
             placeholder="Masukkan nama penerima"
             icon={<User size={18} className="sm:w-5 sm:h-5 text-gray-400" />}
           />
           <InputBox
-            label="No HP Penerima"
-            value={noHp}
-            onChange={(e) => setNoHp(e.target.value)}
-            placeholder="Masukkan nomor HP"
+            label="Nomor Telepon"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+            placeholder="Masukkan nomor telepon"
             icon={<Smartphone size={18} className="sm:w-5 sm:h-5 text-gray-400" />}
           />
           <InputBox
             label="Label Alamat"
-            value={labelAlamat}
-            onChange={(e) => setLabelAlamat(e.target.value)}
-            placeholder="Contoh: Rumah, Kantor"
+            value={labelAddress}
+            onChange={(e) => setLabelAddress(e.target.value)}
+            placeholder="misalnya Rumah, Kantor"
             icon={<Home size={18} className="sm:w-5 sm:h-5 text-gray-400" />}
           />
           <InputBox
             label="Alamat Lengkap"
-            value={alamat}
-            onChange={(e) => setAlamat(e.target.value)}
-            placeholder="Tulis alamat lengkap"
+            value={fullAddress}
+            onChange={(e) => setFullAddress(e.target.value)}
+            placeholder="Masukkan alamat lengkap"
             icon={<MapPin size={18} className="sm:w-5 sm:h-5 text-gray-400" />}
           />
           <InputBox
             label="Catatan untuk Kurir (Opsional)"
-            value={catatan}
-            onChange={(e) => setCatatan(e.target.value)}
-            placeholder="Contoh: Warna rumah, patokan, pesan khusus"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="misalnya Warna rumah, landmark, instruksi khusus"
             icon={<ClipboardList size={18} className="sm:w-5 sm:h-5 text-gray-400" />}
           />
 
@@ -150,23 +163,23 @@ const TambahAlamat: React.FC<TambahAlamatProps> = ({ isOpen, onClose, onSave }) 
           <div className="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
             <Checkbox
               label="Jadikan alamat utama"
-              checked={jadikanUtama}
-              onChange={(e) => setJadikanUtama(e.target.checked)}
+              checked={isPrimary}
+              onChange={(e) => setIsPrimary(e.target.checked)}
             />
             <Checkbox
-              checked={setuju}
-              onChange={(e) => setSetuju(e.target.checked)}
+              checked={agree}
+              onChange={(e) => setAgree(e.target.checked)}
             >
               <span className="text-xs sm:text-sm">
                 Saya menyetujui{" "}
                 <a href="#" className="text-green-600 font-semibold hover:underline">
                   Syarat & Ketentuan
                 </a>{" "}
-                serta{" "}
+                dan{" "}
                 <a href="#" className="text-green-600 font-semibold hover:underline">
                   Kebijakan Privasi
                 </a>{" "}
-                pengaturan alamat di Regar Mart
+                untuk manajemen alamat di Regar Mart
               </span>
             </Checkbox>
           </div>
@@ -177,7 +190,7 @@ const TambahAlamat: React.FC<TambahAlamatProps> = ({ isOpen, onClose, onSave }) 
           <button
             className="w-full bg-green-600 hover:bg-green-700 text-white py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium text-sm sm:text-base disabled:bg-gray-400"
             onClick={handleSave}
-            disabled={!setuju}
+            disabled={!agree}
           >
             Simpan
           </button>
@@ -187,4 +200,4 @@ const TambahAlamat: React.FC<TambahAlamatProps> = ({ isOpen, onClose, onSave }) 
   )
 }
 
-export default TambahAlamat
+export default AddAddress
