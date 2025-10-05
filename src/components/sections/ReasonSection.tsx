@@ -2,12 +2,12 @@
 import type React from "react"
 
 const reasons = [
-  { icon: "/monstera.png", title: "Fresh", desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do" },
-  { icon: "/heart-tick.png", title: "Sehat", desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do" },
-  { icon: "/medal-star.png", title: "Produk Berkualitas", desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do" },
-  { icon: "/truckwhy.png", title: "Pengiriman Cepat", desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do" },
-  { icon: "/boxwhy.png", title: "Ribuan Produk", desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do" },
-  { icon: "/Vectorwhy.png", title: "Harga Terjangkau", desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do" },
+  { icon: "/monstera.png", title: "Fresh", desc: "Langsung dari petani lokal, kesegaran dan kualitas terjamin" },
+  { icon: "/heart-tick.png", title: "Sehat", desc: "Pilihan produk terbaik untuk gaya hidup sehat Anda dan keluarga" },
+  { icon: "/medal-star.png", title: "Produk Berkualitas", desc: "Kami hanya menyediakan produk pilihan dengan mutu terbaik dan terjamin" },
+  { icon: "/truckwhy.png", title: "Pengiriman Cepat", desc: "Layanan cepat dan aman, produk sampai di tangan Anda dalam kondisi terbaik" },
+  { icon: "/boxwhy.png", title: "Ribuan Produk", desc: "Temukan semua kebutuhan pokok Anda dalam satu tempat" },
+  { icon: "/Vectorwhy.png", title: "Harga Terjangkau", desc: "Harga kompetitif dan terjangkau untuk kebutuhan pokok harian Anda" },
 ]
 
 const ReasonSection: React.FC = () => {

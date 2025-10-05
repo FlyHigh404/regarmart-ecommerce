@@ -28,7 +28,7 @@ const FormRating: React.FC<FormRatingProps> = ({
         className="relative flex flex-col p-6"
         style={{
           width: "564px",
-          height: "469px",
+          height: "380px",
           borderRadius: "10px",
           background: "#F8F8FA",
         }}
@@ -96,18 +96,37 @@ const FormRating: React.FC<FormRatingProps> = ({
         </div>
 
         {/* Textarea */}
-        <div className="mt-4 flex-1">
-          <textarea
-            placeholder="Isi ulasan.."
-            value={review}
-            onChange={(e) => setReview(e.target.value)}
-            maxLength={500}
-            className="w-full h-[120px] rounded-lg border border-gray-300 p-3 text-[14px] resize-none focus:outline-none focus:ring-2 focus:ring-green-500"
-          />
-          <div className="mt-1 text-right text-[12px] text-gray-400">
+        <div className="mt-4 flex flex-col items-center">
+          <div
+            className="relative"
+            style={{
+              width: "514.35px",
+              height: "58.195px",
+              flexShrink: 0,
+            }}
+          >
+            <textarea
+              placeholder="Isi ulasan.."
+              value={review}
+              onChange={(e) => setReview(e.target.value)}
+              maxLength={500}
+              className="w-full h-full rounded-lg border border-gray-300 pl-3 pr-10 pt-3 pb-3 text-[14px] resize-none focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+            {/* Icon pena */}
+            <Image
+              src="/edit-2.png"
+              alt="Icon edit"
+              width={22}
+              height={22}
+              className="absolute right-3 bottom-1 opacity-60"
+            />
+          </div>
+
+          <div className="mt-1 w-[514.35px] text-right text-[12px] text-gray-400">
             {review.length}/500
           </div>
         </div>
+
 
         {/* Button */}
         <div className="mt-4 flex justify-between">

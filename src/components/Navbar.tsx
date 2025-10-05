@@ -4,6 +4,9 @@ import { Menu, X, ShoppingCart, User, Settings, LogOut, ChevronDown } from "luci
 import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
 import { signOut, useSession } from "next-auth/react";
+import NotifikasiCust from "./NotifikasiCust"; 
+import CartCust from "./CartCust";
+
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false)
@@ -14,7 +17,10 @@ const Navbar = () => {
     const pathname = usePathname()
     const { data: session, status } = useSession();
     const dropdownRef = useRef<HTMLDivElement>(null);
-    const [cartCount, setCartCount] = useState(0);
+    const [cartCount, setCartCount] = useState<number>(0)
+    
+    // 2. TAMBAH STATE UNTUK JUMLAH NOTIFIKASI
+    const [notificationCount, setNotificationCount] = useState<number>(0); 
 
     useEffect(() => {
         setMounted(true);
@@ -42,29 +48,52 @@ const Navbar = () => {
         };
     }, []);
 
-useEffect(() => {
-    const fetchCart = async () => {
-      try {
-        const res = await fetch("/api/cart");
-        if (!res.ok) {
-          console.error("Gagal fetch cart");
-          return;
-        }
-        const data = await res.json();
-        setCartCount(data?.orderItems?.length || 0);
-      } catch (error) {
-        console.error("Error fetching cart:", error);
-      }
-    };
+    useEffect(() => {
+        if (session) {
+            const fetchCartCount = async () => {
+                try {
+                    const response = await fetch("/api/cart");
+                    if (!response.ok) {
+                        setCartCount(0);
+                        return;
+                    }
+                    const data = await response.json();
+                    setCartCount(Array.isArray(data) ? data.length : 0);
+                } catch (error) {
+                    console.error("Error fetching cart count:", error);
+                    setCartCount(0);
+                }
+            };
+            
+            // Logika fetch untuk notifikasi
+            const fetchNotificationCount = async () => {
+                // Ganti dengan logika fetch API notifikasi Anda
+                // Contoh:
+                // try {
+                //     const response = await fetch("/api/notifications/count");
+                //     const data = await response.json();
+                //     setNotificationCount(data.count || 0);
+                // } catch (error) {
+                //     setNotificationCount(0);
+                // }
 
-    // ✅ hanya fetch jika ada session DAN bukan admin
-    if (session && session.user?.role !== "ADMIN") {
-      fetchCart();
-    } else {
-      // ✅ kalau admin atau belum login, jangan tampilkan badge
-      setCartCount(0);
-    }
-  }, [session]);
+                // Untuk sementara, kita gunakan nilai default 3.
+                setNotificationCount(0);
+            };
+
+            if (session.user?.role !== "ADMIN") {
+                fetchCartCount();
+                fetchNotificationCount();
+            } else {
+                setCartCount(0);
+                setNotificationCount(0);
+            }
+        } else {
+            setCartCount(0);
+            setNotificationCount(0);
+        }
+    }, [session]);
+
 
     /* nav links */
     const navItems = [
@@ -84,6 +113,9 @@ useEffect(() => {
         setIsProfileDropdownOpen(false);
         signOut({ callbackUrl: "/" });
     };
+
+    // Cek apakah user sudah login dan bukan Admin
+    const showCustomerIcons = session && session.user?.role !== "ADMIN";
 
     return (
         <>
@@ -115,7 +147,7 @@ useEffect(() => {
 
                 <ul className="hidden md:flex items-center gap-10 lg:gap-12">
                     {navItems.map((item, i) => {
-                        const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+                        const isActive = pathname && (pathname === item.href || pathname.startsWith(item.href + "/"));
                         return (
                             <li
                                 key={item.href}
@@ -125,7 +157,7 @@ useEffect(() => {
                                 <a
                                     href={item.href}
                                     className={`relative transition-all duration-300 font-medium text-sm hover:scale-105 group 
-                        ${isActive
+                                        ${isActive
                                             ? "bg-gradient-to-r from-[#6EC568] to-[#26A81D] bg-clip-text text-transparent"
                                             : "text-gray-700 hover:bg-gradient-to-r hover:from-[#6EC568] hover:to-[#26A81D] hover:bg-clip-text hover:text-transparent"
                                         }`}
@@ -139,7 +171,7 @@ useEffect(() => {
                                         src="/Line 66.png"
                                         alt="Active Line"
                                         className={`absolute -bottom-2 left-0 transition-all duration-300 
-                            ${isActive ? "w-full" : "w-0 group-hover:w-full"}`}
+                                            ${isActive ? "w-full" : "w-0 group-hover:w-full"}`}
                                         style={{ width: isActive ? '100%' : '0' }}
                                     />
                                 </a>
@@ -149,13 +181,16 @@ useEffect(() => {
                 </ul>
 
                 <div className="hidden md:flex items-center gap-3 animate-fade-in-down" style={{ animationDelay: "0.5s" }}>
+                    
+                    {/* Notifikasi */}
+                    {showCustomerIcons && (
+                        <NotifikasiCust notificationCount={notificationCount} />
+                    )}
+
                     {/* Cart icon with badge */}
-                    <a href="/cart" className="cursor-pointer relative p-3 rounded-xl transition-all duration-300 hover:scale-105">
-                        <ShoppingCart className="w-5 h-5 text-[#4BBF42]" />
-                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                            {cartCount}
-                        </span>
-                    </a>
+                    {showCustomerIcons && (
+                        <CartCust cartCount={cartCount} />
+                    )}
 
                     {/* Auth buttons */}
                     <div className="flex items-center gap-3 ml-2">
@@ -166,17 +201,9 @@ useEffect(() => {
                                     className="flex items-center gap-2 cursor-pointer font-medium text-sm transition-all duration-300 px-4 py-2 rounded-lg hover:bg-white/60 hover:shadow-sm"
                                 >
                                     <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-r from-[#6EC568] to-[#26A81D] p-[1px]">
-                                        {session.user?.image ? (
-                                            <img
-                                                src={session.user?.image}
-                                                alt="Profile"
-                                                className="w-full h-full rounded-full object-cover bg-white"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
-                                                <User className="w-4 h-4 text-gray-600" />
-                                            </div>
-                                        )}
+                                        <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
+                                            <User className="w-4 h-4 text-gray-600" />
+                                        </div>
                                     </div>
                                     <span className="text-gray-700 max-w-[100px] truncate">
                                         {session.user?.name || session.user?.email?.split('@')[0] || 'User'}
@@ -189,17 +216,9 @@ useEffect(() => {
                                     <div className="px-4 py-3 border-b border-gray-100">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-r from-[#6EC568] to-[#26A81D] p-[1px]">
-                                                {session.user?.image ? (
-                                                    <img
-                                                        src={session.user?.image}
-                                                        alt="Profile"
-                                                        className="w-full h-full rounded-full object-cover bg-white"
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
-                                                        <User className="w-5 h-5 text-gray-600" />
-                                                    </div>
-                                                )}
+                                                <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
+                                                    <User className="w-5 h-5 text-gray-600" />
+                                                </div>
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-sm font-semibold text-gray-900 truncate">
@@ -294,17 +313,9 @@ useEffect(() => {
                         <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-orange-50 rounded-xl">
                             <div className="flex items-center gap-3">
                                 <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-r from-[#6EC568] to-[#26A81D] p-[1px]">
-                                    {session.user?.image ? (
-                                        <img
-                                            src={session.user.image}
-                                            alt="Profile"
-                                            className="w-full h-full rounded-full object-cover bg-white"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
-                                            <User className="w-6 h-6 text-gray-600" />
-                                        </div>
-                                    )}
+                                    <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
+                                        <User className="w-6 h-6 text-gray-600" />
+                                    </div>
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-semibold text-gray-900 truncate">
@@ -321,7 +332,7 @@ useEffect(() => {
                     {/* Mobile nav links */}
                     <ul className="space-y-3">
                         {navItems.map((item, i) => {
-                            const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+                            const isActive = pathname && (pathname === item.href || pathname.startsWith(item.href + "/"));
                             return (
                                 <li key={item.href} className="animate-slide-in-right" style={{ animationDelay: `${i * 0.1}s` }}>
                                     <a
@@ -344,12 +355,34 @@ useEffect(() => {
                     </ul>
 
                     <div className="mt-8 border-t border-gray-200 pt-6 space-y-4">
+                        {showCustomerIcons && (
+                            <button
+                                onClick={() => {
+                                    setIsMobileMenuOpen(false);
+                                    router.push('/notifications');
+                                }}
+                                className="cursor-pointer relative p-3 rounded-xl w-full flex items-center justify-center border border-gray-300 hover:border-green-500 transition-all duration-300"
+                            >
+                                <X className="w-5 h-5 text-[#4BBF42] mr-2" />
+                                <span className="text-sm font-semibold">Notifikasi</span>
+                                <span className="absolute top-2 right-4 w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                                    {notificationCount}
+                                </span>
+                            </button>
+                        )}
+                        
                         {/* Cart icon */}
-                        <button className="cursor-pointer relative p-3 rounded-xl w-full flex items-center justify-center border border-gray-300 hover:border-green-500 transition-all duration-300">
-                            <ShoppingCart className="w-5 h-5 text-[#4BBF42] mr-2" />
+                        <button 
+                            onClick={() => {
+                                setIsMobileMenuOpen(false);
+                                router.push('/cart');
+                            }}
+                            className="cursor-pointer relative p-3 rounded-xl w-full flex items-center justify-center border border-gray-300 hover:border-green-500 transition-all duration-300"
+                        >
+                            <ShoppingCart className="w-5 h-5 text-[#4BBF42]" />
                             <span className="text-sm font-semibold">Keranjang</span>
-                            <span className="absolute top-2 right-4 w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                                {cartCount}
+                            <span className="absolute w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                                {showCustomerIcons ? cartCount : 0}
                             </span>
                         </button>
 
@@ -359,7 +392,7 @@ useEffect(() => {
                                 <button
                                     onClick={() => {
                                         setIsMobileMenuOpen(false);
-                                        router.push('/profile');
+                                        router.push('/profil');
                                     }}
                                     className="w-full cursor-pointer border border-gray-300 text-gray-700 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 hover:border-green-500 hover:text-green-600 flex items-center justify-center gap-2"
                                 >
@@ -377,16 +410,17 @@ useEffect(() => {
                         ) : (
                             <>
                                 <Link
-                                    href="/login"
+                                    href="/auth/signin"
                                     className="block w-full text-center font-semibold text-sm px-4 py-3 rounded-lg bg-gradient-to-r from-[#6EC568] to-[#26A81D] bg-clip-text text-transparent hover:opacity-80"
                                 >
                                     Log in
                                 </Link>
-                                <button
+                                <Link
+                                    href="/auth/signup"
                                     className="w-full cursor-pointer bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 hover:shadow-xl"
                                 >
                                     Sign up
-                                </button>
+                                </Link>
                             </>
                         )}
                     </div>

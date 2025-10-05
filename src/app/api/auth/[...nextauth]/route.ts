@@ -67,35 +67,39 @@ export const authOptions: AuthOptions = {
       return session
     },
     async signIn({ user, account }) {
-    if (account?.provider === "google") {
-      const existingUser = await prisma.user.findUnique({
-        where: { email: user.email! },
-      })
-      if (existingUser) {
-        // link akun otomatis
-        await prisma.account.upsert({
-          where: {
-            provider_providerAccountId: {
-              provider: account.provider,
-              providerAccountId: account.providerAccountId,
-            },
-          },
-          update: {},
-          create: {
-            userId: existingUser.id,
+  if (account?.provider === "google") {
+    const existingUser = await prisma.user.findUnique({
+      where: { email: user.email! },
+    })
+
+    if (existingUser) {
+      // link akun otomatis
+      await prisma.account.upsert({
+        where: {
+          provider_providerAccountId: {
             provider: account.provider,
             providerAccountId: account.providerAccountId,
-            type: account.type,
-            access_token: account.access_token,
-            refresh_token: account.refresh_token,
-            expires_at: account.expires_at,
           },
-        })
-        return true
-      }
+        },
+        update: {},
+        create: {
+          userId: existingUser.id,
+          provider: account.provider,
+          providerAccountId: account.providerAccountId,
+          type: account.type,
+          access_token: account.access_token,
+          refresh_token: account.refresh_token,
+          expires_at: account.expires_at,
+        },
+      })
     }
+
+    // penting: return true selalu
     return true
-  },
+  }
+
+  return true
+},
   },
   pages: {
     signIn: '/auth/signin',

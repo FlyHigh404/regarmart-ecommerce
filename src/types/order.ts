@@ -1,10 +1,19 @@
 export enum OrderStatus {
-  PENDING = "Pesanan ditunda",
-  PROCESSING = "Sedang proses",
-  SHIPPED = "Dalam Pengiriman",
-  COMPLETED = "Selesai",
-  CANCELED = "Dibatalkan"
+  PENDING = "PENDING",
+  PROCESSING = "PROCESSING",
+  SHIPPED = "SHIPPED",
+  COMPLETED = "COMPLETED",
+  CANCELED = "CANCELED",
 }
+
+export const OrderStatusLabel: Record<OrderStatus, string> = {
+  [OrderStatus.PENDING]: "Pesanan ditunda",
+  [OrderStatus.PROCESSING]: "Sedang diproses",
+  [OrderStatus.SHIPPED]: "Dikirim",
+  [OrderStatus.COMPLETED]: "Selesai",
+  [OrderStatus.CANCELED]: "Dibatalkan",
+};
+
 
 export enum PaymentMethod {
   COD = "COD",

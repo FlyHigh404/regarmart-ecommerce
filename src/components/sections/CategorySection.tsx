@@ -1,10 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import CardCategory from "@/components/CardCategory" // Sesuaikan path ini jika perlu
+import CardCategory from "@/components/CardCategory" // pastikan path benar
 
-// --- INTERFACES ---
 interface Category {
   title: string
   description: string
@@ -19,7 +18,6 @@ interface ChevronButtonProps {
   className?: string
 }
 
-// --- SUB-KOMPONEN ---
 function ChevronButton({ direction, onClick, size = "md", className }: ChevronButtonProps) {
   const isLeft = direction === "left"
   const Icon = isLeft ? ChevronLeft : ChevronRight
@@ -42,13 +40,11 @@ function ChevronButton({ direction, onClick, size = "md", className }: ChevronBu
   )
 }
 
-
-// --- MAIN KOMPONEN ---
 export default function CategorySection() {
   const categories: Category[] = [
     {
       title: "Buah Segar",
-      description: "Buah segar tanpa peptisida, berasal dari petani unggulan",
+      description: "Buah segar tanpa pestisida, berasal dari petani unggulan",
       image: "/ktgbuah.png",
       circleBgColor: "/bg1.png",
     },
@@ -72,23 +68,59 @@ export default function CategorySection() {
     },
   ]
 
-  // State untuk melacak index kartu yang sedang 'menonjol'
   const [animatedIndex, setAnimatedIndex] = useState(0)
+  const [isReturning, setIsReturning] = useState(false)
+  const idleTimer = useRef<NodeJS.Timeout | null>(null)
+  const sectionRef = useRef<HTMLElement | null>(null)
+  const [isVisible, setIsVisible] = useState(false)
+
+  const resetIdleTimer = () => {
+    if (idleTimer.current) clearTimeout(idleTimer.current)
+    setIsReturning(false)
+    idleTimer.current = setTimeout(() => {
+      setIsReturning(true)
+    }, 1500)
+  }
 
   const handlePrev = () => {
-    setAnimatedIndex((prev) =>
-      prev === 0 ? categories.length - 1 : prev - 1
-    )
+    setAnimatedIndex((prev) => (prev === 0 ? categories.length - 1 : prev - 1))
+    resetIdleTimer()
   }
 
   const handleNext = () => {
-    setAnimatedIndex((prev) =>
-      (prev + 1) % categories.length
-    )
+    setAnimatedIndex((prev) => (prev + 1) % categories.length)
+    resetIdleTimer()
   }
 
+  useEffect(() => {
+    resetIdleTimer()
+    return () => {
+      if (idleTimer.current) clearTimeout(idleTimer.current)
+    }
+  }, [animatedIndex])
+
+  // 🔹 Animasi masuk saat muncul di layar
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setIsVisible(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.3 }
+    )
+    if (sectionRef.current) observer.observe(sectionRef.current)
+    return () => observer.disconnect()
+  }, [])
+
   return (
-    <section id="category" className="relative py-16 overflow-hidden">
+    <section
+      ref={sectionRef}
+      id="category"
+      className={`relative py-16 overflow-hidden transition-all duration-700 
+        ${isVisible ? "animate-fade-in-left" : "opacity-0"}`}
+    >
       {/* Background */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -96,9 +128,7 @@ export default function CategorySection() {
       ></div>
       <div className="absolute inset-0"></div>
 
-
       <div className="max-w-7xl mx-auto px-4 md:px-10 ml-4 md:ml-10 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 relative z-10">
-        
         {/* Title & desktop chevron */}
         <div className="flex flex-col md:justify-center w-full md:w-[280px] md:shrink-0 text-center md:text-left relative">
           <h2 className="text-white font-bold text-2xl md:text-3xl leading-tight mb-2">
@@ -113,8 +143,8 @@ export default function CategorySection() {
           </div>
         </div>
 
-        {/* Slider - Kartu ditampilkan DIAM (tidak ada kelas transisi geser) */}
-        <div className="w-full flex gap-4"> 
+        {/* Slider - Kartu */}
+        <div className="w-full flex gap-4 overflow-x-auto no-scrollbar md:overflow-visible">
           {categories.map((cat, index) => (
             <CardCategory
               key={index}
@@ -123,8 +153,8 @@ export default function CategorySection() {
               description={cat.description}
               image={cat.image}
               circleBgColor={cat.circleBgColor}
-              // Meneruskan status aktif berdasarkan animatedIndex
-              isActive={index === animatedIndex} 
+              isActive={index === animatedIndex}
+              isReturning={isReturning && index === animatedIndex}
             />
           ))}
         </div>

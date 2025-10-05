@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useRef, useState } from "react"
 import CardTesti from "@/components/CardTesti"
 
 const testimonials = [
@@ -13,10 +14,30 @@ const testimonials = [
 ]
 
 export default function TestiSection() {
+  const sectionRef = useRef<HTMLElement | null>(null)
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setIsVisible(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.3 }
+    )
+
+    if (sectionRef.current) observer.observe(sectionRef.current)
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <section
+      ref={sectionRef}
       id="testimoni"
-      className="w-full py-16 px-6 font-jakarta relative overflow-hidden bg-gradient-to-b from-green-50/30 to-white"
+      className={`w-full py-16 px-6 font-jakarta relative overflow-hidden bg-gradient-to-b from-green-50/30 to-white 
+        transition-all duration-700 ${isVisible ? "animate-fade-in-up" : "opacity-0"}`}
       style={{
         backgroundImage: 'url("/bgtesti_beranda.png")',
         backgroundSize: "cover",

@@ -1,4 +1,4 @@
-// src/app/api/checkout/route.ts
+// src/app/api/cart/checkout/route.ts
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";

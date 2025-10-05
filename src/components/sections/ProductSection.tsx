@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Search, Plus, X, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import Link from 'next/link';
 
 export default function ProductPopuler() {
   const [products, setProducts] = useState<any[]>([]);
@@ -37,6 +38,15 @@ export default function ProductPopuler() {
     };
     fetchProducts();
   }, []);
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(price);
+  };
+
 
   const handleAddToCart = async (product: any) => {
     // Cek login
@@ -94,7 +104,7 @@ export default function ProductPopuler() {
     <div>
       {/* Error Modal */}
       {showErrorModal && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+        <div className="fixed inset-0 bg-transparent backdrop-blur-lg flex items-center justify-center z-50 animate-fade-in">
           <div className="bg-white rounded-2xl p-6 mx-4 max-w-sm w-full shadow-2xl animate-scale-in">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-gray-800"> Tidak Dapat Menambahkan</h3>
@@ -143,11 +153,10 @@ export default function ProductPopuler() {
           <button
             key={category.id}
             onClick={() => setActiveCategory(category.name)}
-            className={`px-3.5 sm:px-5 lg:px-4 py-1.5 sm:py-2.5 lg:py-2 rounded-full font-medium text-sm sm:text-sm lg:text-[0.8rem] transition-all duration-300 animate-slide-in-category ${
-              activeCategory === category
-                ? "bg-green-500 text-white shadow-lg scale-105"
-                : "bg-green-50 text-green-600 border border-green-300 hover:bg-green-100 hover:scale-105"
-            }`}
+            className={`px-3.5 sm:px-5 lg:px-4 py-1.5 sm:py-2.5 lg:py-2 rounded-full font-medium text-sm sm:text-sm lg:text-[0.8rem] transition-all duration-300 animate-slide-in-category ${activeCategory === category
+              ? "bg-green-500 text-white shadow-lg scale-105"
+              : "bg-green-50 text-green-600 border border-green-300 hover:bg-green-100 hover:scale-105"
+              }`}
             style={{ animationDelay: `${600 + index * 100}ms` }}
           >
             {category.name}
@@ -162,68 +171,78 @@ export default function ProductPopuler() {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {products.map((product, index) => (
-            <div
-              key={product.id}
-              className="bg-white/90 backdrop-blur-sm rounded-2xl p-3 lg:p-2 shadow-md hover:shadow-xl transition-all duration-500 hover:-translate-y-2 group animate-card-appear"
-              style={{ animationDelay: `${900 + index * 200}ms` }}
-            >
-              {/* 1. Gambar */}
-              <div className="mb-4 bg-gray-50 rounded-xl overflow-hidden transform transition-transform duration-300 group-hover:scale-105">
-                <Image
-                  src={product.imageUrl[0] || "/placeholder.svg"}
-                  alt={product.name}
-                  width={400}
-                  height={250}
-                  className="w-full h-28 lg:h-24 object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-              </div>
-
-              {/* 2. Nama + Berat */}
-              <h4 className="font-bold text-base sm:text-lg lg:text-sm text-gray-800 mb-1 group-hover:text-green-600 transition-colors duration-300">
-                {product.name}{" "}
-                <span className="font-normal text-gray-600">
-                  {product.weight}
-                </span>
-              </h4>
-
-              {/* 3. Stok */}
-              <p className="text-gray-500 text-sm lg:text-xs mb-1">
-                Sisa stok: {product.stock}
-              </p>
-
-              {/* 4. Deskripsi */}
-              <p className="text-gray-600 text-xs sm:text-sm lg:text-[0.7rem] mb-1">
-                {product.description}
-              </p>
-
-              {/* 5. Harga */}
-              <span className="block text-base sm:text-xl lg:text-sm font-bold text-gray-800 mb-1.5">
-                {product.price}
-              </span>
-
-              {/* 6. Button */}
-              <button
-                onClick={() => handleAddToCart(product)}
-                disabled={addingToCart === product.id}
-                className={`w-full px-3 py-2 lg:px-2.5 lg:py-2 rounded-lg font-medium text-sm lg:text-sm transition-all duration-300 flex items-center justify-center gap-2 transform active:scale-95 ${
-                  addingToCart === product.id
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-green-500 hover:bg-green-600 text-white hover:shadow-lg hover:scale-105"
-                }`}
+            <Link href={`/katalog/${product.id}`} passHref key={product.id}>
+              <div
+                className="cursor-pointer bg-white/90 backdrop-blur-sm rounded-lg sm:rounded-xl p-1.5 sm:p-3 lg:p-2 shadow-sm sm:shadow-md hover:shadow-xl transition-all duration-500 hover:-translate-y-2 group animate-card-appear"
+                style={{ animationDelay: `${900 + index * 200}ms` }}
               >
-                {addingToCart === product.id ? (
-                  <>
-                    <Loader2 className="w-4 h-4 lg:w-4 lg:h-4 animate-spin" />
-                    Menambahkan...
-                  </>
-                ) : (
-                  <>
-                    <Plus className="w-4 h-4 lg:w-4 lg:h-4" />
-                    Tambah ke Keranjang
-                  </>
-                )}
-              </button>
-            </div>
+                {/* 1. Gambar */}
+                <div className="mb-2 sm:mb-4 bg-gray-50 rounded-lg overflow-hidden transform transition-transform duration-300 group-hover:scale-105">
+                  <Image
+                    src={product.imageUrl[0] || "/placeholder.svg"}
+                    alt={product.name}
+                    width={400}
+                    height={250}
+                    className="w-full h-20 sm:h-28 lg:h-24 object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                </div>
+
+                {/* 2. Nama + Berat */}
+                <h4 className="font-bold text-sm sm:text-base lg:text-sm text-gray-800 mb-1 group-hover:text-green-600 transition-colors duration-300">
+                  {product.name}{" "}
+                  <span className="font-normal text-gray-600 text-xs sm:text-sm">{product.weight}</span>
+                </h4>
+
+                {/* 3. Stok */}
+                <p className="text-gray-500 text-xs sm:text-sm lg:text-xs mb-1">
+                  Sisa stok: {product.stock}
+                </p>
+
+                {/* 4. Deskripsi */}
+                <p className="text-gray-600 text-[0.65rem] sm:text-xs lg:text-[0.7rem] mb-1 line-clamp-2">
+                  {product.description}
+                </p>
+
+                {/* 5. Harga */}
+                <span className="block text-sm sm:text-base lg:text-sm font-bold text-gray-800 mb-1.5">
+                  {formatPrice(product.price)}
+                </span>
+
+                {/* 6. Button */}
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleAddToCart(product);
+                  }}
+                  disabled={addingToCart === product.id || product.stock === 0}
+                  className={`w-full py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs lg:text-[10px] 
+    transition-all duration-300 flex items-center justify-center gap-1 
+    transform active:scale-95
+    ${addingToCart === product.id
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : product.stock === 0
+                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        : "bg-green-500 hover:bg-green-600 text-white hover:shadow-lg hover:scale-105"
+                    }
+  `}
+                >
+                  {addingToCart === product.id ? (
+                    <>
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                      <span className="ml-1">Menambahkan...</span>
+                    </>
+                  ) : product.stock === 0 ? (
+                    "Stok Habis"
+                  ) : (
+                    <>
+                      <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
+                      Tambah
+                    </>
+                  )}
+                </button>
+              </div>
+            </Link>
           ))}
         </div>
       </div>

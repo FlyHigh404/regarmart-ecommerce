@@ -1,5 +1,5 @@
 "use client";
-import { Truck } from "lucide-react";
+import { Truck, XCircle } from "lucide-react";
 import Image from "next/image";
 import React, { useState } from "react";
 import { Alamat } from "@/types/alamat";
@@ -33,24 +33,31 @@ const CardOrder: React.FC<CardOrderProps> = ({
   const [openConfirm, setOpenConfirm] = useState(false);
   const [openRating, setOpenRating] = useState<null | OrderProduct>(null);
 
+  //Badge warna per status
   const renderStatus = () => {
     switch (status) {
-      case OrderStatus.COMPLETED:
+      case OrderStatus.PROCESSING:
         return (
-          <div className="px-3 py-1 rounded-full text-[12px] font-semibold bg-green-100 text-green-600">
-            Pesanan selesai
+          <div className="px-3 py-1 rounded-[10px] text-[10px] lg:text-[12px] font-semibold bg-[#FFFBD1] text-[#CA8A04]">
+            Sedang diproses
           </div>
         );
       case OrderStatus.SHIPPED:
         return (
-          <div className="px-3 py-1 rounded-full text-[12px] font-semibold bg-orange-100 text-orange-600">
-            Kurir Menjemput
+          <div className="px-3 py-1 rounded-[10px] text-[12px] font-semibold bg-[#FFE9D6] text-[#EA580C]">
+            Dikirim
           </div>
         );
-      case OrderStatus.PROCESSING:
+      case OrderStatus.COMPLETED:
         return (
-          <div className="px-3 py-1 rounded-full text-[12px] font-semibold bg-orange-100 text-orange-600">
-            Pesanan diproses
+          <div className="px-3 py-1 rounded-[10px] text-[12px] font-semibold bg-[#DEF7EC] text-[#047857]">
+            Pesanan selesai
+          </div>
+        );
+      case OrderStatus.CANCELED:
+        return (
+          <div className="px-3 py-1 rounded-[10px] text-[12px] font-semibold bg-[#FFE6E6] text-[#DC2626]">
+            Dibatalkan
           </div>
         );
       default:
@@ -58,11 +65,85 @@ const CardOrder: React.FC<CardOrderProps> = ({
     }
   };
 
+  // Tombol bawah kanan sesuai status
+  const renderButtons = () => {
+    switch (status) {
+      case OrderStatus.PROCESSING:
+        return (
+          <div className="mt-3 flex justify-end gap-2">
+            <button
+              onClick={() => setOpenConfirm(true)}
+              className="rounded-[13px] bg-red-100 text-red-500 px-4 py-1.5 text-[12px] font-semibold hover:bg-red-200 transition-all"
+            >
+              Batalkan pesanan
+            </button>
+            <button
+              onClick={() => setOpenConfirm(true)}
+              className="rounded-[13px] bg-green-600 text-white px-4 py-1.5 text-[12px] font-semibold hover:bg-green-700 transition-all"
+            >
+              Lihat detail
+            </button>
+          </div>
+        );
+      case OrderStatus.SHIPPED:
+        return (
+          <div className="mt-3 flex justify-end gap-2">
+            <button
+              onClick={() => setOpenConfirm(true)}
+              className="rounded-[13px] bg-green-100 text-green-600 px-4 py-1.5 text-[12px] font-semibold hover:bg-green-200 transition-all"
+            >
+              Selesaikan pesanan
+            </button>
+            <button
+              onClick={() => setOpenConfirm(true)}
+              className="rounded-[13px] bg-green-600 text-white px-4 py-1.5 text-[12px] font-semibold hover:bg-green-700 transition-all"
+            >
+              Lihat detail
+            </button>
+          </div>
+        );
+      case OrderStatus.COMPLETED:
+        return null; 
+      case OrderStatus.CANCELED:
+        return (
+          <div className="mt-3 text-right">
+            <button
+              onClick={() =>
+                window.open(`/produk/${products[0]?.id}`, "_blank")
+              }
+              className="rounded-[13px] bg-green-600 text-white px-4 py-1.5 text-[12px] font-semibold hover:bg-green-700 transition-all"
+            >
+              Beli lagi
+            </button>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  // Pesan status pengiriman
+  const getStatusMessage = () => {
+    switch (status) {
+      case OrderStatus.PROCESSING:
+        return "Pesanan anda sedang kami siapkan";
+      case OrderStatus.SHIPPED:
+        return "Pesanan sedang diantar oleh kurir";
+      case OrderStatus.COMPLETED:
+        return "Pesanan telah tiba dan diterima customer";
+      case OrderStatus.CANCELED:
+        return "Pesanan dibatalkan oleh Anda";
+      default:
+        return "";
+    }
+  };
+
   return (
     <>
       <div
-        className={`border border-gray-300 p-4 rounded-2xl relative transition-all duration-300 group animate-card-appear font-jakarta
-                   ${status === OrderStatus.COMPLETED ? "hover:border-green-500 hover:shadow-sm" : "hover:border-green-500 hover:shadow-sm"}`}
+        className={`border border-gray-300 p-4 rounded-2xl relative transition-all duration-300 group font-jakarta
+          ${status === OrderStatus.CANCELED ? "opacity-95" : ""}
+          hover:border-green-500 hover:shadow-sm`}
         style={{ animationDelay: `${700 + index * 200}ms` }}
       >
         {/* Header */}
@@ -102,24 +183,24 @@ const CardOrder: React.FC<CardOrderProps> = ({
                   <div className="flex gap-2">
                     <button
                       onClick={() => setOpenRating(product)}
-                      className="rounded-lg border border-green-600 text-green-600 px-3 py-1 text-[8px] sm:text-[12px] font-semibold
-                                 hover:bg-green-50 transition-all"
+                      className="rounded-lg border border-green-600 text-green-600 px-3 py-1 text-[10px] sm:text-[12px] font-semibold hover:bg-green-50 transition-all"
                     >
                       Beri rating
                     </button>
                     <button
-                      onClick={() => setOpenConfirm(true)}
-                      className="rounded-lg bg-green-600 text-white px-3 py-1 text-[8px] sm:text-[12px] font-semibold
-                                 hover:bg-green-700 transition-all"
+                      onClick={() =>
+                        window.open(`/produk/${product.id}`, "_blank")
+                      }
+                      className="rounded-lg bg-green-600 text-white px-3 py-1 text-[10px] sm:text-[12px] font-semibold hover:bg-green-700 transition-all"
                     >
                       Beli lagi
                     </button>
                   </div>
                 </div>
               )}
-              
-              {/* Harga produk untuk status proses */}
-              {[OrderStatus.PROCESSING, OrderStatus.SHIPPED].includes(status) && (
+
+              {/* Harga untuk selain COMPLETED */}
+              {[OrderStatus.PROCESSING, OrderStatus.SHIPPED, OrderStatus.CANCELED].includes(status) && (
                 <div className="text-[14px] font-medium text-black">
                   {product.price}
                 </div>
@@ -130,42 +211,33 @@ const CardOrder: React.FC<CardOrderProps> = ({
 
         <hr className="my-3 border-gray-200" />
 
-        {/* Info Pengiriman + Total */}
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-col text-[13px]">
-            <div className="flex items-center gap-2">
-              <Truck className={`w-5 h-5 ${status === OrderStatus.COMPLETED ? "text-green-600" : "text-green-600"}`} />
-              <span className={`${status === OrderStatus.COMPLETED ? "text-green-600" : "text-green-600"}`}>
-                {status === OrderStatus.COMPLETED
-                  ? "Pesanan telah tiba dan diterima customer"
-                  : "Pesanan sedang dalam pengiriman"}
-              </span>
-            </div>
-            {dateCompleted && (
-              <span className="text-gray-500 text-[12px] mt-1">
-                {dateCompleted}
-              </span>
+       {/* Info Pengiriman */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col text-[13px]">
+          <div className="flex items-center gap-2">
+            {/* Icon dihapus khusus status dibatalkan */}
+            {status !== OrderStatus.CANCELED && (
+              <Truck className="w-5 h-5 text-green-600" />
             )}
+            <span className="text-green-600">{getStatusMessage()}</span>
           </div>
-          <div className="text-[14px] font-bold text-black">
-            Total pesanan : {total}
-          </div>
-        </div>
-
-        {/* Tombol di bawah card */}
-        <div className="mt-3 text-right">
-          {[OrderStatus.PROCESSING, OrderStatus.SHIPPED].includes(status) && (
-            <button
-              onClick={() => setOpenConfirm(true)}
-              className="rounded-lg bg-green-600 px-4 py-1.5 text-[14px] font-semibold text-white hover:bg-green-700 transition-all duration-300 hover:shadow-lg transform hover:scale-105 active:scale-95"
-            >
-              Lihat detail
-            </button>
+          {dateCompleted && (
+            <span className="text-gray-500 text-[12px] mt-1">
+              {dateCompleted}
+            </span>
           )}
+        </div>
+        <div className="text-[14px] font-bold text-black">
+          Total pesanan : {total}
         </div>
       </div>
 
-      {/* Modal OrderConfirm */}
+
+        {/* Tombol bawah */}
+        {renderButtons()}
+      </div>
+
+      {/* Modal */}
       {openConfirm && (
         <OrderConfirm
           open={openConfirm}
@@ -180,7 +252,6 @@ const CardOrder: React.FC<CardOrderProps> = ({
         />
       )}
 
-      {/* Modal FormRating */}
       {openRating && (
         <FormRating
           open={!!openRating}

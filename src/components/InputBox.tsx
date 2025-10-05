@@ -7,9 +7,10 @@ interface InputBoxProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   placeholder?: string;
   icon?: React.ReactNode; 
+  disabled?: boolean;
 }
 
-const InputBox: React.FC<InputBoxProps> = ({ label, value, onChange, placeholder, icon }) => {
+const InputBox: React.FC<InputBoxProps> = ({ label, value, onChange, placeholder, icon, disabled }) => {
   return (
     <div
       className="

@@ -1,3 +1,5 @@
+"use client";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Mail,
   Phone,
@@ -11,8 +13,34 @@ import {
 import Link from "next/link";
 
 const Footer = () => {
+  const footerRef = useRef<HTMLElement | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    if (footerRef.current) observer.observe(footerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <footer className="bg-white py-12 px-4 sm:px-6 lg:px-8">
+    <footer
+      ref={footerRef}
+      className={`bg-white py-12 px-4 sm:px-6 lg:px-8 transition-all duration-700 ease-out
+        ${
+          isVisible
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-10"
+        }`}
+    >
       <div className="max-w-7xl mx-auto">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-8">
@@ -42,13 +70,17 @@ const Footer = () => {
 
             {/* Social Media Icons */}
             <div className="flex space-x-4">
+              {/* Facebook */}
               <a
-                href="#"
+                href="https://www.facebook.com/RegarMart"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 bg-white hover:bg-green-500 rounded-lg flex items-center justify-center text-gray-500 hover:text-white transition-all duration-300 hover:scale-110"
                 aria-label="Facebook"
               >
                 <Facebook className="w-5 h-5" />
               </a>
+              {/* Twitter */}
               <a
                 href="#"
                 className="w-10 h-10 bg-white hover:bg-green-500 rounded-lg flex items-center justify-center text-gray-500 hover:text-white transition-all duration-300 hover:scale-110"
@@ -56,6 +88,7 @@ const Footer = () => {
               >
                 <Twitter className="w-5 h-5" />
               </a>
+              {/* Instagram */}
               <a
                 href="#"
                 className="w-10 h-10 bg-white hover:bg-green-500 rounded-lg flex items-center justify-center text-gray-500 hover:text-white transition-all duration-300 hover:scale-110"
@@ -63,6 +96,7 @@ const Footer = () => {
               >
                 <Instagram className="w-5 h-5" />
               </a>
+              {/* LinkedIn */}
               <a
                 href="#"
                 className="w-10 h-10 bg-white hover:bg-green-500 rounded-lg flex items-center justify-center text-gray-500 hover:text-white transition-all duration-300 hover:scale-110"
@@ -70,6 +104,7 @@ const Footer = () => {
               >
                 <Linkedin className="w-5 h-5" />
               </a>
+              {/* YouTube */}
               <a
                 href="#"
                 className="w-10 h-10 bg-white hover:bg-green-500 rounded-lg flex items-center justify-center text-gray-500 hover:text-white transition-all duration-300 hover:scale-110"
@@ -83,7 +118,7 @@ const Footer = () => {
           {/* Right Side - Contact Information */}
           <div className="space-y-6 lg:ml-96 lg:mt-3">
             <h3 className="text-xl font-medium text-green-600 mb-6">
-              Contacts us
+              Contact Us
             </h3>
 
             <div className="space-y-4">
@@ -91,15 +126,15 @@ const Footer = () => {
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-gray-500" />
                 <p className="text-gray-500 text-sm font-book">
-                  RegarMart@gmail.com
+                  regarm4rt@gmail.com
                 </p>
               </div>
 
-              {/* Phone */}
+              {/* FB */}
               <div className="flex items-center space-x-3">
-                <Phone className="w-5 h-5 text-gray-500" />
+                <Facebook className="w-5 h-5 text-gray-500" />
                 <p className="text-gray-500 text-sm font-book">
-                  +62 895-3605-77408
+                  Regar Mart
                 </p>
               </div>
 
@@ -115,12 +150,6 @@ const Footer = () => {
                   </p>
                 </div>
               </div>
-              <Link
-                href="/admin-login"
-                className=" text-sm font-book bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition-colors duration-300"
-              >
-                Admin Login
-              </Link>
             </div>
           </div>
         </div>
