@@ -122,7 +122,7 @@ const PesananDetailPage = () => {
             {/* Bottom Section - Status dan Customer Info */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Box Status dan Button Tugaskan Kurir */}
-              <div className="bg-white rounded-lg shadow-sm p-6 lg:pt-16 space-y-4">
+              <div className="bg-white rounded-lg shadow-sm p-6 lg:pt-8 space-y-4">
                 {/* Box Sedang Proses */}
                 <div className="bg-yellow-300 text-center py-6 px-4 rounded-2xl relative">
                   <div className="flex items-center justify-center">
@@ -138,48 +138,73 @@ const PesananDetailPage = () => {
                 </div>
 
                 {/* Button Tugaskan Kurir */}
-                <button className="w-full border-2 border-green-500 hover:bg-green-50 text-green-500 font-semibold py-4 px-4 rounded-2xl transition-colors">
-                  Tugaskan kurir
-                </button>
+                <div className="space-y-3">
+                  {/* Button Tugaskan Kurir */}
+                  <button className="w-full bg-indigo-50 border-2 border-indigo-500 hover:bg-indigo-100 text-indigo-600 font-bold py-4 px-4 rounded-3xl transition-colors">
+                    Tugaskan kurir
+                  </button>
+
+                  {/* Button Selesaikan Pesanan - Disabled */}
+                  <button
+                    disabled
+                    className="w-full bg-gray-200 text-gray-400 font-bold py-4 px-4 rounded-3xl cursor-not-allowed"
+                  >
+                    Selesaikan pesanan
+                  </button>
+
+                  {/* Button Batalkan Pesanan */}
+                  <button className="w-full bg-red-50 border-2 border-red-500 hover:bg-red-100 text-red-500 font-bold py-4 px-4 rounded-3xl transition-colors">
+                    Batalkan pesanan
+                  </button>
+                </div>
               </div>
 
               {/* Detail Pelanggan */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 bg-gray-200 rounded-full flex-shrink-0 overflow-hidden">
+              <div className="bg-white rounded-lg shadow-sm p-8 relative">
+                {/* Profile Image - Top Right */}
+                <div className="absolute top-6 right-6 w-24 h-24 bg-gray-200 rounded-full flex-shrink-0 overflow-hidden border-4 border-white shadow-md">
+                  {order.customer.avatar ? (
                     <img
-                      src={order.customer.avatar || "/placeholder.svg"}
+                      src={order.customer.avatar}
                       alt={order.customer.name}
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLElement).style.display = 'none';
-                      }}
                     />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-semibold text-gray-900 text-base">{order.customer.name}</h3>
-                    <p className="text-sm text-gray-600">Pelanggan</p>
-                  </div>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-300 text-gray-600 font-bold text-2xl">
+                      {order.customer.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                 </div>
 
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 border border-green-200 rounded-lg bg-green-50/30">
-                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Phone size={16} className="text-green-600" />
+                {/* Customer Name */}
+                <div className="mb-8 pr-28">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-1">{order.customer.name}</h2>
+                  <p className="text-base text-gray-500">Pelanggan</p>
+                </div>
+
+                {/* Contact Info */}
+                <div className="space-y-6">
+                  {/* Telephone */}
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Phone size={20} className="text-green-600" />
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs text-gray-600 mb-1">Telephone</p>
-                      <p className="font-medium text-gray-900 text-sm">{order.customer.phone}</p>
+                    <div className="min-w-0 flex-1 pt-1">
+                      <p className="text-sm text-gray-500 mb-1">Telepone</p>
+                      <p className="font-semibold text-gray-900 text-lg">{order.customer.phone}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3 p-3 border border-green-200 rounded-lg bg-green-50/30">
-                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <MapPin size={16} className="text-green-600" />
+                  {/* Address */}
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <MapPin size={20} className="text-green-600" />
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs text-gray-600 mb-1">Alamat</p>
-                      <p className="font-medium text-gray-900 text-xs leading-relaxed">{order.customer.address}</p>
+                    <div className="min-w-0 flex-1 pt-1">
+                      <p className="text-sm text-gray-500 mb-1">Alamat</p>
+                      <p className="font-medium text-gray-900 text-base leading-relaxed">
+                        {order.customer.address}
+                      </p>
                     </div>
                   </div>
                 </div>

@@ -216,7 +216,7 @@ export default function ProductPopuler() {
                     handleAddToCart(product);
                   }}
                   disabled={addingToCart === product.id || product.stock === 0}
-                  className={`w-full py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs lg:text-[10px] 
+                  className={`w-full py-1.5 sm:py-2 rounded-lg text-[11px] sm:text-sm lg:text-sm
     transition-all duration-300 flex items-center justify-center gap-1 
     transform active:scale-95
     ${addingToCart === product.id
@@ -236,8 +236,8 @@ export default function ProductPopuler() {
                     "Stok Habis"
                   ) : (
                     <>
-                      <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
-                      Tambah
+                      <Plus className="w-4 h-4 lg:w-4 lg:h-4" />
+                      Tambah ke Keranjang
                     </>
                   )}
                 </button>
