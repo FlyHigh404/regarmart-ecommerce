@@ -13,8 +13,7 @@ export default function CheckoutNavbar() {
             className="w-28 sm:w-48 h-10 sm:h-14 object-contain" 
           />
         </Link>
-
-        {/* Garis Pemisah */}
+        
         <div className="block h-8 sm:h-10 w-px bg-gray-300 mx-3 sm:mx-4"></div>
 
         {/* Judul Checkout */}

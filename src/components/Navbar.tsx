@@ -4,6 +4,9 @@ import { Menu, X, ShoppingCart, User, Settings, LogOut, ChevronDown } from "luci
 import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
 import { signOut, useSession } from "next-auth/react";
+import NotifikasiCust from "./NotifikasiCust"; 
+import CartCust from "./CartCust";
+
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false)
@@ -15,6 +18,9 @@ const Navbar = () => {
     const { data: session, status } = useSession();
     const dropdownRef = useRef<HTMLDivElement>(null);
     const [cartCount, setCartCount] = useState<number>(0)
+    
+    // 2. TAMBAH STATE UNTUK JUMLAH NOTIFIKASI
+    const [notificationCount, setNotificationCount] = useState<number>(0); 
 
     useEffect(() => {
         setMounted(true);
@@ -48,7 +54,6 @@ const Navbar = () => {
                 try {
                     const response = await fetch("/api/cart");
                     if (!response.ok) {
-                        // kalau 401 / 404 → set 0 aja
                         setCartCount(0);
                         return;
                     }
@@ -59,20 +64,43 @@ const Navbar = () => {
                     setCartCount(0);
                 }
             };
+            
+            // Logika fetch untuk notifikasi
+            const fetchNotificationCount = async () => {
+                // Ganti dengan logika fetch API notifikasi Anda
+                // Contoh:
+                // try {
+                //     const response = await fetch("/api/notifications/count");
+                //     const data = await response.json();
+                //     setNotificationCount(data.count || 0);
+                // } catch (error) {
+                //     setNotificationCount(0);
+                // }
 
-            fetchCartCount();
+                // Untuk sementara, kita gunakan nilai default 3.
+                setNotificationCount(0);
+            };
+
+            if (session.user?.role !== "ADMIN") {
+                fetchCartCount();
+                fetchNotificationCount();
+            } else {
+                setCartCount(0);
+                setNotificationCount(0);
+            }
         } else {
             setCartCount(0);
+            setNotificationCount(0);
         }
     }, [session]);
 
 
     /* nav links */
     const navItems = [
-        { href: "/", label: "Beranda" },
+        { href: "#beranda", label: "Beranda" },
         { href: "/katalog", label: "Katalog" },
-        { href: "/tentang-kami", label: "Tentang Kami" },
-        { href: "/testimoni", label: "Testimoni" },
+        { href: "#about", label: "Tentang Kami" },
+        { href: "#testimoni", label: "Testimoni" },
     ]
 
     /* smooth scroll helper */
@@ -85,6 +113,9 @@ const Navbar = () => {
         setIsProfileDropdownOpen(false);
         signOut({ callbackUrl: "/" });
     };
+
+    // Cek apakah user sudah login dan bukan Admin
+    const showCustomerIcons = session && session.user?.role !== "ADMIN";
 
     return (
         <>
@@ -126,7 +157,7 @@ const Navbar = () => {
                                 <a
                                     href={item.href}
                                     className={`relative transition-all duration-300 font-medium text-sm hover:scale-105 group 
-                        ${isActive
+                                        ${isActive
                                             ? "bg-gradient-to-r from-[#6EC568] to-[#26A81D] bg-clip-text text-transparent"
                                             : "text-gray-700 hover:bg-gradient-to-r hover:from-[#6EC568] hover:to-[#26A81D] hover:bg-clip-text hover:text-transparent"
                                         }`}
@@ -140,7 +171,7 @@ const Navbar = () => {
                                         src="/Line 66.png"
                                         alt="Active Line"
                                         className={`absolute -bottom-2 left-0 transition-all duration-300 
-                            ${isActive ? "w-full" : "w-0 group-hover:w-full"}`}
+                                            ${isActive ? "w-full" : "w-0 group-hover:w-full"}`}
                                         style={{ width: isActive ? '100%' : '0' }}
                                     />
                                 </a>
@@ -150,13 +181,16 @@ const Navbar = () => {
                 </ul>
 
                 <div className="hidden md:flex items-center gap-3 animate-fade-in-down" style={{ animationDelay: "0.5s" }}>
+                    
+                    {/* Notifikasi */}
+                    {showCustomerIcons && (
+                        <NotifikasiCust notificationCount={notificationCount} />
+                    )}
+
                     {/* Cart icon with badge */}
-                    <a href="/cart" className="cursor-pointer relative p-3 rounded-xl transition-all duration-300 hover:scale-105">
-                        <ShoppingCart className="w-5 h-5 text-[#4BBF42]" />
-                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                            {session ? cartCount : 0}
-                        </span>
-                    </a>
+                    {showCustomerIcons && (
+                        <CartCust cartCount={cartCount} />
+                    )}
 
                     {/* Auth buttons */}
                     <div className="flex items-center gap-3 ml-2">
@@ -321,12 +355,34 @@ const Navbar = () => {
                     </ul>
 
                     <div className="mt-8 border-t border-gray-200 pt-6 space-y-4">
+                        {showCustomerIcons && (
+                            <button
+                                onClick={() => {
+                                    setIsMobileMenuOpen(false);
+                                    router.push('/notifications');
+                                }}
+                                className="cursor-pointer relative p-3 rounded-xl w-full flex items-center justify-center border border-gray-300 hover:border-green-500 transition-all duration-300"
+                            >
+                                <X className="w-5 h-5 text-[#4BBF42] mr-2" />
+                                <span className="text-sm font-semibold">Notifikasi</span>
+                                <span className="absolute top-2 right-4 w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                                    {notificationCount}
+                                </span>
+                            </button>
+                        )}
+                        
                         {/* Cart icon */}
-                        <button className="cursor-pointer relative p-3 rounded-xl w-full flex items-center justify-center border border-gray-300 hover:border-green-500 transition-all duration-300">
-                            <ShoppingCart className="w-5 h-5 text-[#4BBF42] mr-2" />
+                        <button 
+                            onClick={() => {
+                                setIsMobileMenuOpen(false);
+                                router.push('/cart');
+                            }}
+                            className="cursor-pointer relative p-3 rounded-xl w-full flex items-center justify-center border border-gray-300 hover:border-green-500 transition-all duration-300"
+                        >
+                            <ShoppingCart className="w-5 h-5 text-[#4BBF42]" />
                             <span className="text-sm font-semibold">Keranjang</span>
-                            <span className="absolute top-2 right-4 w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                                {session ? cartCount : 0}
+                            <span className="absolute w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                                {showCustomerIcons ? cartCount : 0}
                             </span>
                         </button>
 
