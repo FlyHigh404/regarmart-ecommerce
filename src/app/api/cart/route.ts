@@ -57,7 +57,6 @@ export async function POST(req: Request) {
       });
     }
 
-    
     const existingItem = await prisma.orderItem.findFirst({
       where: {
         orderId: order.id,
@@ -95,9 +94,11 @@ export async function POST(req: Request) {
       0
     );
 
+    const totalWithOngkir = total + 20000;
+
     await prisma.order.update({
       where: { id: order.id },
-      data: { totalAmount: total },
+      data: { totalAmount: totalWithOngkir },
     });
 
     return NextResponse.json({ message: "Added to cart" });

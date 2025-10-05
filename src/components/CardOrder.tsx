@@ -1,5 +1,5 @@
 "use client";
-import { Truck, XCircle } from "lucide-react";
+import { Truck } from "lucide-react";
 import Image from "next/image";
 import React, { useState } from "react";
 import { Alamat } from "@/types/alamat";
@@ -33,7 +33,7 @@ const CardOrder: React.FC<CardOrderProps> = ({
   const [openConfirm, setOpenConfirm] = useState(false);
   const [openRating, setOpenRating] = useState<null | OrderProduct>(null);
 
-  //Badge warna per status
+  // Badge warna per status
   const renderStatus = () => {
     switch (status) {
       case OrderStatus.PROCESSING:
@@ -102,8 +102,6 @@ const CardOrder: React.FC<CardOrderProps> = ({
             </button>
           </div>
         );
-      case OrderStatus.COMPLETED:
-        return null; 
       case OrderStatus.CANCELED:
         return (
           <div className="mt-3 text-right">
@@ -156,7 +154,7 @@ const CardOrder: React.FC<CardOrderProps> = ({
 
         {/* Produk List */}
         <div className="space-y-3">
-          {products.map((product) => (
+          {products.map((product: OrderProduct) => (
             <div key={product.id} className="flex items-center gap-3">
               <Image
                 src={product.image || "/placeholder.svg"}
@@ -175,7 +173,7 @@ const CardOrder: React.FC<CardOrderProps> = ({
               </div>
 
               {/* Tombol hanya muncul jika status COMPLETED */}
-              {status === OrderStatus.COMPLETED && (
+              {status === OrderStatus.COMPLETED ? (
                 <div className="flex flex-col items-end gap-1">
                   <div className="text-[14px] font-medium text-black">
                     {product.price}
@@ -197,10 +195,7 @@ const CardOrder: React.FC<CardOrderProps> = ({
                     </button>
                   </div>
                 </div>
-              )}
-
-              {/* Harga untuk selain COMPLETED */}
-              {[OrderStatus.PROCESSING, OrderStatus.SHIPPED, OrderStatus.CANCELED].includes(status) && (
+              ) : (
                 <div className="text-[14px] font-medium text-black">
                   {product.price}
                 </div>
@@ -211,27 +206,25 @@ const CardOrder: React.FC<CardOrderProps> = ({
 
         <hr className="my-3 border-gray-200" />
 
-       {/* Info Pengiriman */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-col text-[13px]">
-          <div className="flex items-center gap-2">
-            {/* Icon dihapus khusus status dibatalkan */}
-            {status !== OrderStatus.CANCELED && (
-              <Truck className="w-5 h-5 text-green-600" />
+        {/* Info Pengiriman */}
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col text-[13px]">
+            <div className="flex items-center gap-2">
+              {status !== OrderStatus.CANCELED && (
+                <Truck className="w-5 h-5 text-green-600" />
+              )}
+              <span className="text-green-600">{getStatusMessage()}</span>
+            </div>
+            {dateCompleted && (
+              <span className="text-gray-500 text-[12px] mt-1">
+                {dateCompleted}
+              </span>
             )}
-            <span className="text-green-600">{getStatusMessage()}</span>
           </div>
-          {dateCompleted && (
-            <span className="text-gray-500 text-[12px] mt-1">
-              {dateCompleted}
-            </span>
-          )}
+          <div className="text-[14px] font-bold text-black">
+            Total pesanan : {total}
+          </div>
         </div>
-        <div className="text-[14px] font-bold text-black">
-          Total pesanan : {total}
-        </div>
-      </div>
-
 
         {/* Tombol bawah */}
         {renderButtons()}

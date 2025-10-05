@@ -3,6 +3,7 @@ import CardOrder from "@/components/CardOrder";
 import { PaymentMethod, OrderProduct, OrderStatus } from "@/types/order";
 import { Alamat } from "@/types/alamat";
 import TabRiwayat from "@/components/TabRiwayat";
+import { useState, useEffect } from "react";
 
 const ordersProcess = [
   {
@@ -30,6 +31,27 @@ const ordersProcess = [
 ];
 
 export default function TransaksiDiprosesPage() {
+  const [orders, setOrders] = useState<any[]>([]);
+  const [userAddress, setUserAddress] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const [ordersRes, addressRes] = await Promise.all([
+          fetch('/api/profile/riwayat-transaksi', { cache: 'no-store' }),
+          fetch('/api/profile/address-primary', { cache: 'no-store' })
+        ]);
+        const ordersData = await ordersRes.json();
+        const addressData = await addressRes.json();
+        setOrders(ordersData);
+        setUserAddress(addressData ? `${addressData.street}, ${addressData.city}, ${addressData.province}, ${addressData.zipCode}` : null);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      }
+    }
+    fetchOrders();
+  }, []);
+  
   return (
     <div className="w-full md:w-[756.65px] rounded-[15px] bg-white p-4 md:p-8 font-jakarta"
          style={{ boxShadow: "6px 6px 54px 0 rgba(0, 0, 0, 0.05)" }}>
