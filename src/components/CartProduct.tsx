@@ -189,7 +189,7 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
             ) : (
               <>
                 <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
-                Tambah
+                Tambah Keranjang
               </>
             )}
           </button>

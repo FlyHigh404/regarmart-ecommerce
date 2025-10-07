@@ -83,6 +83,17 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
               className="mr-3 sm:mr-6"
             />
           )}
+
+        {/* Gambar Jam hanya untuk proses */}
+          {status === OrderStatus.PROCESSING && (
+            <Image
+              src="/jamorder.png"
+              alt="Jam"
+              width={50}
+              height={50}
+              className="mr-3 sm:mr-6"
+            />
+          )}
         </div>
 
         {/* BODY */}
@@ -103,7 +114,7 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
           </div>
 
           {/* Alamat */}
-          <div className="py-4 border-t border-gray-200">
+          <div className="py-4 border-t-6 border-gray-200">
             <h2 className="font-bold text-sm text-black mb-3">
               Alamat Pengiriman
             </h2>
@@ -127,7 +138,7 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
           </div>
 
           {/* Produk */}
-          <div className="py-4 border-t border-gray-200">
+          <div className="py-4 border-t-6 border-gray-200">
             {(showAll ? products : products.slice(0, 1)).map((p) => (
               <div
                 key={p.id}
