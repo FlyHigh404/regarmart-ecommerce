@@ -43,7 +43,7 @@ const Toast = ({ type, message, isVisible, onClose }: ToastProps) => {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-[9999] animate-in slide-in-from-top-2">
+    <div className="fixed top-28 right-4 z-[9999] animate-in slide-in-from-top-2">
       <div
         className={`
           flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border backdrop-blur-sm

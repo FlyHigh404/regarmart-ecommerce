@@ -177,7 +177,7 @@ const NavSearch = () => {
                         </div>
                     ) : (
                         <button
-                            onClick={() => router.push("/login")}
+                            onClick={() => router.push("/auth/signin")}
                             className="px-5 py-2.5 rounded-lg bg-green-600 text-white text-sm font-semibold hover:bg-green-700 transition"
                         >
                             Login
