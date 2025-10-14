@@ -11,7 +11,7 @@ const navItems = [
     name: "Riwayat Transaksi",
     href: "/profil/riwayat-transaksi",
     icon: FileText,
-    children: ["/profil/riwayat-transaksi/transaksi-diproses", "/profil/riwayat-transaksi/transaksi-selesai"],
+    children: ["/profil/riwayat-transaksi/transaksi-diproses", "/profil/riwayat-transaksi/transaksi-dikirim","/profil/riwayat-transaksi/transaksi-selesai","/profil/riwayat-transaksi/transaksi-dibatalkan",],
   },
   { name: "Ubah Password", href: "/profil/ubah-password", icon: Lock },
   { name: "Tema", href: "/profil/tema", icon: Palette },

@@ -67,17 +67,6 @@ const Navbar = () => {
             
             // Logika fetch untuk notifikasi
             const fetchNotificationCount = async () => {
-                // Ganti dengan logika fetch API notifikasi Anda
-                // Contoh:
-                // try {
-                //     const response = await fetch("/api/notifications/count");
-                //     const data = await response.json();
-                //     setNotificationCount(data.count || 0);
-                // } catch (error) {
-                //     setNotificationCount(0);
-                // }
-
-                // Untuk sementara, kita gunakan nilai default 3.
                 setNotificationCount(0);
             };
 

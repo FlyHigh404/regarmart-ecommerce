@@ -147,7 +147,7 @@ const CardOrder: React.FC<CardOrderProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="text-[14px] font-bold text-[#1B1F1B]">
-            No Pesanan : <span>{orderNumber}</span>
+            No Pesanan : <span>#INV {orderNumber}</span>
           </div>
           {renderStatus()}
         </div>

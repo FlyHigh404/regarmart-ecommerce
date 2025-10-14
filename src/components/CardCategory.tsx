@@ -45,9 +45,9 @@ export default function CardCategory({
           className={`w-[95px] h-[95px] rounded-full transition-transform duration-500 ease-in-out transform
             ${
               isReturning
-                ? "translate-y-0 scale-100" // turun kembali ke posisi awal
+                ? "translate-y-0 scale-100" 
                 : isActive
-                ? "-translate-y-10 scale-110" // naik saat aktif
+                ? "-translate-y-10 scale-110" 
                 : "translate-y-0 scale-100"
             }
           `}

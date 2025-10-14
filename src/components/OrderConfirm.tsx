@@ -1,17 +1,15 @@
 "use client";
 import Image from "next/image";
 import { useState } from "react";
-import { MapPin, Check, Clock } from "lucide-react";
+import { MapPin } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Alamat } from "@/types/alamat";
-import { PaymentMethod, OrderStatus, OrderStatusLabel } from "@/types/order";
-
-interface Product {
-  id: string;
-  name: string;
-  price: string;
-  qty: number;
-  image: string;
-}
+import {
+  OrderStatus,
+  OrderStatusLabel,
+  PaymentMethod,
+  OrderProduct,
+} from "@/types/order";
 
 export interface OrderConfirmProps {
   orderNumber: string;
@@ -19,7 +17,7 @@ export interface OrderConfirmProps {
   paymentMethod: PaymentMethod;
   address: Alamat;
   contact: string;
-  products: Product[];
+  products: OrderProduct[];
   total: string;
   open: boolean;
   onClose: () => void;
@@ -36,25 +34,38 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
   onClose,
 }) => {
   const [showAll, setShowAll] = useState(false);
+  const router = useRouter();
+
   if (!open) return null;
 
   const getHeaderStyle = () => {
     switch (status) {
       case OrderStatus.SHIPPED:
-        return "bg-[linear-gradient(180deg,#FFA04F_0%,#FF8A25_100%)] shadow-[6px_6px_54px_0_rgba(0,0,0,0.05)] rounded-t-[15px]";
+        return "bg-[linear-gradient(180deg,#FFA04F_0%,#FF8A25_100%)] rounded-t-[15px]";
       case OrderStatus.PROCESSING:
-        return "bg-[linear-gradient(180deg,#F0E138_0%,#C3B300_100%)] shadow-[6px_6px_54px_0_rgba(0,0,0,0.05)] rounded-t-[15px]";
+        return "bg-[linear-gradient(180deg,#F0E138_0%,#C3B300_100%)] rounded-t-[15px]";
       case OrderStatus.COMPLETED:
-        return "bg-[linear-gradient(145deg,#6EC568_13.92%,#26A81D_87.84%)] shadow-[6px_6px_54px_0_rgba(0,0,0,0.05)] rounded-t-[15px]";
+        return "bg-[linear-gradient(145deg,#6EC568_13.92%,#26A81D_87.84%)] rounded-t-[15px]";
+      case OrderStatus.CANCELED:
+        return "bg-[linear-gradient(145deg,#FFBDBD_13.92%,#E3342F_87.84%)] rounded-t-[15px]";
       default:
         return "bg-gray-300";
+    }
+  };
+
+  const totalQty = products.reduce((acc, p) => acc + p.qty, 0);
+
+  const handleBeliLagi = () => {
+    if (products.length > 0) {
+      const firstProductId = products[0].id;
+      router.push(`/produk/${firstProductId}`);
     }
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 font-jakarta">
       <div className="bg-white rounded-xl shadow-lg w-[95%] sm:w-[650px] max-h-[85vh] overflow-y-auto relative">
-        {/* HEADER */}
+        {/* ===================== HEADER ===================== */}
         <div
           className={`w-full flex justify-between items-center text-white px-4 sm:px-6 py-3 ${getHeaderStyle()}`}
         >
@@ -63,17 +74,16 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
               Pesanan {OrderStatusLabel[status]}
             </h2>
             {status === OrderStatus.SHIPPED ? (
-              <p className="text-sm">
-                Mohon tunggu pesanan anda sedang dikirim kurir
-              </p>
+              <p className="text-sm">Pesanan sedang dikirim oleh kurir</p>
             ) : status === OrderStatus.PROCESSING ? (
-              <p className="text-sm">Mohon tunggu pesanan anda sedang kami proses</p>
-            ) : (
-              <p className="text-sm">Terima kasih telah berbelanja di Regar Mart</p>
-            )}
+              <p className="text-sm">Pesanan Anda sedang diproses</p>
+            ) : status === OrderStatus.COMPLETED ? (
+              <p className="text-sm">Terima kasih telah berbelanja 😊</p>
+            ) : status === OrderStatus.CANCELED ? (
+              <p className="text-sm">Pesanan telah dibatalkan</p>
+            ) : null}
           </div>
 
-          {/* Gambar Truck hanya untuk dikirim */}
           {status === OrderStatus.SHIPPED && (
             <Image
               src="/trukorder.png"
@@ -83,8 +93,6 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
               className="mr-3 sm:mr-6"
             />
           )}
-
-        {/* Gambar Jam hanya untuk proses */}
           {status === OrderStatus.PROCESSING && (
             <Image
               src="/jamorder.png"
@@ -96,9 +104,9 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
           )}
         </div>
 
-        {/* BODY */}
+        {/* ===================== BODY ===================== */}
         <div className="p-4 sm:p-6">
-          {/* Informasi Pesanan */}
+          {/* Info Pesanan */}
           <div className="py-2">
             <h3 className="font-bold text-gray-800 text-sm mb-2">
               Informasi Pesanan
@@ -109,12 +117,14 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
             </div>
             <div className="grid grid-cols-2 text-sm mt-1">
               <span>Metode Pembayaran:</span>
-              <span className="text-right font-medium">{paymentMethod}</span>
+              <span className="text-right font-medium">
+                {PaymentMethod[paymentMethod]}
+              </span>
             </div>
           </div>
 
           {/* Alamat */}
-          <div className="py-4 border-t-6 border-gray-200">
+          <div className="py-4 border-t border-gray-200">
             <h2 className="font-bold text-sm text-black mb-3">
               Alamat Pengiriman
             </h2>
@@ -138,7 +148,7 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
           </div>
 
           {/* Produk */}
-          <div className="py-4 border-t-6 border-gray-200">
+          <div className="py-4 border-t border-gray-200">
             {(showAll ? products : products.slice(0, 1)).map((p) => (
               <div
                 key={p.id}
@@ -147,7 +157,7 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
                 <div className="flex gap-3 items-center">
                   <div className="w-[60px] h-[60px] rounded-md overflow-hidden">
                     <Image
-                      src={p.image}
+                      src={p.image || "/placeholder-product.png"}
                       alt={p.name}
                       width={60}
                       height={60}
@@ -166,11 +176,14 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
             {products.length > 1 && (
               <button
                 onClick={() => setShowAll(!showAll)}
-                className="text-blue-600 text-sm font-medium mt-2"
+                className="text-green-600 text-sm font-medium mt-2"
               >
                 {showAll ? "Sembunyikan" : "Lihat selengkapnya"}
               </button>
             )}
+            <div className="flex justify-end text-xs text-gray-500 mt-2">
+              Total {totalQty} produk
+            </div>
           </div>
 
           {/* Total */}
@@ -191,7 +204,7 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
             <div className="flex gap-3">
               <button
                 disabled
-                className="flex-1 bg-green-100 hover:bg-green-200 text-green-500 font-semibold rounded-lg h-10"
+                className="flex-1 bg-green-100 text-green-500 font-semibold rounded-lg h-10"
               >
                 Selesaikan Pesanan
               </button>
@@ -206,11 +219,14 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
             <div className="flex gap-3">
               <button
                 onClick={onClose}
-                className="flex-1  bg-green-100 hover:bg-green-200 text-green-500 font-semibold rounded-lg h-10"
+                className="flex-1 bg-green-100 text-green-500 font-semibold rounded-lg h-10"
               >
                 Kembali
               </button>
-              <button className="flex-1 bg-[#26A81D] hover:bg-green-700 text-white font-semibold rounded-lg h-10">
+              <button
+                onClick={handleBeliLagi}
+                className="flex-1 bg-[#26A81D] hover:bg-green-700 text-white font-semibold rounded-lg h-10"
+              >
                 Beli Lagi
               </button>
             </div>

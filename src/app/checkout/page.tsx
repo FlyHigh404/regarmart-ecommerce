@@ -75,47 +75,42 @@ const CheckoutPage: React.FC = () => {
   }, []);
 
   // Fungsi untuk memproses checkout
-  const processCheckout = async () => {
-    try {
-      setProcessingCheckout(true);
+const processCheckout = async () => {
+  try {
+    setProcessingCheckout(true);
 
-      const response = await fetch("/api/cart/checkout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          paymentMethod: paymentMethod,
-        }),
-      });
+    const response = await fetch("/api/cart/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paymentMethod }),
+    });
 
-      const result = await response.json();
+    const result = await response.json();
 
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to process checkout");
-      }
-
-      if (result.success) {
-        if (paymentMethod === PaymentMethod.QRIS && result.midtrans) {
-          // ✅ Core API → ambil QRIS URL, bukan redirect
-          setQrisUrl(result.midtrans.qrisUrl);
-
-        } else if (paymentMethod === PaymentMethod.COD) {
-          setOpenOrderConfirm(true);
-
-          // refresh cart
-          const cartResponse = await fetch("/api/cart");
-          const cartData = await cartResponse.json();
-          setOrder(cartData || { orderItems: [], totalAmount: 0 });
-        }
-      }
-    } catch (error) {
-      console.error("Checkout error:", error);
-      alert("Terjadi kesalahan saat memproses checkout");
-    } finally {
-      setProcessingCheckout(false);
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to process checkout");
     }
-  };
+
+    // ✅ Kalau QRIS, tampilkan QR Code
+    if (paymentMethod === PaymentMethod.QRIS && result.midtrans?.qrisUrl) {
+      setQrisUrl(result.midtrans.qrisUrl);
+      return;
+    }
+
+    // ✅ Kalau COD, buka OrderConfirm langsung dengan data hasil checkout
+    if (paymentMethod === PaymentMethod.COD) {
+      setOrder(result); // simpan data order dari API checkout
+      setOpenOrderConfirm(true);
+    }
+
+  } catch (error) {
+    console.error("Checkout error:", error);
+    alert("Terjadi kesalahan saat memproses checkout");
+  } finally {
+    setProcessingCheckout(false);
+  }
+};
+
 
   // Perhitungan total
   const totalHarga = order?.totalAmount || 0;
@@ -453,7 +448,7 @@ const CheckoutPage: React.FC = () => {
           setOpenOrderConfirm(false);
           // Redirect ke halaman orders setelah konfirmasi COD
           if (paymentMethod === PaymentMethod.COD) {
-            router.push("/orders");
+            router.push("/profil/riwayat-transaksi");
           }
         }}
       />

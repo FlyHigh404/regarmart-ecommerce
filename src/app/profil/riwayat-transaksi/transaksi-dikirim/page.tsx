@@ -1,50 +1,54 @@
 "use client";
-import CardOrder from "@/components/CardOrder";
-import { PaymentMethod, OrderProduct, OrderStatus } from "@/types/order";
-import { Alamat } from "@/types/alamat";
+import { useEffect, useState } from "react";
 import TabRiwayat from "@/components/TabRiwayat";
-
-const ordersShipped = [
-  {
-    orderNumber: "#INV-0012",
-    status: OrderStatus.SHIPPED,
-    total: "Rp95.000",
-    products: [
-      {
-        id: "2",
-        name: "Minyak Goreng Tropical 2L",
-        price: "Rp47.500",
-        qty: 2,
-        image: "/ktgbuah.png",
-      },
-    ] as OrderProduct[],
-    paymentMethod: PaymentMethod.QRIS,
-    address: {
-      id: 2,
-      nama: "Team Zenith",
-      telp: "08123456789",
-      alamat: "Jl. Sudirman No. 22, Bandung",
-    } as Alamat,
-    contact: "08123456789",
-  },
-];
+import CardOrder from "@/components/CardOrder";
+import { OrderStatus } from "@/types/order";
+import { transformOrder } from "@/lib/transformOrder";
 
 export default function TransaksiDikirimPage() {
+  const [orders, setOrders] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch("/api/profile/riwayat-transaksi", { cache: "no-store" });
+        if (!res.ok) throw new Error("Gagal fetch data");
+        const data = await res.json();
+
+        const filtered = data
+          .filter((o: any) => o.status === OrderStatus.SHIPPED)
+          .map(transformOrder);
+
+        setOrders(filtered);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchOrders();
+  }, []);
+
   return (
     <div className="w-full md:w-[756.65px] rounded-[15px] bg-white p-4 md:p-8 font-jakarta"
          style={{ boxShadow: "6px 6px 54px 0 rgba(0, 0, 0, 0.05)" }}>
       <TabRiwayat />
-
-      {ordersShipped.length === 0 ? (
+      {isLoading ? (
+        <div className="p-4 text-center text-gray-500">
+          <svg className="animate-spin h-5 w-5 mr-3 inline text-green-500" viewBox="0 0 24 24"></svg>
+          Memuat data pesanan...
+        </div>
+      ) : orders.length === 0 ? (
         <div className="p-4 text-center">
-          <img src="/bgcart.png" alt="Kosong"
-               className="mx-auto w-32 h-32 object-contain mb-2" />
+          <img src="/bgcart.png" alt="Kosong" className="mx-auto w-32 h-32 mb-2" />
           <h2 className="text-md font-semibold text-gray-800 mb-1">Tidak ada transaksi</h2>
           <p className="text-sm text-gray-500">Belum ada pesanan dikirim</p>
         </div>
       ) : (
         <div className="space-y-4">
-          {ordersShipped.map((order, index) => (
+          {orders.map((order, index) => (
             <CardOrder key={order.orderNumber} index={index} {...order} />
           ))}
         </div>
