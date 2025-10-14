@@ -4,8 +4,9 @@ import { Menu, X, ShoppingCart, User, Settings, LogOut, ChevronDown } from "luci
 import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
 import { signOut, useSession } from "next-auth/react";
-import NotifikasiCust from "./NotifikasiCust"; 
+import NotifikasiCust from "./NotifikasiCust";
 import CartCust from "./CartCust";
+import { useCart } from "@/app/context/CartContext"
 
 
 const Navbar = () => {
@@ -17,10 +18,11 @@ const Navbar = () => {
     const pathname = usePathname()
     const { data: session, status } = useSession();
     const dropdownRef = useRef<HTMLDivElement>(null);
-    const [cartCount, setCartCount] = useState<number>(0)
-    
+    const { cartCount, setCartCount, fetchCartCount } = useCart();
+
+
     // 2. TAMBAH STATE UNTUK JUMLAH NOTIFIKASI
-    const [notificationCount, setNotificationCount] = useState<number>(0); 
+    const [notificationCount, setNotificationCount] = useState<number>(0);
 
     useEffect(() => {
         setMounted(true);
@@ -49,40 +51,19 @@ const Navbar = () => {
     }, []);
 
     useEffect(() => {
-        if (session) {
-            const fetchCartCount = async () => {
-                try {
-                    const response = await fetch("/api/cart");
-                    if (!response.ok) {
-                        setCartCount(0);
-                        return;
-                    }
-                    const data = await response.json();
-                    setCartCount(Array.isArray(data) ? data.length : 0);
-                } catch (error) {
-                    console.error("Error fetching cart count:", error);
-                    setCartCount(0);
-                }
-            };
-            
-            // Logika fetch untuk notifikasi
-            const fetchNotificationCount = async () => {
-                setNotificationCount(0);
-            };
-
-            if (session.user?.role !== "ADMIN") {
-                fetchCartCount();
-                fetchNotificationCount();
-            } else {
-                setCartCount(0);
-                setNotificationCount(0);
-            }
-        } else {
-            setCartCount(0);
+        if (!session) {
             setNotificationCount(0);
+            return;
         }
-    }, [session]);
 
+        if (session.user?.role === "ADMIN") {
+            setNotificationCount(0);
+            return;
+        }
+
+        // untuk notifikasi aja
+        setNotificationCount(0);
+    }, [session]);
 
     /* nav links */
     const navItems = [
@@ -170,16 +151,14 @@ const Navbar = () => {
                 </ul>
 
                 <div className="hidden md:flex items-center gap-3 animate-fade-in-down" style={{ animationDelay: "0.5s" }}>
-                    
+
                     {/* Notifikasi */}
                     {showCustomerIcons && (
                         <NotifikasiCust notificationCount={notificationCount} />
                     )}
 
                     {/* Cart icon with badge */}
-                    {showCustomerIcons && (
-                        <CartCust cartCount={cartCount} />
-                    )}
+                    {showCustomerIcons && <CartCust />}
 
                     {/* Auth buttons */}
                     <div className="flex items-center gap-3 ml-2">
@@ -359,9 +338,9 @@ const Navbar = () => {
                                 </span>
                             </button>
                         )}
-                        
+
                         {/* Cart icon */}
-                        <button 
+                        <button
                             onClick={() => {
                                 setIsMobileMenuOpen(false);
                                 router.push('/cart');

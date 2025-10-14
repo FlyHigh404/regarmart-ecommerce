@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useCart } from "@/app/context/CartContext";
 
 // --- INTERFACE ---
 interface CartItemData {
@@ -68,104 +69,125 @@ const CartItem: React.FC<CartItemProps> = ({
 };
 
 // --- KOMPONEN UTAMA CARTCUST ---
-interface CartCustProps {
-  cartCount: number;
-}
-
-const CartCust: React.FC<CartCustProps> = ({ cartCount: externalCount }) => {
+const CartCust: React.FC = () => {
   const router = useRouter();
   const [isClickedOpen, setIsClickedOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-
-  const [activeCartItems, setActiveCartItems] = useState<CartItemData[]>([]);
-  const [loading, setLoading] = useState(true);
-
   const componentRef = useRef<HTMLDivElement>(null);
 
+  // Ambil data dari context
+  const { cartCount, fetchCartCount } = useCart();
+
+  const [cartItems, setCartItems] = useState<CartItemData[]>([]);
+  const [loading, setLoading] = useState(false);
+
   const isDropdownVisible = isClickedOpen || isHovered;
-  const actualCartCount = activeCartItems.length;
 
-  // --- Fetch cart dari API ---
+  // 🔄 Fetch cart count saat komponen mount dan setiap kali dropdown ditutup
   useEffect(() => {
-    const fetchCart = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch("/api/cart");
-        const data = await response.json();
+    fetchCartCount();
+  }, [fetchCartCount]);
 
-        if (response.ok) {
-          const orderItems = data.orderItems || [];
-          const formattedItems = orderItems.map((item: any) => ({
-            id: item.id,
-            name: item.product.name,
-            price: parseFloat(item.unitPrice),
-            quantity: item.quantity,
-            imageUrl: item.product.imageUrl[0] || "/placeholder.svg",
-          }));
-          setActiveCartItems(formattedItems);
-        } else {
-          setActiveCartItems([]);
+  // 🔄 Refresh cart count ketika dropdown ditutup
+  useEffect(() => {
+    if (!isDropdownVisible) {
+      fetchCartCount();
+    }
+  }, [isDropdownVisible, fetchCartCount]);
+
+  // 🔄 Fetch detail item ketika dropdown dibuka
+  useEffect(() => {
+    if (isDropdownVisible) {
+      const fetchCart = async () => {
+        try {
+          setLoading(true);
+          const response = await fetch("/api/cart", { 
+            cache: "no-store",
+            headers: {
+              'Cache-Control': 'no-cache',
+            }
+          });
+          const data = await response.json();
+
+          if (response.ok) {
+            const orderItems = data.orderItems || [];
+            const formattedItems = orderItems.map((item: any) => ({
+              id: item.id,
+              name: item.product.name,
+              price: parseFloat(item.unitPrice),
+              quantity: item.quantity,
+              imageUrl: item.product.imageUrl[0] || "/placeholder.svg",
+            }));
+            setCartItems(formattedItems);
+            
+            // Update cart count dari hasil fetch actual
+            if (formattedItems.length !== cartCount) {
+              fetchCartCount();
+            }
+          } else {
+            setCartItems([]);
+          }
+        } catch (err) {
+          console.error("Gagal ambil cart:", err);
+          setCartItems([]);
+        } finally {
+          setLoading(false);
         }
-      } catch (err) {
-        console.error("Gagal ambil cart:", err);
-        setActiveCartItems([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+      };
 
-    fetchCart();
-  }, []);
+      fetchCart();
+    }
+  }, [isDropdownVisible, cartCount, fetchCartCount]);
 
-  // --- Tutup dropdown saat klik luar ---
+  // Tutup dropdown saat klik luar
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         componentRef.current &&
-        !componentRef.current.contains(event.target as Node) &&
-        isClickedOpen
+        !componentRef.current.contains(event.target as Node)
       ) {
         setIsClickedOpen(false);
         setIsHovered(false);
       }
     };
-    if (isClickedOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isClickedOpen]);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleIconClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsClickedOpen((prev) => !prev);
+    
+    // Jika sedang dibuka, tutup dan refresh count
+    if (isClickedOpen) {
+      setIsClickedOpen(false);
+      fetchCartCount();
+    } else {
+      setIsClickedOpen(true);
+    }
     setIsHovered(false);
   };
 
-  const getBadgeContent = () => {
-    if (actualCartCount === 0) return 0;
-    if (actualCartCount > 99) return "99+";
-    return actualCartCount;
+  const handleViewMore = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsClickedOpen(false);
+    setIsHovered(false);
+    router.push("/cart");
   };
 
-  const badgeContent = getBadgeContent();
+  const badgeContent = cartCount > 99 ? "99+" : cartCount;
 
   return (
     <div
       className="relative"
       ref={componentRef}
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => {
-        if (!isClickedOpen) {
-          setIsHovered(false);
-        }
-      }}
+      onMouseLeave={() => !isClickedOpen && setIsHovered(false)}
     >
       {/* Tombol Ikon Keranjang */}
       <button
         onClick={(e) => {
           handleIconClick(e);
+          // Hanya navigate jika dropdown tidak visible
           if (!isDropdownVisible) {
             router.push("/cart");
           }
@@ -181,17 +203,12 @@ const CartCust: React.FC<CartCustProps> = ({ cartCount: externalCount }) => {
           className={`w-6 h-6 text-[#4BBF42] transition-transform duration-200 ease-out 
             ${isHovered ? "scale-110" : "scale-100"}`}
         />
-
         {/* Badge jumlah item */}
-        {actualCartCount >= 0 && (
-          <span
-            className={`absolute -top-1 -right-1 w-5 h-5 
-                bg-orange-500 
-                text-white text-xs rounded-full flex items-center justify-center font-bold`}
-          >
-            {badgeContent}
-          </span>
-        )}
+        <span
+          className={`absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-bold`}
+        >
+          {badgeContent}
+        </span>
       </button>
 
       {/* Dropdown */}
@@ -203,14 +220,10 @@ const CartCust: React.FC<CartCustProps> = ({ cartCount: externalCount }) => {
         >
           <div className="p-4 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10 shadow-md">
             <h3 className="text-lg font-bold text-gray-800">
-              Keranjang ({actualCartCount})
+              Keranjang ({cartCount})
             </h3>
             <button
-              onClick={(e) => {
-                e.preventDefault();
-                router.push("/cart");
-                setIsClickedOpen(false);
-              }}
+              onClick={handleViewMore}
               className="text-xs text-green-600 hover:underline"
             >
               Lihat Selengkapnya
@@ -221,7 +234,7 @@ const CartCust: React.FC<CartCustProps> = ({ cartCount: externalCount }) => {
             <div className="p-6 text-center text-gray-500 text-sm">
               Memuat keranjang...
             </div>
-          ) : activeCartItems.length === 0 ? (
+          ) : cartItems.length === 0 ? (
             <div className="p-6 text-center">
               <Image
                 src="/bgcart.png"
@@ -239,7 +252,7 @@ const CartCust: React.FC<CartCustProps> = ({ cartCount: externalCount }) => {
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
-              {activeCartItems.map((item, index) => (
+              {cartItems.map((item, index) => (
                 <CartItem key={item.id} {...item} index={index} />
               ))}
             </div>

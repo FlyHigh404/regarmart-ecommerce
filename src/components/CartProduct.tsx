@@ -6,6 +6,7 @@ import { Product } from "@/types/product";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useCart } from "@/app/context/CartContext";
 
 interface CartProductProps {
   product: Product;
@@ -18,6 +19,7 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const { data: session } = useSession();
   const router = useRouter();
+  const { incrementCart } = useCart();
 
   const handleAddToCart = async (product: Product) => {
     if (!session) {
@@ -50,6 +52,7 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
       if (!response.ok) {
         console.error("Gagal menambahkan ke keranjang");
       }
+      setTimeout(() => incrementCart(), 100);
     } catch (error: any) {
       console.error("Error terjadi:", error);
     } finally {
@@ -67,7 +70,7 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
   };
 
   const formatPrice = (price: string | number) => {
-    const numericPrice = Number(price); 
+    const numericPrice = Number(price);
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",
