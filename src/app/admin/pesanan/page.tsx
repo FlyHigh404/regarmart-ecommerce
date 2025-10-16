@@ -1,75 +1,69 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import AdminLayout from "../AdminLayout"
 import { Search, Filter, ChevronDown, Eye } from "lucide-react"
 import { useRouter } from "next/navigation"
 
-const sampleOrders = [
-  {
-    id: "#INV-0015",
-    customer: {
-      name: "Leasie Watson",
-      avatar: "/woman-profile.png",
-    },
-    status: "Menunggu",
-    total: "Rp168.500",
-    date: "Juli 14, 2025",
-  },
-  {
-    id: "#INV-0013",
-    customer: {
-      name: "Theresa Webb",
-      avatar: "/woman-profile-two.png",
-    },
-    status: "Sedang proses",
-    total: "Rp67.800",
-    date: "Juli 12, 2025",
-  },
-  {
-    id: "#INV-0011",
-    customer: {
-      name: "Esther Howard",
-      avatar: "/woman-profile.png",
-    },
-    status: "Dikirim",
-    total: "Rp73.500",
-    date: "Juli 12, 2025",
-  },
-  {
-    id: "#INV-0009",
-    customer: {
-      name: "Ronald Richards",
-      avatar: "/man-profile.png",
-    },
-    status: "Pesanan selesai",
-    total: "Rp14.000",
-    date: "Juli 11, 2025",
-  },
-]
-
-const Pesanan = () => {
+export default function Pesanan() {
   const [searchTerm, setSearchTerm] = useState("")
   const [showFilter, setShowFilter] = useState(false)
-  const [orders, setOrders] = useState(sampleOrders)
+  const [orders, setOrders] = useState<any[]>([])
   const [filterStatus, setFilterStatus] = useState("Semua")
   const router = useRouter()
 
-  const getStatusBadge = (status: string) => {
-    const statusStyles = {
-      Menunggu: "bg-gray-100 text-gray-800",
-      "Sedang proses": "bg-yellow-100 text-yellow-800",
-      Dikirim: "bg-orange-100 text-orange-800",
-      "Pesanan selesai": "bg-green-100 text-green-800",
+  const statusMap: Record<string, string> = {
+    PENDING: "Menunggu",
+    PROCESSING: "Sedang proses",
+    SHIPPED: "Dikirim",
+    COMPLETED: "Pesanan selesai",
+  }
+
+  const statusBadgeStyle: Record<string, string> = {
+    Menunggu: "bg-gray-100 text-gray-800",
+    "Sedang proses": "bg-yellow-100 text-yellow-800",
+    Dikirim: "bg-orange-100 text-orange-800",
+    "Pesanan selesai": "bg-green-100 text-green-800",
+  }
+
+  const formatCurrency = (amount: number) => {
+    return amount.toLocaleString("id-ID", { style: "currency", currency: "IDR" })
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString("id-ID", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
+  }
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const res = await fetch("/api/admin/order")
+        if (!res.ok) throw new Error("Gagal fetch data")
+        const data = await res.json()
+
+        const mapped = data.map((order: any) => ({
+          id: order.id,
+          customer: {
+            name: order.user?.name || "Tanpa Nama",
+            avatar: "/placeholder.svg",
+          },
+          status: statusMap[order.status] || order.status,
+          total: formatCurrency(order.total || 0),
+          date: formatDate(order.createdAt),
+        }))
+
+        setOrders(mapped)
+      } catch (error) {
+        console.error("Gagal mengambil data pesanan:", error)
+      }
     }
 
-    return (
-      <span
-        className={`px-3 py-1 rounded-full text-xs font-medium ${statusStyles[status as keyof typeof statusStyles] || "bg-gray-100 text-gray-800"}`}
-      >
-        {status}
-      </span>
-    )
-  }
+    fetchOrders()
+  }, [])
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
@@ -82,14 +76,25 @@ const Pesanan = () => {
     return matchesSearch && matchesFilter
   })
 
+  const getStatusBadge = (status: string) => (
+    <span
+      className={`px-3 py-1 rounded-full text-xs font-medium ${
+        statusBadgeStyle[status] || "bg-gray-100 text-gray-800"
+      }`}
+    >
+      {status}
+    </span>
+  )
+
   const handlePreviewOrder = (order: any) => {
-    router.push(`/pesanan/${order.id}`)
+    router.push(`/admin/pesanan/${order.id}`)
   }
 
   return (
     <AdminLayout>
       <main className="flex-1 bg-gray-50 pt-3">
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          {/* Header */}
           <div className="p-4 sm:pt-6 sm:pb-0 bg-white">
             <div className="flex flex-col space-y-4 lg:flex-row lg:justify-between lg:items-center lg:space-y-0">
               <div className="flex flex-col">
@@ -112,7 +117,9 @@ const Pesanan = () => {
             </div>
           </div>
 
+          {/* Tabel & Card */}
           <div className="p-4 sm:p-6">
+            {/* Mobile card view */}
             <div className="block lg:hidden space-y-4">
               {filteredOrders.map((order) => (
                 <div
@@ -123,7 +130,7 @@ const Pesanan = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-3 mb-2">
                         <img
-                          src={order.customer.avatar || "/placeholder.svg"}
+                          src={order.customer.avatar}
                           alt={order.customer.name}
                           className="w-8 h-8 rounded-full object-cover"
                         />
@@ -159,6 +166,7 @@ const Pesanan = () => {
               )}
             </div>
 
+            {/* Desktop table */}
             <div className="hidden lg:block overflow-x-auto rounded-lg">
               <table className="w-full">
                 <thead className="bg-gray-100">
@@ -187,7 +195,9 @@ const Pesanan = () => {
                   {filteredOrders.map((order, index) => (
                     <tr
                       key={order.id}
-                      className={`hover:bg-gray-100 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
+                      className={`hover:bg-gray-100 transition-colors ${
+                        index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                      }`}
                     >
                       <td className="py-5 px-6">
                         <div className="font-medium text-gray-900 text-sm">{order.id}</div>
@@ -195,7 +205,7 @@ const Pesanan = () => {
                       <td className="py-5 px-6">
                         <div className="flex items-center gap-3">
                           <img
-                            src={order.customer.avatar || "/placeholder.svg"}
+                            src={order.customer.avatar}
                             alt={order.customer.name}
                             className="w-8 h-8 rounded-full object-cover"
                           />
@@ -239,6 +249,7 @@ const Pesanan = () => {
           </div>
         </div>
 
+        {/* Modal Filter */}
         {showFilter && (
           <div className="fixed inset-0 z-40" onClick={() => setShowFilter(false)}>
             <div
@@ -286,5 +297,3 @@ const Pesanan = () => {
     </AdminLayout>
   )
 }
-
-export default Pesanan
