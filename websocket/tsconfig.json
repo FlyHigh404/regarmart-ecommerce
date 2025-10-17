@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    /* Project Options */
+    "target": "es2017",                /* Versi target ECMAScript untuk output. */
+    "module": "commonjs",              /* Sistem modul untuk kode yang dikompilasi. */
+    "rootDir": "./src",                /* Menentukan direktori root file input. */
+    "outDir": "./dist",                /* Menentukan direktori output untuk file JS yang dikompilasi. */
+
+    /* Type Checking */
+    "strict": true,                    /* Mengaktifkan semua mode pemeriksaan tipe yang ketat. */
+    "esModuleInterop": true,           /* Mengizinkan `import * as m from "mod"` dari CommonJS modules. */
+    "skipLibCheck": true,              /* Melewati pemeriksaan tipe semua file deklarasi `.d.ts`. */
+    "forceConsistentCasingInFileNames": true /* Memastikan file yang diimpor menggunakan penamaan kasus yang konsisten. */
+  }
+}
