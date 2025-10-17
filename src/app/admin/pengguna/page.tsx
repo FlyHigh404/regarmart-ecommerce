@@ -1,47 +1,97 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import AdminLayout from "../AdminLayout"
-import { Filter, ChevronDown, ReceiptText } from "lucide-react"
+import { Filter, ChevronDown } from "lucide-react"
 import Swal from "sweetalert2"
 import withReactContent from "sweetalert2-react-content"
+import { useRouter } from "next/navigation"
 
-// Sample customer data - replace with your actual data source
-const sampleCustomers = [
-  {
-    id: "CUST-001",
-    name: "Leasie Watson",
-    avatar: "/woman-profile.png",
-    address: "Jl. Merpati No.40ab, Kepuh, Betro, Kec. Sedati, Kabupaten Sidoarjo, Jawa Timur 61253, Indonesia",
-    phone: "089536057489",
-  },
-  {
-    id: "CUST-002",
-    name: "Floyd Miles",
-    avatar: "/man-profile.png",
-    address: "Jl. Merpati No.40ab, Kepuh, Betro, Kec. Sedati, Kabupaten Sidoarjo, Jawa Timur 61253, Indonesia",
-    phone: "089536057489",
-  },
-  {
-    id: "CUST-003",
-    name: "Theresa Webb",
-    avatar: "/woman-profile-two.png",
-    address: "Jl. Merpati No.40ab, Kepuh, Betro, Kec. Sedati, Kabupaten Sidoarjo, Jawa Timur 61253, Indonesia",
-    phone: "089536057489",
-  },
-]
+interface Address {
+  id: string
+  userId: string
+  recipientName: string
+  phoneNumber: string
+  label: string
+  fullAddress: string
+  note: string
+  isPrimary: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+interface Order {
+  id: string
+  userId: string
+  totalAmount: string
+  status: string
+  paymentMethod: string
+  createdAt: string
+  updatedAt: string
+}
+
+interface Customer {
+  id: string
+  name: string
+  email: string
+  emailVerified: string | null
+  image: string | null
+  phone: string | null
+  address: string | null
+  role: string
+  password: string
+  createdAt: string
+  updatedAt: string
+  orders: Order[]
+  Address: Address[]
+}
 
 const Pengguna = () => {
   const [searchTerm, setSearchTerm] = useState("")
   const [showFilter, setShowFilter] = useState(false)
-  const [customers, setCustomers] = useState(sampleCustomers)
+  const [customers, setCustomers] = useState<Customer[]>([])
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
   const [showPreview, setShowPreview] = useState(false)
-  const [selectedCustomer, setSelectedCustomer] = useState<any>(null)
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
+
+  // Fetch customers data from API
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch('/api/admin/customers')
+        if (!response.ok) {
+          throw new Error('Failed to fetch customers')
+        }
+        const data = await response.json()
+        setCustomers(data)
+      } catch (error) {
+        console.error('Error fetching customers:', error)
+        Swal.fire({
+          title: 'Error!',
+          text: 'Failed to load customers data.',
+          icon: 'error',
+          customClass: {
+            popup: 'rounded-xl',
+            confirmButton: 'rounded-lg px-4 py-2',
+          },
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCustomers()
+  }, [])
 
   const filteredCustomers = customers.filter((customer) => {
     const matchesSearch =
       customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.phone.toLowerCase().includes(searchTerm.toLowerCase())
+      customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (customer.phone && customer.phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      customer.Address.some((addr) => 
+        addr.fullAddress.toLowerCase().includes(searchTerm.toLowerCase())
+      )
 
     return matchesSearch
   })
@@ -79,9 +129,43 @@ const Pengguna = () => {
     })
   }
 
-  const handlePreviewCustomer = (customer: any) => {
-    setSelectedCustomer(customer)
-    setShowPreview(true)
+  const handlePreviewCustomer = (customer: { id: string }) => {
+  router.push(`/admin/pengguna/${customer.id}`)
+}
+
+  // Helper function to get primary address or first address
+  const getCustomerAddress = (customer: Customer): string => {
+    if (!customer.Address || customer.Address.length === 0) {
+      return customer.address || 'Alamat tidak tersedia'
+    }
+    const primaryAddress = customer.Address.find((addr) => addr.isPrimary)
+    const address = primaryAddress || customer.Address[0]
+    return address.fullAddress || 'Alamat tidak tersedia'
+  }
+
+  // Helper function to get phone number
+  const getCustomerPhone = (customer: Customer): string => {
+    if (customer.phone) return customer.phone
+    if (customer.Address && customer.Address.length > 0) {
+      const primaryAddress = customer.Address.find((addr) => addr.isPrimary)
+      return primaryAddress?.phoneNumber || customer.Address[0]?.phoneNumber || '-'
+    }
+    return '-'
+  }
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <main className="flex-1 bg-gray-50 pt-3">
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden p-12">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+              <p className="mt-4 text-gray-600">Loading customers...</p>
+            </div>
+          </div>
+        </main>
+      </AdminLayout>
+    )
   }
 
   return (
@@ -121,16 +205,16 @@ const Pengguna = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-3 mb-2">
                         <img
-                          src={customer.avatar || "/placeholder.svg"}
+                          src={customer.image || "/placeholder.svg"}
                           alt={customer.name}
                           className="w-8 h-8 rounded-full object-cover"
                         />
                         <div>
                           <h3 className="font-medium text-gray-900 text-sm">{customer.name}</h3>
-                          <p className="text-gray-600 text-xs">{customer.phone}</p>
+                          <p className="text-gray-600 text-xs">{getCustomerPhone(customer)}</p>
                         </div>
                       </div>
-                      <p className="text-gray-500 text-xs line-clamp-2">{customer.address}</p>
+                      <p className="text-gray-500 text-xs line-clamp-2">{getCustomerAddress(customer)}</p>
                     </div>
                     <div className="flex items-center gap-2 ml-3">
                       <button
@@ -138,8 +222,7 @@ const Pengguna = () => {
                         className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-all duration-200"
                         title="View"
                       >
-                        {/* <ReceiptText /> */}
-
+                        <img src="/receipt-item.png" alt="View" className="" width="30"/>
                       </button>
                     </div>
                   </div>
@@ -181,7 +264,7 @@ const Pengguna = () => {
                       <td className="py-5 px-6">
                         <div className="flex items-center gap-3">
                           <img
-                            src={customer.avatar || "/placeholder.svg"}
+                            src={customer.image || "/placeholder.svg"}
                             alt={customer.name}
                             className="w-8 h-8 rounded-full object-cover"
                           />
@@ -189,10 +272,10 @@ const Pengguna = () => {
                         </div>
                       </td>
                       <td className="py-5 px-6 max-w-xs">
-                        <span className="text-gray-600 text-sm line-clamp-2">{customer.address}</span>
+                        <span className="text-gray-600 text-sm line-clamp-2">{getCustomerAddress(customer)}</span>
                       </td>
                       <td className="py-5 px-6">
-                        <span className="text-gray-900 text-sm font-medium">{customer.phone}</span>
+                        <span className="text-gray-900 text-sm font-medium">{getCustomerPhone(customer)}</span>
                       </td>
                       <td className="py-5 px-6">
                         <div className="flex items-center gap-2 ml-4">
@@ -201,9 +284,7 @@ const Pengguna = () => {
                             className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-all duration-200"
                             title="View"
                           >
-                            {/* <ReceiptText /> */}
-                            <img src="/receipt-item.png" alt="" className="" width="30"/>
-
+                            <img src="/receipt-item.png" alt="View" className="" width="30"/>
                           </button>
                         </div>
                       </td>

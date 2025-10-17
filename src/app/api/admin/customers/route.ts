@@ -15,7 +15,8 @@ export async function GET(req: NextRequest) {
                 role: { not: "ADMIN" }, // Assuming you want to fetch only non-admin users
             },
             include: {
-                orders: true, // Include orders if needed
+                orders: true,
+                Address: true
             },
         });
 

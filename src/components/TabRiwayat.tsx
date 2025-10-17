@@ -14,7 +14,7 @@ export default function TabRiwayat() {
   const pathname = usePathname();
 
   return (
-    <div className="flex w-full text-center p-2 md:p-3 mb-4 md:mb-6">
+    <div className="flex w-full text-center p-2 md:p-3 mb-4 md:mb-6 -mt-6">
       {tabs.map((tab) => {
         const isActive = pathname === tab.href;
 
