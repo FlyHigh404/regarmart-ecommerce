@@ -10,12 +10,14 @@ export default function Pesanan() {
   const [orders, setOrders] = useState<any[]>([])
   const [filterStatus, setFilterStatus] = useState("Semua")
   const router = useRouter()
+  const [loading, setLoading] = useState(true); 
 
   const statusMap: Record<string, string> = {
     PENDING: "Menunggu",
     PROCESSING: "Sedang proses",
     SHIPPED: "Dikirim",
     COMPLETED: "Pesanan selesai",
+    CANCELED: "Dibatalkan",
   }
 
   const statusBadgeStyle: Record<string, string> = {
@@ -23,10 +25,12 @@ export default function Pesanan() {
     "Sedang proses": "bg-yellow-100 text-yellow-800",
     Dikirim: "bg-orange-100 text-orange-800",
     "Pesanan selesai": "bg-green-100 text-green-800",
+    Dibatalkan: "bg-red-100 text-red-800",
   }
 
-  const formatCurrency = (amount: number) => {
-    return amount.toLocaleString("id-ID", { style: "currency", currency: "IDR" })
+  const formatCurrency = (amount: string | number) => {
+    const numAmount = typeof amount === "string" ? parseFloat(amount) : amount
+    return numAmount.toLocaleString("id-ID", { style: "currency", currency: "IDR" })
   }
 
   const formatDate = (dateString: string) => {
@@ -41,6 +45,7 @@ export default function Pesanan() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
+        setLoading(true);
         const res = await fetch("/api/admin/order")
         if (!res.ok) throw new Error("Gagal fetch data")
         const data = await res.json()
@@ -49,17 +54,19 @@ export default function Pesanan() {
           id: order.id,
           customer: {
             name: order.user?.name || "Tanpa Nama",
-            avatar: "/placeholder.svg",
+            avatar: order.user?.image || "/placeholder.svg",
           },
           status: statusMap[order.status] || order.status,
-          total: formatCurrency(order.total || 0),
+          total: formatCurrency(order.totalAmount),
           date: formatDate(order.createdAt),
         }))
 
         setOrders(mapped)
       } catch (error) {
         console.error("Gagal mengambil data pesanan:", error)
-      }
+      } finally {
+        setLoading(false);
+      } 
     }
 
     fetchOrders()
@@ -89,6 +96,21 @@ export default function Pesanan() {
   const handlePreviewOrder = (order: any) => {
     router.push(`/admin/pesanan/${order.id}`)
   }
+
+  if (loading) {
+      return (
+        <AdminLayout>
+          <main className="flex-1 bg-gray-50 pt-3">
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden p-12">
+              <div className="text-center">
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+                <p className="mt-4 text-gray-600">Loading pesanan...</p>
+              </div>
+            </div>
+          </main>
+        </AdminLayout>
+      );
+    }
 
   return (
     <AdminLayout>
@@ -172,9 +194,6 @@ export default function Pesanan() {
                 <thead className="bg-gray-100">
                   <tr>
                     <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">
-                      ID
-                    </th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">
                       PELANGGAN
                     </th>
                     <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">
@@ -199,9 +218,6 @@ export default function Pesanan() {
                         index % 2 === 0 ? "bg-white" : "bg-gray-50"
                       }`}
                     >
-                      <td className="py-5 px-6">
-                        <div className="font-medium text-gray-900 text-sm">{order.id}</div>
-                      </td>
                       <td className="py-5 px-6">
                         <div className="flex items-center gap-3">
                           <img
@@ -235,7 +251,7 @@ export default function Pesanan() {
 
                   {filteredOrders.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="py-12 px-6 text-center bg-white">
+                      <td colSpan={5} className="py-12 px-6 text-center bg-white">
                         <div className="text-gray-500">
                           <p className="text-lg font-medium">Tidak ada pesanan ditemukan</p>
                           <p className="text-sm mt-1">Coba ubah kata kunci pencarian Anda</p>
@@ -270,6 +286,7 @@ export default function Pesanan() {
                     <option>Sedang proses</option>
                     <option>Dikirim</option>
                     <option>Pesanan selesai</option>
+                    <option>Dibatalkan</option>
                   </select>
                 </div>
                 <div className="flex gap-2 pt-2">

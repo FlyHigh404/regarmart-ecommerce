@@ -1,12 +1,12 @@
-import {NextResponse} from 'next/server';
-import {prisma} from '@/lib/prisma';
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { getServerSession } from 'next-auth/next';
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
     const session = await getServerSession(authOptions);
     if (!session || session.user?.role !== 'ADMIN') {
-        return NextResponse.json({error: 'Unauthorized'}, {status: 401});
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const { id } = params;
 
@@ -14,8 +14,24 @@ export async function GET(request: Request, { params }: { params: { id: string }
         const order = await prisma.order.findUnique({
             where: { id },
             include: {
-                user: { select: { id: true, name: true, email: true } },
-                orderItems: { include: { product: true } },
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        image: true,
+                        phone: true,
+                        Address: {
+                            where: { isPrimary: true },
+                            select: { fullAddress: true },
+                        },
+                    },
+                },
+                orderItems: {
+                    include: {
+                        product: true,
+                    },
+                },
             },
         });
 
@@ -30,22 +46,55 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(
+    request: Request,
+    { params }: { params: { id: string } }
+) {
     const session = await getServerSession(authOptions);
+
     if (!session || session.user?.role !== 'ADMIN') {
-        return NextResponse.json({error: 'Unauthorized'}, {status: 401});
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
     const { id } = params;
-    const { status } = await request.json();
 
     try {
+        const { status } = await request.json();
+
+        const allowedStatuses = ['PROCESSING', 'SHIPPED', 'COMPLETED', 'CANCELED'];
+        if (!allowedStatuses.includes(status)) {
+            return NextResponse.json(
+                { error: 'Invalid status value' },
+                { status: 400 }
+            );
+        }
+
         const updatedOrder = await prisma.order.update({
             where: { id },
-            data: { status },
+            data: {
+                status,
+                updatedAt: new Date()
+            },
+            include: {
+                user: {
+                    include: {
+                        Address: true
+                    }
+                },
+                orderItems: {
+                    include: {
+                        product: true
+                    }
+                }
+            }
         });
+
         return NextResponse.json(updatedOrder);
     } catch (error) {
         console.error('Error updating order:', error);
-        return NextResponse.json({ error: 'Failed to update order' }, { status: 500 });
+        return NextResponse.json(
+            { error: 'Failed to update order' },
+            { status: 500 }
+        );
     }
 }

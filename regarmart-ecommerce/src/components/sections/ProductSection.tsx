@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Search, Plus, X, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { Search, Plus, X, Loader2, CheckCircle, AlertCircle, LogIn } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from 'next/link';
@@ -43,6 +43,74 @@ const Toast = ({
   </div>
 );
 
+// Login Confirmation Modal Component
+const LoginModal = ({ 
+  isOpen, 
+  onClose, 
+  onConfirm 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  onConfirm: () => void;
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-transparent backdrop-blur-sm"
+        onClick={onClose}
+      ></div>
+      
+      {/* Modal */}
+      <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-slideUp">
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <X size={20} />
+        </button>
+
+        {/* Icon */}
+        <div className="flex justify-center mb-4">
+          <div className="w-16 h-16 bg-[#26A81D] rounded-full flex items-center justify-center">
+            <LogIn size={32} className="text-white" />
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="text-center mb-6">
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
+            Login Diperlukan
+          </h3>
+          <p className="text-gray-600 leading-relaxed">
+            Anda harus login terlebih dahulu untuk menambahkan produk ke keranjang.
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors"
+          >
+            Batal
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 px-4 py-3 bg-[#26A81D] hover:bg-green-600 text-white font-semibold rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2"
+          >
+            <LogIn size={18} />
+            Login
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Loading Skeleton Component
 const ProductSkeleton = () => (
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -68,11 +136,18 @@ export default function ProductPopuler() {
   const [searchQuery, setSearchQuery] = useState("");
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-  const [centerProductIndex, setCenterProductIndex] = useState(1);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [pendingProduct, setPendingProduct] = useState<any>(null);
+  const [isMounted, setIsMounted] = useState(false);
   
   const { data: session } = useSession();
   const router = useRouter();
   const { incrementCart } = useCart();
+
+  // Handle client-side mounting
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -101,27 +176,17 @@ export default function ProductPopuler() {
     }
   }, [toast]);
 
-  // Reset center index when category changes
-  useEffect(() => {
-    setCenterProductIndex(1);
-  }, [activeCategory, searchQuery]);
-
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(price);
+    // Simple format that's consistent on server and client
+    return `Rp ${price.toLocaleString('id-ID')}`;
   };
 
   const handleAddToCart = async (product: any) => {
     // Cek login
     if (!session) {
-      setToast({ 
-        message: "Anda harus login terlebih dahulu.", 
-        type: 'error' 
-      });
-      setTimeout(() => router.push("/auth/signin"), 2000);
+      // Simpan produk yang ingin ditambahkan dan tampilkan modal login
+      setPendingProduct(product);
+      setShowLoginModal(true);
       return;
     }
 
@@ -134,6 +199,10 @@ export default function ProductPopuler() {
       return;
     }
 
+    await addToCart(product);
+  };
+
+  const addToCart = async (product: any) => {
     setAddingToCart(product.id);
     try {
       const response = await fetch("/api/cart", {
@@ -171,11 +240,24 @@ export default function ProductPopuler() {
     }
   };
 
+  const handleLoginConfirm = () => {
+    setShowLoginModal(false);
+    router.push("/auth/signin");
+  };
+
+  const handleLoginCancel = () => {
+    setShowLoginModal(false);
+    setPendingProduct(null);
+  };
+
   // Render product card function
   const renderProductCard = (product: any, index: number) => (
     <Link href={`/katalog/${product.id}`} passHref key={product.id}>
       <div
-        className="cursor-pointer bg-white/90 backdrop-blur-sm rounded-lg sm:rounded-xl p-1.5 sm:p-3 lg:p-2 shadow-sm sm:shadow-md hover:shadow-xl transition-all duration-500 hover:-translate-y-2 group"
+        className={`cursor-pointer bg-white/90 backdrop-blur-sm rounded-lg sm:rounded-xl p-1.5 sm:p-3 lg:p-2 shadow-sm sm:shadow-md hover:shadow-xl transition-all duration-500 hover:-translate-y-2 mb-2 group ${
+          isMounted ? 'animate-card-appear' : ''
+        }`}
+        style={isMounted ? { animationDelay: `${index * 100}ms` } : undefined}
       >
         {/* Gambar */}
         <div className="mb-2 sm:mb-4 bg-gray-50 rounded-lg overflow-hidden transform transition-transform duration-300 group-hover:scale-105">
@@ -240,7 +322,7 @@ export default function ProductPopuler() {
           ) : (
             <>
               <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
-              Tambah
+              Tambah Keranjang
             </>
           )}
         </button>
@@ -255,6 +337,23 @@ export default function ProductPopuler() {
     const matchesCategory = !activeCategory || product.category?.name === activeCategory;
     return matchesSearch && matchesCategory;
   });
+
+  // Don't render until mounted to avoid hydration mismatch
+  if (!isMounted) {
+    return (
+      <div className="overflow-x-hidden">
+        <div className="relative max-w-xl mt-1 mx-auto mb-5 px-2 sm:px-0">
+          <div className="relative">
+            <div className="w-full pl-10 sm:pl-11 pr-4 py-2.5 sm:py-3 lg:py-2.5 text-sm sm:text-base lg:text-[0.95rem] border border-gray-200 rounded-3xl shadow-md bg-white/90 backdrop-blur-sm h-12" />
+          </div>
+        </div>
+        <div className="flex flex-wrap justify-center lg:justify-start lg:ml-42 gap-2 sm:gap-2.5 lg:gap-2 mb-4">
+          <div className="px-3.5 sm:px-5 lg:px-4 py-1.5 sm:py-2.5 lg:py-2 rounded-full h-10 w-20 bg-gray-200 animate-pulse" />
+        </div>
+        <ProductSkeleton />
+      </div>
+    );
+  }
 
   if (error) {
     return (
@@ -272,7 +371,7 @@ export default function ProductPopuler() {
   }
 
   return (
-    <div className="overflow-x-hidden">
+    <div className="overflow-x-hidden" suppressHydrationWarning>
       {toast && (
         <Toast
           message={toast.message}
@@ -281,8 +380,14 @@ export default function ProductPopuler() {
         />
       )}
 
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={handleLoginCancel}
+        onConfirm={handleLoginConfirm}
+      />
+
       {/* Search Bar */}
-      <div className="relative max-w-xl mx-auto mb-5 px-2 sm:px-0 animate-fade-in-up animation-delay-400">
+      <div className="relative max-w-xl mt-1 mx-auto mb-5 px-2 sm:px-0 animate-fade-in-up animation-delay-400">
         <div className="relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 sm:w-4.5 lg:w-4 h-4 sm:h-4.5 lg:h-4 text-gray-900 animate-pulse-soft" />
           <input
@@ -291,6 +396,8 @@ export default function ProductPopuler() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 sm:pl-11 pr-4 py-2.5 sm:py-3 lg:py-2.5 text-sm sm:text-base lg:text-[0.95rem] border border-gray-200 rounded-3xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent shadow-md bg-white/90 backdrop-blur-sm transition-all duration-300 hover:shadow-lg focus:scale-[1.01]"
+            autoComplete="off"
+            suppressHydrationWarning
           />
         </div>
       </div>
@@ -304,6 +411,7 @@ export default function ProductPopuler() {
               ? "bg-green-500 text-white shadow-lg scale-105"
               : "bg-green-50 text-green-600 border border-green-300 hover:bg-green-100 hover:scale-105"
           }`}
+          suppressHydrationWarning
         >
           Semua
         </button>
@@ -317,6 +425,7 @@ export default function ProductPopuler() {
                 : "bg-green-50 text-green-600 border border-green-300 hover:bg-green-100 hover:scale-105"
             }`}
             style={{ animationDelay: `${600 + index * 100}ms` }}
+            suppressHydrationWarning
           >
             {category.name}
           </button>
@@ -355,70 +464,8 @@ export default function ProductPopuler() {
             </button>
           </div>
         ) : (
-          <div className="relative">
-            {/* Navigation Buttons */}
-            {filteredProducts.length > 3 && (
-              <>
-                <button
-                  onClick={() => setCenterProductIndex(prev => Math.max(0, prev - 1))}
-                  disabled={centerProductIndex === 0}
-                  className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white shadow-lg rounded-full p-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                  <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => setCenterProductIndex(prev => Math.min(filteredProducts.length - 1, prev + 1))}
-                  disabled={centerProductIndex === filteredProducts.length - 1}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white shadow-lg rounded-full p-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                  <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </>
-            )}
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 px-8">
-              {/* Left Product */}
-              {centerProductIndex > 0 && filteredProducts[centerProductIndex - 1] && (
-                <div className="opacity-40 transition-all duration-500">
-                  {renderProductCard(filteredProducts[centerProductIndex - 1], centerProductIndex - 1)}
-                </div>
-              )}
-              {centerProductIndex === 0 && <div className="hidden sm:block"></div>}
-
-              {/* Center Product (Main Focus) */}
-              <div className="opacity-100 transition-all duration-500">
-                {renderProductCard(filteredProducts[centerProductIndex], centerProductIndex)}
-              </div>
-
-              {/* Right Product */}
-              {centerProductIndex < filteredProducts.length - 1 && filteredProducts[centerProductIndex + 1] && (
-                <div className="opacity-40 transition-all duration-500">
-                  {renderProductCard(filteredProducts[centerProductIndex + 1], centerProductIndex + 1)}
-                </div>
-              )}
-              {centerProductIndex === filteredProducts.length - 1 && <div className="hidden sm:block"></div>}
-            </div>
-
-            {/* Indicators */}
-            {filteredProducts.length > 1 && (
-              <div className="flex justify-center gap-2 mt-6">
-                {filteredProducts.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCenterProductIndex(index)}
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      index === centerProductIndex 
-                        ? 'w-8 bg-green-500' 
-                        : 'w-2 bg-gray-300 hover:bg-gray-400'
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filteredProducts.map((product, index) => renderProductCard(product, index))}
           </div>
         )}
       </div>
@@ -488,6 +535,30 @@ export default function ProductPopuler() {
         }
         .animate-pulse-soft {
           animation: pulse-soft 2s ease-in-out infinite;
+        }
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.2s ease-out;
+        }
+        .animate-slideUp {
+          animation: slideUp 0.3s ease-out;
         }
       `}</style>
     </div>

@@ -1,5 +1,5 @@
 "use client";
-import { Plus, X } from "lucide-react";
+import { LogIn, Plus, X } from "lucide-react";
 import Image from "next/image";
 import React, { useState } from "react";
 import { Product } from "@/types/product";
@@ -78,42 +78,59 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
     }).format(numericPrice);
   };
 
-
   return (
     <>
       {/* Error Modal */}
       {showErrorModal && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
-          <div className="bg-white rounded-2xl p-6 mx-4 max-w-sm w-full shadow-2xl animate-scale-in">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">
-                Tidak Dapat Menambahkan
-              </h3>
-              <button
-                onClick={closeErrorModal}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-transparent backdrop-blur-sm"
+            onClick={closeErrorModal}
+          ></div>
+
+          {/* Modal */}
+          <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-slideUp">
+            {/* Close Button */}
+            <button
+              onClick={closeErrorModal}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X size={20} />
+            </button>
+
+            {/* Icon */}
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 bg-[#26A81D] rounded-full flex items-center justify-center">
+                <LogIn size={32} className="text-white" />
+              </div>
             </div>
-            <p className="text-gray-600 mb-6">
-              {errorMessage}
-            </p>
+
+            {/* Content */}
+            <div className="text-center mb-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                Login Diperlukan
+              </h3>
+              <p className="text-gray-600 leading-relaxed">
+                {errorMessage}
+              </p>
+            </div>
+
+            {/* Actions */}
             <div className="flex gap-3">
               <button
                 onClick={closeErrorModal}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors"
               >
-                Tutup
+                Batal
               </button>
-              {!session && (
-                <button
-                  onClick={handleLoginRedirect}
-                  className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-                >
-                  Login
-                </button>
-              )}
+              <button
+                onClick={session?.user?.role === "ADMIN" ? closeErrorModal : handleLoginRedirect}
+                className="flex-1 px-4 py-3 bg-[#26A81D] hover:bg-green-600 text-white font-semibold rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2"
+              >
+                <LogIn size={18} />
+                {session?.user?.role === "ADMIN" ? "Tutup" : "Login"}
+              </button>
             </div>
           </div>
         </div>

@@ -21,10 +21,12 @@ const Products = () => {
     price: number;
     stock: number;
   }>>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setLoading(true);
         const response = await fetch("/api/admin/products");
         if (response.ok) {
           const data = await response.json();
@@ -32,6 +34,8 @@ const Products = () => {
         }
       } catch (error) {
         console.error("Failed to fetch products:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchProducts();
@@ -101,6 +105,21 @@ const Products = () => {
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.category.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <main className="flex-1 bg-gray-50 pt-3">
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden p-12">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+              <p className="mt-4 text-gray-600">Loading products...</p>
+            </div>
+          </div>
+        </main>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
