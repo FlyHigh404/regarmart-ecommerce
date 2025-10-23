@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
 
     try {
         const orders = await prisma.order.findMany({
+            where: {status: 'PENDING'},
             include: {
                 user: { select: { id: true, name: true, email: true } }
             },

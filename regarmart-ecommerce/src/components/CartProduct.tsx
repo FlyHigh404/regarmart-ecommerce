@@ -6,7 +6,7 @@ import { Product } from "@/types/product";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useCart } from "@/app/context/CartContext";
+import { useCart } from "@/context/CartContext";
 
 interface CartProductProps {
   product: Product;

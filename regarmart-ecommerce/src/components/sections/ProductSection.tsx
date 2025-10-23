@@ -5,7 +5,7 @@ import { Search, Plus, X, Loader2, CheckCircle, AlertCircle } from "lucide-react
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from 'next/link';
-import { useCart } from "@/app/context/CartContext";
+import { useCart } from "@/context/CartContext";
 
 // Toast Notification Component
 const Toast = ({ 

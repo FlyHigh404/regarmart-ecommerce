@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useCart } from "@/app/context/CartContext";
+import { useCart } from "@/context/CartContext";
 
 // --- INTERFACE ---
 interface CartItemData {

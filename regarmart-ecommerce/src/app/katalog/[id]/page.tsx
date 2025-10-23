@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import Footer from "@/components/Footer";
 import NavSearch from "@/components/NavSearch";
-import { useCart } from "@/app/context/CartContext";
+import { useCart } from "@/context/CartContext";
 
 // Toast Notification Component
 const Toast = ({ 
