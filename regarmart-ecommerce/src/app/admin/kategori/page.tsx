@@ -7,25 +7,43 @@ import CategoryUploadForm from "@/components/CategoryUploadForm";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
+interface CategoryUploadFormProps {
+  initialData?: any;
+  onClose?: () => void;
+  onSuccess?: () => void; // Tambah callback untuk refresh data
+}
+
 const Categories = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
-  const [formData, setFormData] = useState({ name: "", description: "" });
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [categories, setCategories] = useState<
     Array<{ id: string; name: string; description: string; imageUrl: string | null }>
   >([]);
   const [editingCategory, setEditingCategory] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
 
   // filter states
   const [filterOption, setFilterOption] = useState("Semua");
 
+  const refreshCategories = async () => {
+    try {
+      const response = await fetch("/api/admin/categories");
+      if (response.ok) {
+        const data = await response.json();
+        setCategories(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch categories:", error);
+    }
+  };
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
+        setLoading(true);
         const response = await fetch("/api/admin/categories");
         if (response.ok) {
           const data = await response.json();
@@ -33,6 +51,8 @@ const Categories = () => {
         }
       } catch (error) {
         console.error("Failed to fetch categories:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchCategories();
@@ -54,42 +74,6 @@ const Categories = () => {
 
     return matchesSearch && matchesFilter;
   });
-
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    try {
-      const response = await fetch("/api/admin/categories", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to create category");
-      }
-
-      const newCat = await response.json();
-      setCategories((prev) => [...prev, newCat]);
-
-      setFormData({ name: "", description: "" });
-      setShowAddModal(false);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleDeleteCategory = async (categoryId: string) => {
     const MySwal = withReactContent(Swal);
@@ -144,6 +128,21 @@ const Categories = () => {
     });
   };
 
+  if (loading) {
+    return (
+      <AdminLayout>
+        <main className="flex-1 bg-gray-50 pt-3">
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden p-12">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+              <p className="mt-4 text-gray-600">Loading categories...</p>
+            </div>
+          </div>
+        </main>
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout>
       <main className="flex-1 bg-gray-50 pt-3">
@@ -162,22 +161,10 @@ const Categories = () => {
               <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3">
                 {/* Filter and Add buttons container */}
                 <div className="flex space-x-2 sm:space-x-3 order-2 sm:order-2">
-                  {/* Filter Button */}
-                  <div className="relative flex-1 sm:flex-none">
-                    <button
-                      onClick={() => setShowFilter(!showFilter)}
-                      className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 sm:px-6 py-2 sm:py-3 rounded-lg flex items-center justify-center gap-2 sm:gap-3 transition-colors text-sm w-full sm:w-auto"
-                    >
-                      <Filter className="text-green-600 w-4 h-4 sm:w-5 sm:h-5" />
-                      <span className="hidden sm:inline">Filter</span>
-                      <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    </button>
-                  </div>
-
                   {/* Add Category Button */}
                   <button
                     onClick={() => setShowAddModal(true)}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg flex items-center justify-center gap-2 sm:gap-3 transition-colors font-medium text-sm flex-1 sm:flex-none"
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg flex items-center justify-center gap-2 sm:gap-3 transition-colors font-medium text-sm flex-1 sm:flex-none mr-3"
                   >
                     <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                     <span className="hidden sm:inline">Tambah Kategori</span>
@@ -326,7 +313,10 @@ const Categories = () => {
 
               <div className="p-4 sm:p-6">
                 {error && <div className="mb-3 text-red-600 text-sm">{error}</div>}
-                <CategoryUploadForm onClose={() => setShowAddModal(false)} />
+                <CategoryUploadForm
+                  onClose={() => setShowAddModal(false)}
+                  onSuccess={refreshCategories} // Tambah ini
+                />
               </div>
             </div>
           </div>
@@ -353,25 +343,38 @@ const Categories = () => {
               </div>
 
               <div className="p-4 sm:p-6">
-                <CategoryUploadForm initialData={editingCategory} onClose={() => setShowEditModal(false)} />
+                <CategoryUploadForm
+                  initialData={editingCategory}
+                  onClose={() => setShowEditModal(false)}
+                  onSuccess={refreshCategories} // Tambah ini
+                />
               </div>
             </div>
           </div>
         )}
-        
+
         {/* Filter Dropdown */}
         {showFilter && (
-          <div className="fixed inset-0 z-40" onClick={() => setShowFilter(false)}>
+          <div className="fixed inset-0 z-40 flex items-center justify-center" onClick={() => setShowFilter(false)}>
             <div
-              className="absolute top-32 right-4 sm:right-8 bg-white rounded-lg shadow-xl border border-gray-200 p-4 w-64 max-w-[calc(100vw-2rem)]"
+              className="bg-white rounded-xl shadow-2xl border border-gray-200 p-6 w-full max-w-md mx-4"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="font-medium text-gray-900 mb-3">Filter Kategori</h3>
-              <div className="space-y-3">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Filter Kategori</h3>
+                <button
+                  onClick={() => setShowFilter(false)}
+                  className="text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-4">
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">Deskripsi</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Deskripsi</label>
                   <select
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none focus:border-transparent"
                     value={filterOption}
                     onChange={(e) => setFilterOption(e.target.value)}
                   >
@@ -380,15 +383,16 @@ const Categories = () => {
                     <option>Tanpa Deskripsi</option>
                   </select>
                 </div>
-                <div className="flex gap-2 pt-2">
+
+                <div className="flex gap-3 pt-2">
                   <button
-                    className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                    className="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
                     onClick={() => setShowFilter(false)}
                   >
                     Terapkan
                   </button>
                   <button
-                    className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
+                    className="flex-1 bg-gray-100 text-gray-700 py-3 px-4 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
                     onClick={() => {
                       setFilterOption("Semua");
                       setShowFilter(false);

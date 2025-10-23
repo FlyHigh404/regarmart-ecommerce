@@ -78,7 +78,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           {/* Desktop Header */}
           <div className="hidden lg:flex items-center justify-between px-6 py-8 bg-white shadow-sm">
             {/* Left Section - Search Bar */}
-            <div className="flex-1 max-w-3xl">
+            {/* <div className="flex-1 max-w-3xl">
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                 <input
@@ -89,10 +89,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   className="w-full pl-12 pr-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent focus:bg-white transition-all duration-200"
                 />
               </div>
-            </div>
+            </div> */}
 
             {/* Right Section - Notification & User Info */}
-            <div className="flex items-center space-x-6 mr-6">
+            <div className="flex items-center ml-210 space-x-6 mr-6">
               {/* Notification */}
               <div className="relative">
                 <Bell
@@ -123,20 +123,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
           {/* Mobile Header Bar */}
           <div className="lg:hidden flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 p-3 sm:p-4 mb-4 sm:mb-6 bg-white shadow-sm">
-            {/* Search Bar */}
-            <div className="relative w-full sm:w-2/3">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
-              <input
-                type="text"
-                placeholder="Cari disini..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300"
-              />
-            </div>
-
             {/* Mobile Notifikasi dan Avatar */}
-            <div className="flex items-center justify-between sm:justify-end space-x-3 sm:space-x-4">
+            <div className="flex items-center justify-center gap-65 sm:justify-end space-x-3 sm:space-x-4">
               <div className="flex items-center space-x-3">
                 <div className="relative">
                   <Bell

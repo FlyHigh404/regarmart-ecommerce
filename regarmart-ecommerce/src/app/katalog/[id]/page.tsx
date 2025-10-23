@@ -13,6 +13,7 @@ import {
   CheckCircle,
   AlertCircle,
   Loader2,
+  LogIn,
 } from "lucide-react";
 import Footer from "@/components/Footer";
 import NavSearch from "@/components/NavSearch";
@@ -53,6 +54,74 @@ const Toast = ({
     </div>
   </div>
 );
+
+// Login Confirmation Modal Component
+const LoginModal = ({ 
+  isOpen, 
+  onClose, 
+  onConfirm 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  onConfirm: () => void;
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-transparent backdrop-blur-sm"
+        onClick={onClose}
+      ></div>
+      
+      {/* Modal */}
+      <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-slideUp">
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <X size={20} />
+        </button>
+
+        {/* Icon */}
+        <div className="flex justify-center mb-4">
+          <div className="w-16 h-16 bg-[#26A81D] rounded-full flex items-center justify-center">
+            <LogIn size={32} className="text-white" />
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="text-center mb-6">
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
+            Login Diperlukan
+          </h3>
+          <p className="text-gray-600 leading-relaxed">
+            Anda harus login terlebih dahulu untuk menambahkan produk ke keranjang.
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors"
+          >
+            Batal
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 px-4 py-3 bg-[#26A81D] hover:bg-green-600 text-white font-semibold rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2"
+          >
+            <LogIn size={18} />
+            Login
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // Loading Skeleton Component
 const ProductSkeleton = () => (
@@ -98,6 +167,7 @@ const ProductDetailPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [addingToCart, setAddingToCart] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
     if (!params?.id) return;
@@ -157,25 +227,7 @@ const ProductDetailPage = () => {
     window.history.back();
   };
 
-  const handleAddToCart = async () => {
-    // Cek login
-    if (!session) {
-      setToast({ 
-        message: "Anda harus login terlebih dahulu.", 
-        type: 'error' 
-      });
-      return;
-    }
-
-    // Cek role user
-    if (session.user?.role === "ADMIN") {
-      setToast({ 
-        message: "Akun admin tidak dapat menambahkan produk ke keranjang.", 
-        type: 'error' 
-      });
-      return;
-    }
-
+  const addToCart = async () => {
     setAddingToCart(true);
     try {
       const response = await fetch("/api/cart", {
@@ -212,6 +264,34 @@ const ProductDetailPage = () => {
     } finally {
       setAddingToCart(false);
     }
+  };
+
+  const handleAddToCart = async () => {
+    // Cek login
+    if (!session) {
+      setShowLoginModal(true);
+      return;
+    }
+
+    // Cek role user
+    if (session.user?.role === "ADMIN") {
+      setToast({ 
+        message: "Akun admin tidak dapat menambahkan produk ke keranjang.", 
+        type: 'error' 
+      });
+      return;
+    }
+
+    await addToCart();
+  };
+
+  const handleLoginConfirm = () => {
+    setShowLoginModal(false);
+    window.location.href = "/auth/signin";
+  };
+
+  const handleLoginCancel = () => {
+    setShowLoginModal(false);
   };
 
   if (loading) {
@@ -261,6 +341,13 @@ const ProductDetailPage = () => {
           onClose={() => setToast(null)}
         />
       )}
+
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={handleLoginCancel}
+        onConfirm={handleLoginConfirm}
+      />
+
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 py-6">
           {/* Product Detail Container */}
@@ -534,6 +621,30 @@ const ProductDetailPage = () => {
         }
         .animate-slide-in {
           animation: slide-in 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.2s ease-out;
+        }
+        .animate-slideUp {
+          animation: slideUp 0.3s ease-out;
         }
       `}</style>
     </>
