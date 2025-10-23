@@ -47,12 +47,9 @@ interface Customer {
 
 const Pengguna = () => {
   const [searchTerm, setSearchTerm] = useState("")
-  const [showFilter, setShowFilter] = useState(false)
   const [customers, setCustomers] = useState<Customer[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
-  const [showPreview, setShowPreview] = useState(false)
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
 
   // Fetch customers data from API
   useEffect(() => {
@@ -95,39 +92,6 @@ const Pengguna = () => {
 
     return matchesSearch
   })
-
-  const handleDeleteCustomer = async (customerId: string) => {
-    const MySwal = withReactContent(Swal)
-
-    MySwal.fire({
-      title: "Are you sure?",
-      text: "Do you really want to delete this customer?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#dc2626",
-      cancelButtonColor: "#6b7280",
-      confirmButtonText: "Yes, delete it!",
-      cancelButtonText: "Cancel",
-      customClass: {
-        popup: "rounded-xl",
-        confirmButton: "rounded-lg px-4 py-2",
-        cancelButton: "rounded-lg px-4 py-2",
-      },
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        setCustomers((prev) => prev.filter((customer) => customer.id !== customerId))
-        MySwal.fire({
-          title: "Deleted!",
-          text: "Customer has been deleted successfully.",
-          icon: "success",
-          customClass: {
-            popup: "rounded-xl",
-            confirmButton: "rounded-lg px-4 py-2",
-          },
-        })
-      }
-    })
-  }
 
   const handlePreviewCustomer = (customer: { id: string }) => {
   router.push(`/admin/pengguna/${customer.id}`)
@@ -177,19 +141,6 @@ const Pengguna = () => {
               <div className="flex flex-col">
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Tabel customers</h1>
                 <p className="text-gray-500 text-sm sm:text-base mt-1">Ini adalah daftar data customers</p>
-              </div>
-
-              <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3 mr-3">
-                <div className="relative order-2 sm:order-2">
-                  <button
-                    onClick={() => setShowFilter(!showFilter)}
-                    className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 sm:px-6 py-2 sm:py-3 rounded-lg flex items-center justify-center gap-2 sm:gap-3 transition-colors text-sm w-full sm:w-auto"
-                  >
-                    <Filter className="text-green-600 w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="hidden sm:inline">Filter</span>
-                    <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  </button>
-                </div>
               </div>
             </div>
           </div>
@@ -306,42 +257,6 @@ const Pengguna = () => {
             </div>
           </div>
         </div>
-
-        {showFilter && (
-          <div className="fixed inset-0 z-40" onClick={() => setShowFilter(false)}>
-            <div
-              className="absolute top-32 right-4 sm:right-8 bg-white rounded-lg shadow-xl border border-gray-200 p-4 w-64 max-w-[calc(100vw-2rem)]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3 className="font-medium text-gray-900 mb-3">Filter Customer</h3>
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm text-gray-700 mb-1">Lokasi</label>
-                  <select className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none focus:border-transparent">
-                    <option>Semua Lokasi</option>
-                    <option>Sidoarjo</option>
-                    <option>Surabaya</option>
-                    <option>Malang</option>
-                  </select>
-                </div>
-                <div className="flex gap-2 pt-2">
-                  <button
-                    className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
-                    onClick={() => setShowFilter(false)}
-                  >
-                    Terapkan
-                  </button>
-                  <button
-                    className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
-                    onClick={() => setShowFilter(false)}
-                  >
-                    Reset
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </main>
     </AdminLayout>
   )
