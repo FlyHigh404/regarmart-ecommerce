@@ -6,7 +6,7 @@ import { useRouter, usePathname } from "next/navigation"
 import { signOut, useSession } from "next-auth/react";
 import NotifikasiCust from "./NotifikasiCust";
 import CartCust from "./CartCust";
-import { useCart } from "@/app/context/CartContext"
+import { useCart } from "@/context/CartContext"
 
 
 const Navbar = () => {

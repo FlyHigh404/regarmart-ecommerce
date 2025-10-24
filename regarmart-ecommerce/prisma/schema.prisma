@@ -25,6 +25,7 @@ model User {
   orders        Order[]
   ratings       Rating[]
   reviews       Review[]
+  replyAdmin    Review[]       @relation("replyAdmin")
   sessions      Session[]
 }
 
@@ -105,10 +106,13 @@ model Review {
   productId String
   userId    String
   content   String
+  reply    String?
+  replyBy  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   product   Product  @relation(fields: [productId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
+  admin     User?    @relation("replyAdmin",fields: [replyBy], references: [id])
 }
 
 model Rating {

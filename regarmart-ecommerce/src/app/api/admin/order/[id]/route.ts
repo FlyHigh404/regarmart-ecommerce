@@ -1,3 +1,4 @@
+// api/admin/order/[id]/route.ts
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
@@ -46,6 +47,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
 }
 
+
 export async function PATCH(
     request: Request,
     { params }: { params: { id: string } }
@@ -89,12 +91,28 @@ export async function PATCH(
             }
         });
 
+        // simpan ke tabel Notification
+        const message = `Your order status has been updated to ${status}`;
+        const notification = await prisma.notification.create({
+            data: {
+                userId: updatedOrder.user.id,
+                message,
+            },
+        });
+
+        // kirim event ke server websocket (kalau aktif)
+        await fetch(`${process.env.WS_SERVER_URL}/notify/order`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                userId: updatedOrder.user.id,
+                notification,
+            }),
+        });
+
         return NextResponse.json(updatedOrder);
     } catch (error) {
-        console.error('Error updating order:', error);
-        return NextResponse.json(
-            { error: 'Failed to update order' },
-            { status: 500 }
-        );
+        console.error("Error updating order:", error);
+        return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
     }
 }

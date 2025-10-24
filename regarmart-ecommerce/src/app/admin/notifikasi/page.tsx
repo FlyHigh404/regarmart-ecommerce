@@ -106,21 +106,6 @@ const Notifikasi = () => {
                   Ini adalah daftar notifikasi ke customers
                 </p>
               </div>
-
-              {/* Actions */}
-              <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3">
-                {/* Filter Button */}
-                <div className="relative">
-                  <button
-                    onClick={() => setShowFilter(!showFilter)}
-                    className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 sm:px-6 py-2 sm:py-3 rounded-lg flex items-center justify-center gap-2 sm:gap-3 transition-colors text-sm w-full sm:w-auto"
-                  >
-                    <Filter className="text-green-600 w-4 h-4 sm:w-5 sm:h-5" />
-                    <span>Filter</span>
-                    <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
 

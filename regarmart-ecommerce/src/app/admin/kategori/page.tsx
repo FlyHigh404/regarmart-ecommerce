@@ -161,22 +161,10 @@ const Categories = () => {
               <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3">
                 {/* Filter and Add buttons container */}
                 <div className="flex space-x-2 sm:space-x-3 order-2 sm:order-2">
-                  {/* Filter Button */}
-                  <div className="relative flex-1 sm:flex-none">
-                    <button
-                      onClick={() => setShowFilter(!showFilter)}
-                      className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 sm:px-6 py-2 sm:py-3 rounded-lg flex items-center justify-center gap-2 sm:gap-3 transition-colors text-sm w-full sm:w-auto"
-                    >
-                      <Filter className="text-green-600 w-4 h-4 sm:w-5 sm:h-5" />
-                      <span className="hidden sm:inline">Filter</span>
-                      <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    </button>
-                  </div>
-
                   {/* Add Category Button */}
                   <button
                     onClick={() => setShowAddModal(true)}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg flex items-center justify-center gap-2 sm:gap-3 transition-colors font-medium text-sm flex-1 sm:flex-none"
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg flex items-center justify-center gap-2 sm:gap-3 transition-colors font-medium text-sm flex-1 sm:flex-none mr-3"
                   >
                     <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                     <span className="hidden sm:inline">Tambah Kategori</span>

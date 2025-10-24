@@ -19,7 +19,7 @@ import NavSearch from "@/components/NavSearch";
 import RatingSection from "@/components/RatingSection";
 import ReviewSection from "@/components/ReviewSection";
 import FormRating from "@/components/FormRating";
-import { useCart } from "@/app/context/CartContext";
+import { useCart } from "@/context/CartContext";
 
 // Toast Notification Component
 const Toast = ({ 

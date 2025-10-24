@@ -3,7 +3,8 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import { ReactNode } from "react";
 import { Providers } from "@/components/providers";
 import "./globals.css";
-import { CartProvider } from "./context/CartContext";
+import { CartProvider } from "../context/CartContext";
+import NotificationProvider from "@/components/NotificationProvider";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -24,9 +25,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" className={plusJakartaSans.variable}>
       <body>
         <Providers>
-          <CartProvider>
-            {children}
-          </CartProvider>
+          <NotificationProvider>
+            <CartProvider>
+              {children}
+            </CartProvider>
+          </NotificationProvider>
         </Providers>
       </body>
     </html >
