@@ -23,7 +23,7 @@ export enum PaymentMethod {
 export interface OrderProduct {
   id: string;
   name: string;
-  price: string;
+  price: string | number;
   qty: number;
   image: string;
 }

@@ -6,7 +6,6 @@ import AboutSection from "@/components/sections/AboutSection";
 import TestiSection from "@/components/sections/TestiSection";
 import DataSection from "@/components/sections/DataSection";
 import ReasonSection from "@/components/sections/ReasonSection";
-import KatalogSection from "@/components/sections/KatalogSection";
 
 export default function Home() {
   return (
@@ -14,7 +13,6 @@ export default function Home() {
     <Navbar />
     <HeroSection />
     <CategorySection />
-    <KatalogSection />
     <AboutSection />
     <ReasonSection />
     <DataSection />

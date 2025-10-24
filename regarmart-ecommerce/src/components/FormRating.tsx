@@ -19,8 +19,92 @@ const FormRating: React.FC<FormRatingProps> = ({
 }) => {
   const [rating, setRating] = useState<number>(0);
   const [review, setReview] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
 
   if (!open) return null;
+
+  const handleSubmit = async () => {
+    if (rating === 0) {
+      setError("Pilih rating terlebih dahulu!");
+      return;
+    }
+
+    if (!review.trim()) {
+      setError("Tulis ulasan terlebih dahulu!");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      // 1. Kirim rating ke endpoint rating
+      const ratingResponse = await fetch(`/api/products/${product.id}/ratings`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // penting untuk session
+        body: JSON.stringify({
+          value: rating,
+        }),
+      });
+
+      if (!ratingResponse.ok) {
+        const errorData = await ratingResponse.json();
+        throw new Error(errorData.error || "Gagal mengirim rating");
+      }
+
+      // 2. Kirim review ke endpoint review
+      const reviewResponse = await fetch(`/api/products/${product.id}/reviews`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // penting untuk session
+        body: JSON.stringify({
+          content: review, // API mengharapkan 'content' bukan 'review'
+        }),
+      });
+
+      if (!reviewResponse.ok) {
+        const errorData = await reviewResponse.json();
+        throw new Error(errorData.error || "Gagal mengirim ulasan");
+      }
+
+      // Reset form dan tutup modal
+      setRating(0);
+      setReview("");
+      onClose();
+      
+      // Tampilkan alert sukses
+      alert("Rating dan ulasan berhasil dikirim!");
+      
+    } catch (err: any) {
+      console.error("Error submitting review:", err);
+      
+      // Handle error spesifik
+      if (err.message.includes("Unauthorized")) {
+        setError("Anda harus login sebagai customer untuk memberikan ulasan");
+      } else if (err.message.includes("Content required")) {
+        setError("Ulasan tidak boleh kosong");
+      } else if (err.message.includes("Rating must be 1-5")) {
+        setError("Rating harus antara 1-5");
+      } else {
+        setError(err.message || "Terjadi kesalahan saat mengirim ulasan");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    setRating(0);
+    setReview("");
+    setError("");
+    onClose();
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 font-jakarta">
@@ -37,7 +121,7 @@ const FormRating: React.FC<FormRatingProps> = ({
         <div className="flex items-center justify-between border-b border-gray-200 pb-3">
           <div className="w-6 h-6"></div>
           <h2 className="text-2xl font-bold text-black">Nilai Produk</h2>
-          <button onClick={onClose}>
+          <button onClick={handleClose}>
             <X className="w-6 h-6 text-gray-500 hover:text-gray-700" />
           </button>
         </div>
@@ -57,6 +141,13 @@ const FormRating: React.FC<FormRatingProps> = ({
           </div>
         </div>
 
+        {/* Error Message */}
+        {error && (
+          <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-red-600 text-sm text-center">{error}</p>
+          </div>
+        )}
+
         {/* Rating */}
         <div className="mt-4 flex flex-col items-center gap-2">
           <div className="flex items-center gap-6 w-full justify-between">
@@ -65,7 +156,10 @@ const FormRating: React.FC<FormRatingProps> = ({
               {[1, 2, 3, 4, 5].map((star) => (
                 <svg
                   key={star}
-                  onClick={() => setRating(star)}
+                  onClick={() => {
+                    setRating(star);
+                    setError(""); // Clear error ketika user memilih rating
+                  }}
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
                   fill={
@@ -108,7 +202,10 @@ const FormRating: React.FC<FormRatingProps> = ({
             <textarea
               placeholder="Isi ulasan.."
               value={review}
-              onChange={(e) => setReview(e.target.value)}
+              onChange={(e) => {
+                setReview(e.target.value);
+                setError(""); // Clear error ketika user mengetik
+              }}
               maxLength={500}
               className="w-full h-full rounded-lg border border-gray-300 pl-3 pr-10 pt-3 pb-3 text-[14px] resize-none focus:outline-none focus:ring-2 focus:ring-green-500"
             />
@@ -127,13 +224,13 @@ const FormRating: React.FC<FormRatingProps> = ({
           </div>
         </div>
 
-
         {/* Button */}
         <div className="mt-4 flex justify-between">
           <button
-            onClick={onClose}
+            onClick={handleClose}
+            disabled={loading}
             className="flex justify-center items-center rounded-md font-semibold text-green-700 bg-green-100
-                       hover:bg-green-200 transition-all"
+                       hover:bg-green-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               width: "242px",
               height: "45px",
@@ -143,18 +240,16 @@ const FormRating: React.FC<FormRatingProps> = ({
           </button>
 
           <button
-            onClick={() => {
-              console.log("Kirim rating:", { orderNumber, rating, review });
-              onClose();
-            }}
+            onClick={handleSubmit}
+            disabled={loading}
             className="flex justify-center items-center rounded-md font-semibold text-white bg-green-600
-                       hover:bg-green-700 transition-all"
+                      hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               width: "242px",
               height: "45px",
             }}
           >
-            Kirim
+            {loading ? "Mengirim..." : "Kirim"}
           </button>
         </div>
       </div>
