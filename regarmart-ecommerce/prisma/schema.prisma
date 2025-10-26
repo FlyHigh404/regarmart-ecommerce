@@ -24,8 +24,8 @@ model User {
   notifications Notification[]
   orders        Order[]
   ratings       Rating[]
-  reviews       Review[]
   replyAdmin    Review[]       @relation("replyAdmin")
+  reviews       Review[]
   sessions      Session[]
 }
 
@@ -106,13 +106,13 @@ model Review {
   productId String
   userId    String
   content   String
-  reply    String?
-  replyBy  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  reply     String?
+  replyBy   String?
   product   Product  @relation(fields: [productId], references: [id])
+  admin     User?    @relation("replyAdmin", fields: [replyBy], references: [id])
   user      User     @relation(fields: [userId], references: [id])
-  admin     User?    @relation("replyAdmin",fields: [replyBy], references: [id])
 }
 
 model Rating {
