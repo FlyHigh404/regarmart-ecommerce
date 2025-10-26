@@ -122,7 +122,11 @@ const CheckoutPage: React.FC = () => {
   };
 
   // Perhitungan total
-  const totalHarga = order?.totalAmount || 0;
+  const totalHargaProduk = order?.orderItems?.reduce(
+    (sum: number, item: any) => sum + (Number(item.unitPrice) * item.quantity),
+    0
+  ) || 0;
+  const totalPembayaran = totalHargaProduk + ongkir - diskon;
 
   if (loading) {
     return (
@@ -291,7 +295,7 @@ const CheckoutPage: React.FC = () => {
                     <span>
                       Total harga ({order?.orderItems?.length || 0} Produk)
                     </span>
-                    <span>Rp{totalHarga.toLocaleString("id-ID")}</span>
+                    <span>Rp{totalHargaProduk.toLocaleString("id-ID")}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Ongkos Kirim</span>
@@ -301,7 +305,7 @@ const CheckoutPage: React.FC = () => {
 
                 <div className="flex justify-between font-bold text-sm w-full mt-2">
                   <span>Total Pembayaran</span>
-                  <span>Rp{totalHarga.toLocaleString("id-ID")}</span>
+                  <span>Rp{totalPembayaran.toLocaleString("id-ID")}</span>
                 </div>
               </div>
             </div>
@@ -360,7 +364,7 @@ const CheckoutPage: React.FC = () => {
                     <span>
                       Total harga ({order?.orderItems?.length || 0} Produk)
                     </span>
-                    <span>Rp{totalHarga.toLocaleString("id-ID")}</span>
+                    <span>Rp{totalHargaProduk.toLocaleString("id-ID")}</span>
                   </div>
                   <div className="flex justify-between text-green-600">
                     <span>Potongan Diskon</span>
@@ -374,7 +378,7 @@ const CheckoutPage: React.FC = () => {
 
                 <div className="flex justify-between font-bold text-sm w-full">
                   <span>Total Pembayaran</span>
-                  <span>Rp{totalHarga.toLocaleString("id-ID")}</span>
+                  <span>Rp{totalPembayaran.toLocaleString("id-ID")}</span>
                 </div>
                 <button
                   onClick={processCheckout}
@@ -400,7 +404,7 @@ const CheckoutPage: React.FC = () => {
           <div className="pr-2">
             <p className="text-[10px] text-gray-500">Total</p>
             <p className="text-sm font-bold text-green-600">
-              Rp{totalHarga.toLocaleString("id-ID")}
+              Rp{totalHargaProduk.toLocaleString("id-ID")}
             </p>
           </div>
           <button
@@ -446,9 +450,8 @@ const CheckoutPage: React.FC = () => {
 
         {/* Order Confirm Modal */}
         <OrderConfirm
-          orderNumber={`#INV-${
-            order?.id?.toString().padStart(4, "0") || "0000"
-          }`}
+          orderNumber={`#INV-${order?.id?.toString().padStart(4, "0") || "0000"
+            }`}
           status={OrderStatus.PROCESSING}
           paymentMethod={paymentMethod}
           products={
@@ -460,7 +463,7 @@ const CheckoutPage: React.FC = () => {
               image: item.product?.imageUrl?.[0] || "/placeholder-product.png",
             })) || []
           }
-          total={`Rp${totalHarga.toLocaleString("id-ID")}`}
+          total={`Rp${totalPembayaran.toLocaleString("id-ID")}`}
           address={alamatAktif}
           contact={`${alamatAktif.reciptName} | ${alamatAktif.phoneNumber}`}
           open={openOrderConfirm}

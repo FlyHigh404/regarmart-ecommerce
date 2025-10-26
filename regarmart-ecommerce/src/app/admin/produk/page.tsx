@@ -1,12 +1,14 @@
 "use client";
 import { useState, useEffect } from "react";
 import AdminLayout from "../AdminLayout";
-import { Search, Plus, Edit, Trash2, Filter, ChevronDown, Menu } from "lucide-react";
+import { Search, Plus, Edit, Trash2, Filter, ChevronDown, AlertCircle, Loader2, CheckCircle2, Menu } from "lucide-react";
 import ProductUploadForm from "@/components/ProductUploadForm";
-import axios from "axios"
-import Swal from "sweetalert2"
-import withReactContent from "sweetalert2-react-content"
 
+type Toast = {
+  id: number;
+  type: "success" | "error";
+  message: string;
+};
 
 const Products = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -22,81 +24,96 @@ const Products = () => {
     stock: number;
   }>>([]);
   const [loading, setLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  
+  // Delete confirmation modal
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<{id: string; name: string; category?: string} | null>(null);
+  
+  // Delete success modal
+  const [deleteSuccessOpen, setDeleteSuccessOpen] = useState(false);
+  const [deletedProductName, setDeletedProductName] = useState("");
+  
+  // Toast notifications
+  const [toasts, setToasts] = useState<Toast[]>([]);
+
+  const showToast = (type: "success" | "error", message: string) => {
+    const id = Date.now();
+    setToasts((prev) => [...prev, { id, type, message }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4000);
+  };
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch("/api/admin/products");
-        if (response.ok) {
-          const data = await response.json();
-          setProducts(data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch products:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchProducts();
   }, []);
 
-  async function DeleteProduct(product: { id: string, name: string }) {
-    const MySwal = withReactContent(Swal);
-
-    MySwal.fire({
-      title: 'Are you sure?',
-      text: `Do you really want to delete ${product.name}?`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#dc2626',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel',
-      customClass: {
-        popup: 'rounded-xl',
-        confirmButton: 'rounded-lg px-4 py-2',
-        cancelButton: 'rounded-lg px-4 py-2'
-      }
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          // Change the axios.delete call to use a string id
-          await axios.delete(`/api/admin/products/${product.id}`);
-          await fetchProducts();
-          MySwal.fire({
-            title: 'Deleted!',
-            text: 'Product has been deleted successfully.',
-            icon: 'success',
-            customClass: {
-              popup: 'rounded-xl',
-              confirmButton: 'rounded-lg px-4 py-2'
-            }
-          });
-        } catch (error) {
-          MySwal.fire({
-            title: 'Error!',
-            text: 'Failed to delete product. Please try again.',
-            icon: 'error',
-            customClass: {
-              popup: 'rounded-xl',
-              confirmButton: 'rounded-lg px-4 py-2'
-            }
-          });
-        }
-      }
-    });
-  }
-
-  const fetchProducts = async () => {
+  const fetchProducts = async (silentRefresh = false) => {
     try {
+      if (!silentRefresh) {
+        setLoading(true);
+      }
       const response = await fetch("/api/admin/products");
       if (response.ok) {
         const data = await response.json();
         setProducts(data);
+      } else {
+        if (!silentRefresh) {
+          showToast("error", "Gagal memuat daftar produk");
+        }
       }
     } catch (error) {
       console.error("Failed to fetch products:", error);
+      if (!silentRefresh) {
+        showToast("error", "Gagal memuat daftar produk. Silakan refresh halaman.");
+      }
+    } finally {
+      if (!silentRefresh) {
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleDeleteClick = (product: { id: string; name: string; category?: { name: string } }) => {
+    setProductToDelete({
+      id: product.id,
+      name: product.name,
+      category: product.category?.name
+    });
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!productToDelete) return;
+
+    setIsDeleting(productToDelete.id);
+    setDeleteConfirmOpen(false);
+
+    try {
+      const response = await fetch(`/api/admin/products/${productToDelete.id}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete product');
+      }
+      
+      // Store deleted product name for success modal
+      setDeletedProductName(productToDelete.name);
+      
+      // Show success modal immediately
+      setDeleteSuccessOpen(true);
+      
+      // Refresh products in background with silent flag
+      await fetchProducts(true);
+      
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      showToast("error", "Gagal menghapus produk. Silakan coba lagi.");
+    } finally {
+      setIsDeleting(null);
+      setProductToDelete(null);
     }
   };
 
@@ -123,6 +140,27 @@ const Products = () => {
 
   return (
     <AdminLayout>
+      {/* Toast Notifications */}
+      <div className="fixed top-4 right-4 z-[100] space-y-2">
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            className={`flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg animate-slide-in ${
+              toast.type === "success"
+                ? "bg-green-50 text-green-800 border border-green-200"
+                : "bg-red-50 text-red-800 border border-red-200"
+            }`}
+          >
+            {toast.type === "success" ? (
+              <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+            ) : (
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            )}
+            <span className="text-sm font-medium">{toast.message}</span>
+          </div>
+        ))}
+      </div>
+
       <main className="flex-1 bg-gray-50 pt-2">
         {/* Main Container with shadow and rounded corners */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -170,7 +208,12 @@ const Products = () => {
             {/* Mobile Card View */}
             <div className="block lg:hidden space-y-4">
               {filteredProducts.map((product) => (
-                <div key={product.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div 
+                  key={product.id} 
+                  className={`bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow ${
+                    isDeleting === product.id ? "opacity-50" : ""
+                  }`}
+                >
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-gray-900 text-sm truncate">{product.name}</h3>
@@ -181,15 +224,21 @@ const Products = () => {
                         onClick={() => setEditingProduct(product)}
                         className="p-2 text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-200"
                         title="Edit"
+                        disabled={isDeleting === product.id}
                       >
                         <Edit size={16} />
                       </button>
                       <button
-                        onClick={() => DeleteProduct(product)}
-                        className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
+                        onClick={() => handleDeleteClick(product)}
+                        className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 disabled:opacity-50"
                         title="Delete"
+                        disabled={isDeleting === product.id}
                       >
-                        <Trash2 size={14} />
+                        {isDeleting === product.id ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : (
+                          <Trash2 size={14} />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -198,8 +247,9 @@ const Products = () => {
                       Rp {product.price.toLocaleString("id-ID")}
                     </span>
                     <span
-                      className={`font-medium ${product.stock === 0 ? "text-red-600" : "text-gray-900"
-                        }`}
+                      className={`font-medium ${
+                        product.stock === 0 ? "text-red-600" : "text-gray-900"
+                      }`}
                     >
                       Stok: {product.stock}
                     </span>
@@ -241,8 +291,9 @@ const Products = () => {
                   {filteredProducts.map((product, index) => (
                     <tr
                       key={product.id}
-                      className={`hover:bg-gray-100 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                        }`}
+                      className={`hover:bg-gray-100 transition-colors ${
+                        index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                      } ${isDeleting === product.id ? "opacity-50" : ""}`}
                     >
                       <td className="py-5 px-6">
                         <div className="font-medium text-gray-900 text-sm">
@@ -256,13 +307,14 @@ const Products = () => {
                       </td>
                       <td className="py-5 px-6">
                         <span className="text-gray-900 font-medium text-sm">
-                          {product.price.toLocaleString("id-ID")}
+                          Rp {product.price.toLocaleString("id-ID")}
                         </span>
                       </td>
                       <td className="py-5 px-6">
                         <span
-                          className={`font-medium text-sm ${product.stock === 0 ? "text-red-600" : "text-gray-900"
-                            }`}
+                          className={`font-medium text-sm ${
+                            product.stock === 0 ? "text-red-600" : "text-gray-900"
+                          }`}
                         >
                           {product.stock}
                         </span>
@@ -273,15 +325,21 @@ const Products = () => {
                             onClick={() => setEditingProduct(product)}
                             className="p-2 text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-200"
                             title="Edit"
+                            disabled={isDeleting === product.id}
                           >
                             <Edit size={16} />
                           </button>
                           <button
-                            onClick={() => DeleteProduct(product)}
-                            className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
+                            onClick={() => handleDeleteClick(product)}
+                            className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 disabled:opacity-50"
                             title="Delete"
+                            disabled={isDeleting === product.id}
                           >
-                            <Trash2 size={16} />
+                            {isDeleting === product.id ? (
+                              <Loader2 size={16} className="animate-spin" />
+                            ) : (
+                              <Trash2 size={16} />
+                            )}
                           </button>
                         </div>
                       </td>
@@ -303,6 +361,96 @@ const Products = () => {
             </div>
           </div>
         </div>
+
+        {/* Delete Confirmation Modal */}
+        {deleteConfirmOpen && productToDelete && (
+          <div className="fixed inset-0 bg-transparent backdrop-blur-md flex justify-center items-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[440px] p-6 md:p-8 relative animate-scale-in">
+              <div className="flex flex-col items-center text-center">
+                {/* Icon */}
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                  <AlertCircle className="w-8 h-8 md:w-10 md:h-10 text-red-600" />
+                </div>
+
+                {/* Title */}
+                <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-2">
+                  Hapus Produk?
+                </h2>
+
+                {/* Description */}
+                <p className="text-sm md:text-base text-gray-600 mb-2">
+                  Apakah Anda yakin ingin menghapus produk ini?
+                </p>
+
+                {/* Product Preview */}
+                <div className="w-full bg-gray-50 rounded-lg p-3 mb-6 text-left">
+                  <p className="text-sm font-semibold text-gray-900 mb-1">
+                    {productToDelete.name}
+                  </p>
+                  {productToDelete.category && (
+                    <p className="text-xs text-gray-600 mb-1">
+                      Kategori: {productToDelete.category}
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-500">
+                    Produk ini akan dihapus secara permanen
+                  </p>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 w-full">
+                  <button
+                    className="flex-1 px-4 py-2.5 md:py-3 rounded-xl border-2 border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors text-sm md:text-base"
+                    onClick={() => {
+                      setDeleteConfirmOpen(false);
+                      setProductToDelete(null);
+                    }}
+                  >
+                    Batal
+                  </button>
+                  <button
+                    className="flex-1 px-4 py-2.5 md:py-3 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors text-sm md:text-base"
+                    onClick={handleDeleteConfirm}
+                  >
+                    Hapus
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Success Modal */}
+        {deleteSuccessOpen && (
+          <div className="fixed inset-0 bg-transparent backdrop-blur-md flex justify-center items-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[440px] p-6 md:p-8 relative animate-scale-in">
+              <div className="flex flex-col items-center text-center">
+                {/* Success Icon */}
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                  <CheckCircle2 className="w-8 h-8 md:w-10 md:h-10 text-green-600" />
+                </div>
+
+                {/* Title */}
+                <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-2">
+                  Produk Berhasil Dihapus!
+                </h2>
+
+                {/* Description */}
+                <p className="text-sm md:text-base text-gray-600 mb-4">
+                  Produk <span className="font-semibold text-gray-900">{deletedProductName}</span> telah dihapus dari sistem
+                </p>
+
+                {/* OK Button */}
+                <button
+                  className="w-full px-4 py-2.5 md:py-3 rounded-xl bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors text-sm md:text-base"
+                  onClick={() => setDeleteSuccessOpen(false)}
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Add Product Modal */}
         {showAddModal && (
@@ -334,6 +482,7 @@ const Products = () => {
           </div>
         )}
 
+        {/* Edit Product Modal */}
         {editingProduct && (
           <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setEditingProduct(null)} />
@@ -393,6 +542,36 @@ const Products = () => {
           </div>
         )}
       </main>
+
+      <style jsx>{`
+        @keyframes slide-in {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        .animate-slide-in {
+          animation: slide-in 0.3s ease-out;
+        }
+        
+        @keyframes scale-in {
+          from {
+            transform: scale(0.9);
+            opacity: 0;
+          }
+          to {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+        .animate-scale-in {
+          animation: scale-in 0.2s ease-out;
+        }
+      `}</style>
     </AdminLayout>
   );
 };
