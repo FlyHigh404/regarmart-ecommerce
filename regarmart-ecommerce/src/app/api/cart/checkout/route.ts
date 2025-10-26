@@ -46,11 +46,20 @@ export async function POST(req: Request) {
       );
     }
 
-    // Update order dengan payment method
-    await prisma.order.update({
+    // 🔥 PERBAIKAN: Hitung total dengan ongkir
+    const ONGKIR = 20000;
+    const productTotal = order.orderItems.reduce(
+      (sum: number, item: any) => sum + (Number(item.unitPrice) * item.quantity),
+      0
+    );
+    const finalTotal = productTotal + ONGKIR;
+
+    // Update order dengan payment method DAN total amount yang benar
+    const updatedOrder = await prisma.order.update({
       where: { id: order.id },
       data: {
         paymentMethod: paymentMethod,
+        totalAmount: finalTotal, // 🔥 Update total amount dengan ongkir
       },
     });
 
@@ -59,7 +68,7 @@ export async function POST(req: Request) {
         payment_type: "qris",
         transaction_details: {
           order_id: order.id, // UUID dari Prisma, udah unik
-          gross_amount: Number(order.totalAmount),
+          gross_amount: finalTotal, // 🔥 Gunakan finalTotal yang sudah + ongkir
         },
         qris: { acquirer: "gopay" },
         customer_details: {
@@ -80,7 +89,8 @@ export async function POST(req: Request) {
         success: true,
         orderId: order.id,
         paymentMethod: "QRIS",
-        totalAmount: Number(order.totalAmount),
+        totalAmount: finalTotal,
+        shippingCost: ONGKIR,
         midtrans: {
           transactionId: midtransResponse.transaction_id,
           orderId: midtransResponse.order_id,
@@ -106,7 +116,8 @@ export async function POST(req: Request) {
         success: true,
         orderId: order.id,
         paymentMethod: "COD",
-        totalAmount: Number(order.totalAmount),
+        totalAmount: finalTotal,
+        shippingCost: ONGKIR,
         message: "Order placed successfully with Cash on Delivery",
       });
     }

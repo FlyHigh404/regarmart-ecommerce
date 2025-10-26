@@ -14,14 +14,6 @@ import Footer from "@/components/Footer";
 import NavKeranjang from "@/components/NavKeranjang";
 import { useRouter } from "next/navigation";
 
-interface CustomerInfo {
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-}
-
-// Toast Notification Component
 interface ToastProps {
   type: "success" | "error";
   message: string;
@@ -34,7 +26,7 @@ const Toast = ({ type, message, isVisible, onClose }: ToastProps) => {
     if (isVisible) {
       const timer = setTimeout(() => {
         onClose();
-      }, 4000); // Auto close after 4 seconds
+      }, 4000); 
 
       return () => clearTimeout(timer);
     }
@@ -315,8 +307,8 @@ const CartPage = () => {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  const discount = 4500;
-  const shippingEstimate = 22500;
+  const discount = 0;
+  const shippingEstimate = 20000;
   const finalTotal = totalPrice - discount + shippingEstimate;
 
   const handleSelectAll = (checked: boolean) => {

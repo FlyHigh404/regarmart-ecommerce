@@ -2,15 +2,20 @@
 "use client";
 import { useState, useEffect } from "react";
 import AdminLayout from "../AdminLayout";
-import { Search, Plus, Edit, Trash2, X, Filter, ChevronDown } from "lucide-react";
+import { Search, Plus, Edit, Trash2, X, Filter, ChevronDown, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import CategoryUploadForm from "@/components/CategoryUploadForm";
-import Swal from "sweetalert2";
-import withReactContent from "sweetalert2-react-content";
+
+// Add this type definition at the top of your file
+type Toast = {
+  id: number;
+  type: "success" | "error";
+  message: string;
+};
 
 interface CategoryUploadFormProps {
   initialData?: any;
   onClose?: () => void;
-  onSuccess?: () => void; // Tambah callback untuk refresh data
+  onSuccess?: () => void;
 }
 
 const Categories = () => {
@@ -24,6 +29,23 @@ const Categories = () => {
   >([]);
   const [editingCategory, setEditingCategory] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<{ id: string; name: string; description: string } | null>(null);
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  
+  // Delete success modal states
+  const [deleteSuccessOpen, setDeleteSuccessOpen] = useState(false);
+  const [deletedCategoryName, setDeletedCategoryName] = useState("");
+
+  // Add this toast function
+  const showToast = (type: "success" | "error", message: string) => {
+    const id = Date.now();
+    setToasts((prev) => [...prev, { id, type, message }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4000);
+  };
 
   // filter states
   const [filterOption, setFilterOption] = useState("Semua");
@@ -75,57 +97,44 @@ const Categories = () => {
     return matchesSearch && matchesFilter;
   });
 
-  const handleDeleteCategory = async (categoryId: string) => {
-    const MySwal = withReactContent(Swal);
-
-    MySwal.fire({
-      title: "Are you sure?",
-      text: "Do you really want to delete this category?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#dc2626",
-      cancelButtonColor: "#6b7280",
-      confirmButtonText: "Yes, delete it!",
-      cancelButtonText: "Cancel",
-      customClass: {
-        popup: "rounded-xl",
-        confirmButton: "rounded-lg px-4 py-2",
-        cancelButton: "rounded-lg px-4 py-2",
-      },
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          const response = await fetch(`/api/admin/categories/${categoryId}`, {
-            method: "DELETE",
-          });
-
-          if (response.ok) {
-            setCategories((prev) => prev.filter((cat) => cat.id !== categoryId));
-            MySwal.fire({
-              title: "Deleted!",
-              text: "Category has been deleted successfully.",
-              icon: "success",
-              customClass: {
-                popup: "rounded-xl",
-                confirmButton: "rounded-lg px-4 py-2",
-              },
-            });
-          } else {
-            throw new Error("Failed to delete category");
-          }
-        } catch (error) {
-          MySwal.fire({
-            title: "Error!",
-            text: "Failed to delete category. Please try again.",
-            icon: "error",
-            customClass: {
-              popup: "rounded-xl",
-              confirmButton: "rounded-lg px-4 py-2",
-            },
-          });
-        }
-      }
+  const handleDeleteClick = (category: { id: string; name: string; description: string }) => {
+    setCategoryToDelete({
+      id: category.id,
+      name: category.name,
+      description: category.description
     });
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!categoryToDelete) return;
+
+    setIsDeleting(categoryToDelete.id);
+    setDeleteConfirmOpen(false);
+
+    try {
+      const response = await fetch(`/api/admin/categories/${categoryToDelete.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete category');
+      }
+
+      // Store deleted category name for success modal
+      setDeletedCategoryName(categoryToDelete.name);
+
+      await refreshCategories();
+      
+      // Show success modal instead of toast
+      setDeleteSuccessOpen(true);
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      showToast("error", "Gagal menghapus kategori. Silakan coba lagi.");
+    } finally {
+      setIsDeleting(null);
+      setCategoryToDelete(null);
+    }
   };
 
   if (loading) {
@@ -145,6 +154,27 @@ const Categories = () => {
 
   return (
     <AdminLayout>
+      {/* Toast Notifications */}
+      <div className="fixed top-4 right-4 z-[100] space-y-2">
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            className={`flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg animate-slide-in ${
+              toast.type === "success"
+                ? "bg-green-50 text-green-800 border border-green-200"
+                : "bg-red-50 text-red-800 border border-red-200"
+            }`}
+          >
+            {toast.type === "success" ? (
+              <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+            ) : (
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            )}
+            <span className="text-sm font-medium">{toast.message}</span>
+          </div>
+        ))}
+      </div>
+
       <main className="flex-1 bg-gray-50 pt-3">
         {/* Main Container with shadow and rounded corners */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -182,7 +212,9 @@ const Categories = () => {
               {filteredCategories.map((cat) => (
                 <div
                   key={cat.id}
-                  className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                  className={`bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow ${
+                    isDeleting === cat.id ? "opacity-50" : ""
+                  }`}
                 >
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex-1 min-w-0">
@@ -199,15 +231,21 @@ const Categories = () => {
                         }}
                         className="p-2 text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-200"
                         title="Edit"
+                        disabled={isDeleting === cat.id}
                       >
                         <Edit size={14} />
                       </button>
                       <button
-                        onClick={() => handleDeleteCategory(cat.id)}
-                        className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
+                        onClick={() => handleDeleteClick(cat)}
+                        className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 disabled:opacity-50"
                         title="Delete"
+                        disabled={isDeleting === cat.id}
                       >
-                        <Trash2 size={14} />
+                        {isDeleting === cat.id ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : (
+                          <Trash2 size={14} />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -242,8 +280,9 @@ const Categories = () => {
                   {filteredCategories.map((cat, index) => (
                     <tr
                       key={cat.id}
-                      className={`hover:bg-gray-100 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                        }`}
+                      className={`hover:bg-gray-100 transition-colors ${
+                        index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                      } ${isDeleting === cat.id ? "opacity-50" : ""}`}
                     >
                       <td className="py-5 px-6">
                         <div className="font-medium text-gray-900 text-sm">{cat.name}</div>
@@ -260,15 +299,21 @@ const Categories = () => {
                             }}
                             className="p-2 text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-200"
                             title="Edit"
+                            disabled={isDeleting === cat.id}
                           >
                             <Edit size={16} />
                           </button>
                           <button
-                            onClick={() => handleDeleteCategory(cat.id)}
-                            className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
+                            onClick={() => handleDeleteClick(cat)}
+                            className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 disabled:opacity-50"
                             title="Delete"
+                            disabled={isDeleting === cat.id}
                           >
-                            <Trash2 size={16} />
+                            {isDeleting === cat.id ? (
+                              <Loader2 size={16} className="animate-spin" />
+                            ) : (
+                              <Trash2 size={16} />
+                            )}
                           </button>
                         </div>
                       </td>
@@ -290,6 +335,94 @@ const Categories = () => {
             </div>
           </div>
         </div>
+
+        {/* Delete Confirmation Modal */}
+        {deleteConfirmOpen && categoryToDelete && (
+          <div className="fixed inset-0 bg-transparent backdrop-blur-md flex justify-center items-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[440px] p-6 md:p-8 relative animate-scale-in">
+              <div className="flex flex-col items-center text-center">
+                {/* Icon */}
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                  <AlertCircle className="w-8 h-8 md:w-10 md:h-10 text-red-600" />
+                </div>
+
+                {/* Title */}
+                <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-2">
+                  Hapus Kategori?
+                </h2>
+
+                {/* Description */}
+                <p className="text-sm md:text-base text-gray-600 mb-2">
+                  Apakah Anda yakin ingin menghapus kategori ini?
+                </p>
+
+                {/* Category Preview */}
+                <div className="w-full bg-gray-50 rounded-lg p-3 mb-6 text-left">
+                  <p className="text-sm font-semibold text-gray-900 mb-1">
+                    {categoryToDelete.name}
+                  </p>
+                  <p className="text-xs text-gray-600 mb-1">
+                    {categoryToDelete.description || "Tidak ada deskripsi"}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Kategori ini akan dihapus secara permanen
+                  </p>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 w-full">
+                  <button
+                    className="flex-1 px-4 py-2.5 md:py-3 rounded-xl border-2 border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors text-sm md:text-base"
+                    onClick={() => {
+                      setDeleteConfirmOpen(false);
+                      setCategoryToDelete(null);
+                    }}
+                  >
+                    Batal
+                  </button>
+                  <button
+                    className="flex-1 px-4 py-2.5 md:py-3 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors text-sm md:text-base"
+                    onClick={handleDeleteConfirm}
+                  >
+                    Hapus
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Success Modal */}
+        {deleteSuccessOpen && (
+          <div className="fixed inset-0 bg-transparent backdrop-blur-md flex justify-center items-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[440px] p-6 md:p-8 relative animate-scale-in">
+              <div className="flex flex-col items-center text-center">
+                {/* Success Icon */}
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                  <CheckCircle2 className="w-8 h-8 md:w-10 md:h-10 text-green-600" />
+                </div>
+
+                {/* Title */}
+                <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-2">
+                  Kategori Berhasil Dihapus!
+                </h2>
+
+                {/* Description */}
+                <p className="text-sm md:text-base text-gray-600 mb-4">
+                  Kategori <span className="font-semibold text-gray-900">{deletedCategoryName}</span> telah dihapus dari sistem
+                </p>
+
+                {/* OK Button */}
+                <button
+                  className="w-full px-4 py-2.5 md:py-3 rounded-xl bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors text-sm md:text-base"
+                  onClick={() => setDeleteSuccessOpen(false)}
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Add Category Modal */}
         {showAddModal && (
@@ -315,7 +448,7 @@ const Categories = () => {
                 {error && <div className="mb-3 text-red-600 text-sm">{error}</div>}
                 <CategoryUploadForm
                   onClose={() => setShowAddModal(false)}
-                  onSuccess={refreshCategories} // Tambah ini
+                  onSuccess={refreshCategories}
                 />
               </div>
             </div>
@@ -346,7 +479,7 @@ const Categories = () => {
                 <CategoryUploadForm
                   initialData={editingCategory}
                   onClose={() => setShowEditModal(false)}
-                  onSuccess={refreshCategories} // Tambah ini
+                  onSuccess={refreshCategories}
                 />
               </div>
             </div>
@@ -406,6 +539,36 @@ const Categories = () => {
           </div>
         )}
       </main>
+
+      <style jsx>{`
+        @keyframes slide-in {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        .animate-slide-in {
+          animation: slide-in 0.3s ease-out;
+        }
+        
+        @keyframes scale-in {
+          from {
+            transform: scale(0.9);
+            opacity: 0;
+          }
+          to {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+        .animate-scale-in {
+          animation: scale-in 0.2s ease-out;
+        }
+      `}</style>
     </AdminLayout>
   );
 };
