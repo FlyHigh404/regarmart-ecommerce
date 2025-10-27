@@ -1,14 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import AdminLayout from "../AdminLayout";
-import { Search, Plus, Edit, Trash2, Filter, ChevronDown, AlertCircle, Loader2, CheckCircle2, Menu } from "lucide-react";
+import { Search, Plus, Edit, Trash2, Filter, ChevronDown, AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
 import ProductUploadForm from "@/components/ProductUploadForm";
-
-type Toast = {
-  id: number;
-  type: "success" | "error";
-  message: string;
-};
 
 const Products = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -25,24 +19,23 @@ const Products = () => {
   }>>([]);
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
-  
-  // Delete confirmation modal
+
+  const [selectedCategory, setSelectedCategory] = useState("Semua Kategori");
+  const [selectedStockStatus, setSelectedStockStatus] = useState("Semua");
+
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [productToDelete, setProductToDelete] = useState<{id: string; name: string; category?: string} | null>(null);
-  
-  // Delete success modal
+  const [productToDelete, setProductToDelete] = useState<{ id: string; name: string; category?: string } | null>(null);
+
   const [deleteSuccessOpen, setDeleteSuccessOpen] = useState(false);
   const [deletedProductName, setDeletedProductName] = useState("");
-  
-  // Toast notifications
-  const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const showToast = (type: "success" | "error", message: string) => {
-    const id = Date.now();
-    setToasts((prev) => [...prev, { id, type, message }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4000);
+  const [saveSuccessOpen, setSaveSuccessOpen] = useState(false);
+  const [savedProductInfo, setSavedProductInfo] = useState({ name: "", isEdit: false });
+
+  const handleProductSaveSuccess = (productName: string, isEdit: boolean) => {
+    setSavedProductInfo({ name: productName, isEdit });
+    setSaveSuccessOpen(true);
+    fetchProducts(true);
   };
 
   useEffect(() => {
@@ -59,15 +52,9 @@ const Products = () => {
         const data = await response.json();
         setProducts(data);
       } else {
-        if (!silentRefresh) {
-          showToast("error", "Gagal memuat daftar produk");
-        }
       }
     } catch (error) {
       console.error("Failed to fetch products:", error);
-      if (!silentRefresh) {
-        showToast("error", "Gagal memuat daftar produk. Silakan refresh halaman.");
-      }
     } finally {
       if (!silentRefresh) {
         setLoading(false);
@@ -94,34 +81,53 @@ const Products = () => {
       const response = await fetch(`/api/admin/products/${productToDelete.id}`, {
         method: 'DELETE',
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to delete product');
       }
-      
-      // Store deleted product name for success modal
+
       setDeletedProductName(productToDelete.name);
-      
-      // Show success modal immediately
+
       setDeleteSuccessOpen(true);
-      
-      // Refresh products in background with silent flag
+
       await fetchProducts(true);
-      
+
     } catch (error) {
       console.error("Error deleting product:", error);
-      showToast("error", "Gagal menghapus produk. Silakan coba lagi.");
     } finally {
       setIsDeleting(null);
       setProductToDelete(null);
     }
   };
 
-  const filteredProducts = products.filter(
-    (product) =>
+  const handleApplyFilter = () => {
+    setShowFilter(false);
+  };
+
+  const handleResetFilter = () => {
+    setSelectedCategory("Semua Kategori");
+    setSelectedStockStatus("Semua");
+    setShowFilter(false);
+  };
+
+  const categories = ["Semua Kategori", ...Array.from(new Set(products.map(p => p.category.name)))];
+
+  const filteredProducts = products.filter((product) => {
+    const matchesSearch =
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.category.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+      product.category.name.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesCategory =
+      selectedCategory === "Semua Kategori" ||
+      product.category.name === selectedCategory;
+
+    const matchesStock =
+      selectedStockStatus === "Semua" ||
+      (selectedStockStatus === "Tersedia" && product.stock > 0) ||
+      (selectedStockStatus === "Stok Habis" && product.stock === 0);
+
+    return matchesSearch && matchesCategory && matchesStock;
+  });
 
   if (loading) {
     return (
@@ -140,27 +146,6 @@ const Products = () => {
 
   return (
     <AdminLayout>
-      {/* Toast Notifications */}
-      <div className="fixed top-4 right-4 z-[100] space-y-2">
-        {toasts.map((toast) => (
-          <div
-            key={toast.id}
-            className={`flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg animate-slide-in ${
-              toast.type === "success"
-                ? "bg-green-50 text-green-800 border border-green-200"
-                : "bg-red-50 text-red-800 border border-red-200"
-            }`}
-          >
-            {toast.type === "success" ? (
-              <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
-            ) : (
-              <AlertCircle className="w-5 h-5 flex-shrink-0" />
-            )}
-            <span className="text-sm font-medium">{toast.message}</span>
-          </div>
-        ))}
-      </div>
-
       <main className="flex-1 bg-gray-50 pt-2">
         {/* Main Container with shadow and rounded corners */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -174,9 +159,21 @@ const Products = () => {
               </div>
 
               {/* Actions */}
-              <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3">
+              <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3 mr-3">
+                {/* Search Bar */}
+                <div className="relative flex-1 sm:max-w-xs">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
+                  <input
+                    type="text"
+                    placeholder="Cari produk..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                  />
+                </div>
+
                 {/* Filter and Add buttons container */}
-                <div className="flex space-x-2 sm:space-x-3 order-2 sm:order-2">
+                <div className="flex space-x-2 sm:space-x-3">
                   {/* Filter Button */}
                   <div className="relative flex-1 sm:flex-none">
                     <button
@@ -208,11 +205,10 @@ const Products = () => {
             {/* Mobile Card View */}
             <div className="block lg:hidden space-y-4">
               {filteredProducts.map((product) => (
-                <div 
-                  key={product.id} 
-                  className={`bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow ${
-                    isDeleting === product.id ? "opacity-50" : ""
-                  }`}
+                <div
+                  key={product.id}
+                  className={`bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow ${isDeleting === product.id ? "opacity-50" : ""
+                    }`}
                 >
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex-1 min-w-0">
@@ -247,9 +243,8 @@ const Products = () => {
                       Rp {product.price.toLocaleString("id-ID")}
                     </span>
                     <span
-                      className={`font-medium ${
-                        product.stock === 0 ? "text-red-600" : "text-gray-900"
-                      }`}
+                      className={`font-medium ${product.stock === 0 ? "text-red-600" : "text-gray-900"
+                        }`}
                     >
                       Stok: {product.stock}
                     </span>
@@ -260,7 +255,7 @@ const Products = () => {
               {filteredProducts.length === 0 && (
                 <div className="text-center py-12 text-gray-500">
                   <p className="text-lg font-medium">Tidak ada produk ditemukan</p>
-                  <p className="text-sm mt-1">Coba ubah kata kunci pencarian Anda</p>
+                  <p className="text-sm mt-1">Coba ubah kata kunci pencarian atau filter Anda</p>
                 </div>
               )}
             </div>
@@ -291,9 +286,8 @@ const Products = () => {
                   {filteredProducts.map((product, index) => (
                     <tr
                       key={product.id}
-                      className={`hover:bg-gray-100 transition-colors ${
-                        index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                      } ${isDeleting === product.id ? "opacity-50" : ""}`}
+                      className={`hover:bg-gray-100 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                        } ${isDeleting === product.id ? "opacity-50" : ""}`}
                     >
                       <td className="py-5 px-6">
                         <div className="font-medium text-gray-900 text-sm">
@@ -312,9 +306,8 @@ const Products = () => {
                       </td>
                       <td className="py-5 px-6">
                         <span
-                          className={`font-medium text-sm ${
-                            product.stock === 0 ? "text-red-600" : "text-gray-900"
-                          }`}
+                          className={`font-medium text-sm ${product.stock === 0 ? "text-red-600" : "text-gray-900"
+                            }`}
                         >
                           {product.stock}
                         </span>
@@ -351,7 +344,7 @@ const Products = () => {
                       <td colSpan={5} className="py-12 px-6 text-center bg-white">
                         <div className="text-gray-500">
                           <p className="text-lg font-medium">Tidak ada produk ditemukan</p>
-                          <p className="text-sm mt-1">Coba ubah kata kunci pencarian Anda</p>
+                          <p className="text-sm mt-1">Coba ubah kata kunci pencarian atau filter Anda</p>
                         </div>
                       </td>
                     </tr>
@@ -452,6 +445,38 @@ const Products = () => {
           </div>
         )}
 
+        {/* Save/Edit Success Modal */}
+        {saveSuccessOpen && (
+          <div className="fixed inset-0 bg-transparent backdrop-blur-md flex justify-center items-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[440px] p-6 md:p-8 relative animate-scale-in">
+              <div className="flex flex-col items-center text-center">
+                {/* Success Icon */}
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                  <CheckCircle2 className="w-8 h-8 md:w-10 md:h-10 text-green-600" />
+                </div>
+
+                {/* Title */}
+                <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-2">
+                  {savedProductInfo.isEdit ? "Produk Berhasil Diperbarui!" : "Produk Berhasil Ditambahkan!"}
+                </h2>
+
+                {/* Description */}
+                <p className="text-sm md:text-base text-gray-600 mb-4">
+                  Produk <span className="font-semibold text-gray-900">{savedProductInfo.name}</span> telah {savedProductInfo.isEdit ? "diperbarui" : "ditambahkan"} ke sistem
+                </p>
+
+                {/* OK Button */}
+                <button
+                  className="w-full px-4 py-2.5 md:py-3 rounded-xl bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors text-sm md:text-base"
+                  onClick={() => setSaveSuccessOpen(false)}
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Add Product Modal */}
         {showAddModal && (
           <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
@@ -476,7 +501,7 @@ const Products = () => {
               </div>
 
               <div className="p-4 sm:p-6">
-                <ProductUploadForm onClose={() => setShowAddModal(false)} />
+                <ProductUploadForm onClose={() => setShowAddModal(false)} onSuccess={handleProductSaveSuccess} />
               </div>
             </div>
           </div>
@@ -497,42 +522,64 @@ const Products = () => {
                 </button>
               </div>
               <div className="p-4 sm:p-6">
-                <ProductUploadForm initialData={editingProduct} onClose={() => setEditingProduct(null)} />
+                <ProductUploadForm initialData={editingProduct} onClose={() => setEditingProduct(null)} onSuccess={handleProductSaveSuccess} />
               </div>
             </div>
           </div>
         )}
 
-        {/* Filter Dropdown */}
+        {/* Filter Dropdown - Centered */}
         {showFilter && (
-          <div className="fixed inset-0 z-40" onClick={() => setShowFilter(false)}>
-            <div className="absolute top-32 right-4 sm:right-8 bg-white rounded-lg shadow-xl border border-gray-200 p-4 w-64 max-w-[calc(100vw-2rem)]">
-              <h3 className="font-medium text-gray-900 mb-3">Filter Produk</h3>
-              <div className="space-y-3">
+          <div className="fixed inset-0 z-40 flex items-start justify-center pt-32">
+            {/* Backdrop */}
+            <div
+              className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+              onClick={() => setShowFilter(false)}
+            />
+
+            {/* Filter Card */}
+            <div
+              className="bg-white rounded-xl shadow-2xl border border-gray-200 p-6 sm:p-8 w-full max-w-md mx-4 relative z-10 animate-scale-in"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-xl font-semibold text-gray-900 mb-6">Filter Produk</h3>
+              <div className="space-y-5">
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">Kategori</label>
-                  <select className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                    <option>Semua Kategori</option>
-                    <option>Sembako</option>
-                    <option>Rumah Tangga</option>
-                    <option>Sayur</option>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+                  <select
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                  >
+                    {categories.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">Status Stok</label>
-                  <select className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                    <option>Semua</option>
-                    <option>Tersedia</option>
-                    <option>Stok Habis</option>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Status Stok</label>
+                  <select
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    value={selectedStockStatus}
+                    onChange={(e) => setSelectedStockStatus(e.target.value)}
+                  >
+                    <option value="Semua">Semua</option>
+                    <option value="Tersedia">Tersedia</option>
+                    <option value="Stok Habis">Stok Habis</option>
                   </select>
                 </div>
-                <div className="flex gap-2 pt-2">
-                  <button className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
+                <div className="flex gap-3 pt-4">
+                  <button
+                    className="flex-1 bg-green-600 text-white py-3 px-6 rounded-lg text-base font-semibold hover:bg-green-700 transition-colors"
+                    onClick={handleApplyFilter}
+                  >
                     Terapkan
                   </button>
                   <button
-                    className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
-                    onClick={() => setShowFilter(false)}
+                    className="flex-1 bg-gray-100 text-gray-700 py-3 px-6 rounded-lg text-base font-semibold hover:bg-gray-200 transition-colors"
+                    onClick={handleResetFilter}
                   >
                     Reset
                   </button>
