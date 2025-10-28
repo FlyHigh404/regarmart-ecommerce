@@ -198,7 +198,7 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
               onClick={onClose}
               className="w-full bg-[#26A81D] hover:bg-green-700 text-white font-semibold rounded-lg h-10"
             >
-              Kembali
+              Liaht Riwayat Pesanan
             </button>
           ) : status === OrderStatus.SHIPPED ? (
             <div className="flex gap-3">

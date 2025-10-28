@@ -122,10 +122,11 @@ const CheckoutPage: React.FC = () => {
   };
 
   // Perhitungan total
-  const totalHargaProduk = order?.orderItems?.reduce(
-    (sum: number, item: any) => sum + (Number(item.unitPrice) * item.quantity),
-    0
-  ) || 0;
+  const totalHargaProduk =
+    order?.orderItems?.reduce(
+      (sum: number, item: any) => sum + Number(item.unitPrice) * item.quantity,
+      0
+    ) || 0;
   const totalPembayaran = totalHargaProduk + ongkir - diskon;
 
   if (loading) {
@@ -450,8 +451,9 @@ const CheckoutPage: React.FC = () => {
 
         {/* Order Confirm Modal */}
         <OrderConfirm
-          orderNumber={`#INV-${order?.id?.toString().padStart(4, "0") || "0000"
-            }`}
+          orderNumber={`#INV-${
+            order?.id?.toString().padStart(4, "0") || "0000"
+          }`}
           status={OrderStatus.PROCESSING}
           paymentMethod={paymentMethod}
           products={
@@ -464,7 +466,14 @@ const CheckoutPage: React.FC = () => {
             })) || []
           }
           total={`Rp${totalPembayaran.toLocaleString("id-ID")}`}
-          address={alamatAktif}
+          address={{
+            nama: alamatAktif.reciptName, // Mapped to address.nama
+            telp: alamatAktif.phoneNumber, // Mapped to address.telp
+            alamat: alamatAktif.fullAdress, // Mapped to address.alamat
+            utama: alamatAktif.isPrimaary, // Mapped to address.utama
+            // Tambahkan properti wajib lain dari type Alamat jika ada, misal: id: alamatAktif.id
+            id: alamatAktif.id,
+          }}
           contact={`${alamatAktif.reciptName} | ${alamatAktif.phoneNumber}`}
           open={openOrderConfirm}
           onClose={() => {
