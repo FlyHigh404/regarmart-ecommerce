@@ -14,6 +14,7 @@ export default function CardTesti({ name, role, testimonial, avatar }: CardTesti
                  hover:shadow-md transition-all duration-300 
                  p-4 sm:p-5 md:p-6 
                  w-[240px] sm:w-[300px] md:w-[380px] 
+                 h-[160px] sm:h-[180px] md:h-[200px]
                  flex justify-between items-start gap-3 sm:gap-4"
     >
       {/* Konten kiri */}

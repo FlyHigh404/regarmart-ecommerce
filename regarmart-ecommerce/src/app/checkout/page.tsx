@@ -18,21 +18,8 @@ const CheckoutPage: React.FC = () => {
     PaymentMethod.COD
   );
 
-  const [alamatAktif, setAlamatAktif] = useState<any>({
-    id: 1,
-    label: "Rumah",
-    fullAdress: "Jl. Merdeka No. 123, Jakarta",
-    reciptName: "Budi Santoso",
-    phoneNumber: "081234567890",
-    note: "Dekat Toko Buku",
-    isPrimaary: true,
-  });
-
-  const [order, setOrder] = useState<any>({
-    orderItems: [],
-    totalAmount: 0,
-  });
-
+  const [alamatAktif, setAlamatAktif] = useState<Alamat | null>(null);
+  const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [processingCheckout, setProcessingCheckout] = useState(false);
   const [openAlamat, setOpenAlamat] = useState(false);
@@ -52,81 +39,83 @@ const CheckoutPage: React.FC = () => {
   });
 
   useEffect(() => {
-    const fetchOrders = async () => {
+    const fetchCheckoutData = async () => {
       try {
         setLoading(true);
-        const [res1, res2] = await Promise.all([
-          fetch("/api/cart").then((res) => res.json()),
-          fetch("/api/profile/address-primary").then((res) => res.json()),
+        const [cartResponse, addressResponse] = await Promise.all([
+          fetch("/api/cart"),
+          fetch("/api/profile/address-primary")
         ]);
-        console.log("Pending Order:", res1);
 
-        // Set order data dari API
-        setOrder(res1 || { id: null, orderItems: [], totalAmount: 0 });
-
-        if (res2) {
-          setAlamatAktif({
-            id: res2.id,
-            label: res2.label,
-            fullAdress: res2.fullAddress,
-            reciptName: res2.recipientName,
-            phoneNumber: res2.phoneNumber,
-            note: res2.note,
-            isPrimaary: res2.isPrimary,
-          });
+        if (!cartResponse.ok || !addressResponse.ok) {
+          throw new Error("Failed to fetch checkout data");
         }
-      } catch (err) {
-        console.error("Error fetching pending order:", err);
-        setOrder({ orderItems: [], totalAmount: 0 });
+
+        const cartData = await cartResponse.json();
+        const addressData = await addressResponse.json();
+
+        setOrder(cartData);
+        setAlamatAktif(addressData);
+      } catch (error) {
+        console.error("Error fetching checkout data:", error);
+        setOrder(null);
+        setAlamatAktif(null);
       } finally {
         setLoading(false);
       }
     };
-    fetchOrders();
+
+    fetchCheckoutData();
   }, []);
 
-  // Fungsi untuk memproses checkout
   const processCheckout = async () => {
-    try {
-      setProcessingCheckout(true);
+  if (!alamatAktif?.id) {
+    alert("Silakan pilih alamat pengiriman terlebih dahulu");
+    return;
+  }
 
-      const response = await fetch("/api/cart/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ paymentMethod }),
-      });
+  try {
+    setProcessingCheckout(true);
 
-      const result = await response.json();
+    const response = await fetch("/api/cart/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        paymentMethod,
+        addressId: alamatAktif.id
+      }),
+    });
 
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to process checkout");
-      }
+    const result = await response.json();
 
-      // ✅ Kalau QRIS, tampilkan QR Code
-      if (paymentMethod === PaymentMethod.QRIS && result.midtrans?.qrisUrl) {
-        setQrisUrl(result.midtrans.qrisUrl);
-        return;
-      }
-
-      // ✅ Kalau COD, buka OrderConfirm langsung dengan data hasil checkout
-      if (paymentMethod === PaymentMethod.COD) {
-        setOrder(result); // simpan data order dari API checkout
-        setOpenOrderConfirm(true);
-      }
-    } catch (error) {
-      console.error("Checkout error:", error);
-      alert("Terjadi kesalahan saat memproses checkout");
-    } finally {
-      setProcessingCheckout(false);
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to process checkout");
     }
-  };
 
-  // Perhitungan total
-  const totalHargaProduk = order?.orderItems?.reduce(
-    (sum: number, item: any) => sum + (Number(item.unitPrice) * item.quantity),
-    0
-  ) || 0;
-  const totalPembayaran = totalHargaProduk + ongkir - diskon;
+    console.log("Checkout result:", result); // Debug
+
+    // Untuk QRIS, tampilkan QR Code
+    if (paymentMethod === PaymentMethod.QRIS && result.midtrans?.qrisUrl) {
+      setQrisUrl(result.midtrans.qrisUrl);
+      return;
+    }
+
+    // Untuk COD, update order state dengan data yang benar
+    if (paymentMethod === PaymentMethod.COD) {
+      setOrder(result);
+      setOpenOrderConfirm(true);
+    }
+  } catch (error) {
+    console.error("Checkout error:", error);
+    alert("Terjadi kesalahan saat memproses checkout");
+  } finally {
+    setProcessingCheckout(false);
+  }
+};
+
+  // Hitung total
+  const totalHarga = order?.totalAmount || 0;
+  const totalPembayaran = totalHarga - diskon;
 
   if (loading) {
     return (
@@ -136,18 +125,24 @@ const CheckoutPage: React.FC = () => {
     );
   }
 
+  if (!order || !alamatAktif) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Data tidak ditemukan</p>
+      </div>
+    );
+  }
+
   return (
     <AuthCheck role="CUSTOMER">
       <div className="min-h-screen bg-gray-100 max-sm:bg-white flex flex-col">
-        {/* Navbar Checkout */}
         <CheckoutNavbar />
 
-        {/* Konten Utama */}
         <div className="p-6 max-w-6xl mx-auto flex-1 w-full pb-24 md:pb-6">
           <h1 className="text-lg font-bold mb-3">Checkout Produk</h1>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* ==================== KIRI ==================== */}
+            {/* Kolom Kiri */}
             <div className="md:col-span-2 space-y-3">
               {/* Alamat Pengiriman */}
               <div className="bg-white shadow rounded-xl p-4 max-sm:shadow-none max-sm:rounded-none max-sm:border-b border-gray-200 relative overflow-hidden">
@@ -158,9 +153,9 @@ const CheckoutPage: React.FC = () => {
                   <div className="flex items-center gap-1">
                     <MapPin className="w-4 h-4 text-green-600" />
                     <p className="font-medium text-xs text-[#8F8F8F]">
-                      {alamatAktif.reciptName}
+                      {alamatAktif.recipientName}
                     </p>
-                    {alamatAktif.isPrimaary && (
+                    {alamatAktif.isPrimary && (
                       <span className="bg-green-100 text-green-600 text-[10px] font-medium px-2 py-0.5 rounded-full">
                         Utama
                       </span>
@@ -176,18 +171,18 @@ const CheckoutPage: React.FC = () => {
 
                 <div className="pl-6 mt-1">
                   <p className="font-medium text-xs text-black">
-                    {alamatAktif.reciptName}
+                    {alamatAktif.recipientName}
                     <span className="after:content-['|'] after:mx-1 text-[#8F8F8F]"></span>
                     <span className="text-[#8F8F8F]">
                       {alamatAktif.phoneNumber}
                     </span>
                   </p>
-                  <p className="text-[11px] text-[#8F8F8F ]">
-                    {alamatAktif.fullAdress}
+                  <p className="text-[11px] text-[#8F8F8F]">
+                    {alamatAktif.fullAddress}
                   </p>
                 </div>
 
-                {/* Strip Hijau-Oren di bawah */}
+                {/* Strip Hijau-Oren */}
                 <div
                   className="absolute bottom-0 left-0 w-full h-1 rounded-b-xl"
                   style={{
@@ -204,7 +199,7 @@ const CheckoutPage: React.FC = () => {
                 />
               </div>
 
-              {/* Pesanan */}
+              {/* Daftar Produk */}
               {order?.orderItems?.map((item: any, idx: number) => (
                 <div
                   key={item.id}
@@ -238,7 +233,7 @@ const CheckoutPage: React.FC = () => {
                 </div>
               ))}
 
-              {/* ==================== MOBILE PAYMENT METHOD ==================== */}
+              {/* Metode Pembayaran - Mobile */}
               <div className="md:hidden bg-white p-3 mt-3">
                 <h2 className="font-semibold text-sm mb-2">
                   Metode Pembayaran
@@ -284,7 +279,7 @@ const CheckoutPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* ==================== MOBILE PAYMENT DETAIL ==================== */}
+              {/* Ringkasan Pembayaran - Mobile */}
               <div className="md:hidden bg-white p-3 mt-3">
                 <h2 className="font-semibold text-sm mb-2">
                   Ringkasan Pembayaran
@@ -295,7 +290,7 @@ const CheckoutPage: React.FC = () => {
                     <span>
                       Total harga ({order?.orderItems?.length || 0} Produk)
                     </span>
-                    <span>Rp{totalHargaProduk.toLocaleString("id-ID")}</span>
+                    <span>Rp{totalHarga.toLocaleString("id-ID")}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Ongkos Kirim</span>
@@ -310,7 +305,7 @@ const CheckoutPage: React.FC = () => {
               </div>
             </div>
 
-            {/* ==================== KANAN (DESKTOP) ==================== */}
+            {/* Kolom Kanan - Desktop */}
             <div className="hidden md:block">
               <div className="bg-white shadow rounded-xl p-4 space-y-3 border border-gray-200">
                 <h2 className="font-semibold text-sm mb-1">
@@ -364,7 +359,7 @@ const CheckoutPage: React.FC = () => {
                     <span>
                       Total harga ({order?.orderItems?.length || 0} Produk)
                     </span>
-                    <span>Rp{totalHargaProduk.toLocaleString("id-ID")}</span>
+                    <span>Rp{totalHarga.toLocaleString("id-ID")}</span>
                   </div>
                   <div className="flex justify-between text-green-600">
                     <span>Potongan Diskon</span>
@@ -383,7 +378,9 @@ const CheckoutPage: React.FC = () => {
                 <button
                   onClick={processCheckout}
                   disabled={
-                    processingCheckout || order?.orderItems?.length === 0
+                    processingCheckout || 
+                    !order?.orderItems?.length ||
+                    !alamatAktif
                   }
                   className="bg-green-600 text-white px-6 h-11 rounded-lg text-medium font-semibold w-full disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
@@ -404,12 +401,16 @@ const CheckoutPage: React.FC = () => {
           <div className="pr-2">
             <p className="text-[10px] text-gray-500">Total</p>
             <p className="text-sm font-bold text-green-600">
-              Rp{totalHargaProduk.toLocaleString("id-ID")}
+              Rp{totalPembayaran.toLocaleString("id-ID")}
             </p>
           </div>
           <button
             onClick={processCheckout}
-            disabled={processingCheckout || order?.orderItems?.length === 0}
+            disabled={
+              processingCheckout || 
+              !order?.orderItems?.length ||
+              !alamatAktif
+            }
             className="bg-green-600 text-white px-4 h-11 rounded-lg text-medium font-semibold flex-1 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {processingCheckout ? "Memproses..." : "Konfirmasi"}
@@ -437,7 +438,6 @@ const CheckoutPage: React.FC = () => {
                 alt="QRIS"
                 className="w-64 h-64 object-contain"
               />
-              <h1>{qrisUrl}</h1>
               <button
                 onClick={() => setQrisUrl(null)}
                 className="mt-4 bg-green-600 text-white px-4 py-2 rounded"
@@ -449,32 +449,37 @@ const CheckoutPage: React.FC = () => {
         )}
 
         {/* Order Confirm Modal */}
-        <OrderConfirm
-          orderNumber={`#INV-${order?.id?.toString().padStart(4, "0") || "0000"
-            }`}
-          status={OrderStatus.PROCESSING}
-          paymentMethod={paymentMethod}
-          products={
-            order?.orderItems?.map((item: any) => ({
-              id: item.id.toString(),
-              name: item.product?.name,
-              qty: item.quantity,
-              price: `Rp${Number(item.unitPrice).toLocaleString("id-ID")}`,
-              image: item.product?.imageUrl?.[0] || "/placeholder-product.png",
-            })) || []
-          }
-          total={`Rp${totalPembayaran.toLocaleString("id-ID")}`}
-          address={alamatAktif}
-          contact={`${alamatAktif.reciptName} | ${alamatAktif.phoneNumber}`}
-          open={openOrderConfirm}
-          onClose={() => {
-            setOpenOrderConfirm(false);
-            // Redirect ke halaman orders setelah konfirmasi COD
-            if (paymentMethod === PaymentMethod.COD) {
-              router.push("/profil/riwayat-transaksi");
-            }
-          }}
-        />
+<OrderConfirm
+  orderNumber={`#INV-${order?.id?.toString().padStart(4, "0") || "0000"}`}
+  status={OrderStatus.PROCESSING}
+  paymentMethod={paymentMethod}
+  products={
+    order?.orderItems?.map((item: any) => ({
+      id: item.productId || item.id,
+      name: item.product?.name,
+      qty: item.quantity,
+      price: `Rp${Number(item.unitPrice).toLocaleString("id-ID")}`,
+      image: item.product?.imageUrl?.[0] || "/placeholder-product.png",
+    })) || []
+  }
+  total={`Rp${totalPembayaran.toLocaleString("id-ID")}`}
+  address={{
+    id: alamatAktif.id.toString(),
+    nama: alamatAktif.recipientName || alamatAktif.nama || "Nama tidak tersedia",
+    telp: alamatAktif.phoneNumber || alamatAktif.telp || "Telepon tidak tersedia",
+    alamat: alamatAktif.fullAddress || alamatAktif.alamat || "Alamat tidak tersedia",
+    utama: alamatAktif.isPrimary || alamatAktif.utama || false,
+  }}
+  contact={`${alamatAktif.recipientName || alamatAktif.nama} | ${alamatAktif.phoneNumber || alamatAktif.telp}`}
+  open={openOrderConfirm}
+  onClose={() => {
+    setOpenOrderConfirm(false);
+    if (paymentMethod === PaymentMethod.COD) {
+      router.push("/profil/riwayat-transaksi");
+    }
+  }}
+/>
+          
       </div>
     </AuthCheck>
   );
