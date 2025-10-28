@@ -1,4 +1,3 @@
-// components/CategoryUploadForm.tsx
 "use client";
 
 import type React from "react";
@@ -19,7 +18,7 @@ interface CategoryFormData {
 interface CategoryUploadFormProps {
     initialData?: any;
     onClose?: () => void;
-    onSuccess?: () => void; // Tambah prop untuk callback success
+    onSuccess?: (categoryName: string, isEdit: boolean) => void; 
 }
 
 export default function CategoryUploadForm({ initialData, onClose, onSuccess }: CategoryUploadFormProps) {
@@ -31,7 +30,6 @@ export default function CategoryUploadForm({ initialData, onClose, onSuccess }: 
         description: "",
     });
 
-    // Fetch categories
     useEffect(() => {
         const fetchCategories = async () => {
             try {
@@ -71,21 +69,20 @@ export default function CategoryUploadForm({ initialData, onClose, onSuccess }: 
         setLoading(true);
 
         try {
-            // Category data to send
             const categoryData = {
                 ...formData,
             };
 
             let response;
-            if (initialData) {
-                // Update category if initialData exists
+            const isEdit = !!initialData;
+            
+            if (isEdit) {
                 response = await fetch(`/api/admin/categories/${initialData.id}`, {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(categoryData),
                 });
             } else {
-                // Create new category if no initialData
                 response = await fetch("/api/admin/categories", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -94,15 +91,15 @@ export default function CategoryUploadForm({ initialData, onClose, onSuccess }: 
             }
 
             if (response.ok) {
-                // Panggil callback success jika ada
                 if (onSuccess) {
-                    onSuccess();
+                    onSuccess(formData.name, isEdit);
                 }
                 
-                // Tutup modal
-                if (onClose) {
-                    onClose();
-                }
+                setTimeout(() => {
+                    if (onClose) {
+                        onClose();
+                    }
+                }, 100);
             } else {
                 const errorData = await response.json();
                 alert(errorData.error || "Failed to save category");

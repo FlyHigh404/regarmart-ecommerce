@@ -4,7 +4,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { X, Loader2 } from "lucide-react"
+import { X, Loader2, CheckCircle2 } from "lucide-react"
 import FileDropzone from "./FileDropZone"
 
 interface Category {
@@ -18,15 +18,16 @@ interface ProductFormData {
   price: string
   stock: string
   categoryId: string
-  imageUrl: string[] // hasil upload ke server
+  imageUrl: string[]
 }
 
 interface ProductUploadFormProps {
-  initialData?: any; // data produk untuk edit
+  initialData?: any;
   onClose?: () => void;
+  onSuccess?: (productName: string, isEdit: boolean) => void;
 }
 
-export default function ProductUploadForm({ initialData, onClose }: ProductUploadFormProps) {
+export default function ProductUploadForm({ initialData, onClose, onSuccess }: ProductUploadFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [uploadingImages, setUploadingImages] = useState(false)
@@ -40,7 +41,6 @@ export default function ProductUploadForm({ initialData, onClose }: ProductUploa
     imageUrl: [],
   })
 
-  // tambahan
   const [pendingFiles, setPendingFiles] = useState<File[]>([])
   const [previewUrls, setPreviewUrls] = useState<string[]>([])
 
@@ -68,7 +68,7 @@ export default function ProductUploadForm({ initialData, onClose }: ProductUploa
         price: initialData.price?.toString() || "",
         stock: initialData.stock?.toString() || "",
         categoryId: initialData.category?.id || "",
-        imageUrl: initialData.imageUrl || [],  // Pastikan ini memperbarui gambar yang ada di awal
+        imageUrl: initialData.imageUrl || [],
       });
 
       setPreviewUrls(initialData.imageUrl || []);
@@ -85,7 +85,6 @@ export default function ProductUploadForm({ initialData, onClose }: ProductUploa
     }))
   }
 
-  // drop file (preview dulu, belum upload)
   const handleFilesDrop = (files: FileList) => {
     const arr = Array.from(files)
     setPendingFiles((prev) => [...prev, ...arr])
@@ -94,11 +93,9 @@ export default function ProductUploadForm({ initialData, onClose }: ProductUploa
   }
 
   const removeImage = (index: number) => {
-    // Hapus gambar dari pendingFiles dan previewUrls
     const newPendingFiles = pendingFiles.filter((_, i) => i !== index);
     const newPreviewUrls = previewUrls.filter((_, i) => i !== index);
 
-    // Jika gambar yang dihapus adalah gambar yang sudah diupload sebelumnya, hapus juga dari formData.imageUrl
     if (index < formData.imageUrl.length) {
       const newImageUrls = formData.imageUrl.filter((_, i) => i !== index);
       setFormData((prev) => ({
@@ -107,7 +104,6 @@ export default function ProductUploadForm({ initialData, onClose }: ProductUploa
       }));
     }
 
-    // Perbarui state untuk pendingFiles dan previewUrls
     setPendingFiles(newPendingFiles);
     setPreviewUrls(newPreviewUrls);
   };
@@ -117,7 +113,6 @@ export default function ProductUploadForm({ initialData, onClose }: ProductUploa
     setLoading(true);
 
     try {
-      // Upload gambar baru jika ada
       const uploadedUrls: string[] = [...formData.imageUrl];
 
       for (const file of pendingFiles) {
@@ -127,7 +122,7 @@ export default function ProductUploadForm({ initialData, onClose }: ProductUploa
         const res = await fetch("/api/upload", { method: "POST", body: fd });
         if (!res.ok) throw new Error("Upload failed");
         const data = await res.json();
-        uploadedUrls.push(data.url);  // Tambahkan URL gambar yang baru
+        uploadedUrls.push(data.url);
       }
 
       const productData = {
@@ -138,7 +133,9 @@ export default function ProductUploadForm({ initialData, onClose }: ProductUploa
       };
 
       let response;
-      if (initialData) {
+      const isEdit = !!initialData;
+      
+      if (isEdit) {
         response = await fetch(`/api/admin/products/${initialData.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -153,7 +150,17 @@ export default function ProductUploadForm({ initialData, onClose }: ProductUploa
       }
 
       if (response.ok) {
-        window.location.reload();
+        // Panggil callback onSuccess dengan nama produk dan status edit
+        if (onSuccess) {
+          onSuccess(formData.name, isEdit);
+        }
+        
+        // Tutup modal setelah delay singkat
+        setTimeout(() => {
+          if (onClose) {
+            onClose();
+          }
+        }, 100);
       } else {
         const errorData = await response.json();
         alert(errorData.error || "Failed to save product");
@@ -177,7 +184,6 @@ export default function ProductUploadForm({ initialData, onClose }: ProductUploa
         <div className="mb-8">
           {previewUrls.length > 0 ? (
             <div>
-              {/* Preview Gambar Utama */}
               <div className="relative">
                 <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden border-2 border-dashed border-gray-300">
                   <img
@@ -187,7 +193,6 @@ export default function ProductUploadForm({ initialData, onClose }: ProductUploa
                   />
                 </div>
 
-                {/* Thumbnail gambar tambahan */}
                 {previewUrls.length > 1 && (
                   <div className="flex gap-2 mt-3 flex-wrap">
                     {previewUrls.slice(1).map((url, index) => (
@@ -209,7 +214,6 @@ export default function ProductUploadForm({ initialData, onClose }: ProductUploa
                   </div>
                 )}
 
-                {/* Hapus gambar utama */}
                 <div className="absolute top-3 right-3 flex gap-2">
                   <button
                     type="button"
@@ -225,7 +229,6 @@ export default function ProductUploadForm({ initialData, onClose }: ProductUploa
               <div className="mt-4">
                 <div className="relative border-2 border-dashed border-green-400 rounded-lg p-6 bg-white hover:bg-green-50 transition-colors">
                   <div className="text-center">
-                    {/* Upload Icon hijau seperti dalam gambar */}
                     <div className="w-12 h-12 mx-auto mb-3 text-green-500">
                       <img src="/export.png" alt="" />
                     </div>
@@ -237,7 +240,6 @@ export default function ProductUploadForm({ initialData, onClose }: ProductUploa
                     multiple={true}
                     label="Tambah gambar lain"
                     id="product-images-additional"
-
                   />
                 </div>
               </div>

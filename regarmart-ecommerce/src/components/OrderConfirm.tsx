@@ -22,7 +22,7 @@ export interface OrderConfirmProps {
   orderNumber: string;
   status: OrderStatus;
   paymentMethod: PaymentMethod;
-  address: Alamat; // GUNAKAN INI
+  address: Alamat; 
   contact?: string;
   products: OrderProduct[];
   total: string;
@@ -34,7 +34,7 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
   orderNumber,
   status,
   paymentMethod,
-  address, // GUNAKAN address BUKAN alamatAktif
+  address, 
   products,
   total,
   open,

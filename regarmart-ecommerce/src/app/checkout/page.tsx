@@ -92,8 +92,6 @@ const CheckoutPage: React.FC = () => {
       throw new Error(result.error || "Failed to process checkout");
     }
 
-    console.log("Checkout result:", result); // Debug
-
     // Untuk QRIS, tampilkan QR Code
     if (paymentMethod === PaymentMethod.QRIS && result.midtrans?.qrisUrl) {
       setQrisUrl(result.midtrans.qrisUrl);
@@ -449,36 +447,36 @@ const CheckoutPage: React.FC = () => {
         )}
 
         {/* Order Confirm Modal */}
-<OrderConfirm
-  orderNumber={`#INV-${order?.id?.toString().padStart(4, "0") || "0000"}`}
-  status={OrderStatus.PROCESSING}
-  paymentMethod={paymentMethod}
-  products={
-    order?.orderItems?.map((item: any) => ({
-      id: item.productId || item.id,
-      name: item.product?.name,
-      qty: item.quantity,
-      price: `Rp${Number(item.unitPrice).toLocaleString("id-ID")}`,
-      image: item.product?.imageUrl?.[0] || "/placeholder-product.png",
-    })) || []
-  }
-  total={`Rp${totalPembayaran.toLocaleString("id-ID")}`}
-  address={{
-    id: alamatAktif.id.toString(),
-    nama: alamatAktif.recipientName || alamatAktif.nama || "Nama tidak tersedia",
-    telp: alamatAktif.phoneNumber || alamatAktif.telp || "Telepon tidak tersedia",
-    alamat: alamatAktif.fullAddress || alamatAktif.alamat || "Alamat tidak tersedia",
-    utama: alamatAktif.isPrimary || alamatAktif.utama || false,
-  }}
-  contact={`${alamatAktif.recipientName || alamatAktif.nama} | ${alamatAktif.phoneNumber || alamatAktif.telp}`}
-  open={openOrderConfirm}
-  onClose={() => {
-    setOpenOrderConfirm(false);
-    if (paymentMethod === PaymentMethod.COD) {
-      router.push("/profil/riwayat-transaksi");
-    }
-  }}
-/>
+        <OrderConfirm
+          orderNumber={`#INV-${order?.id?.toString().padStart(4, "0") || "0000"}`}
+          status={OrderStatus.PROCESSING}
+          paymentMethod={paymentMethod}
+          products={
+            order?.orderItems?.map((item: any) => ({
+              id: item.productId || item.id,
+              name: item.product?.name,
+              qty: item.quantity,
+              price: `Rp${Number(item.unitPrice).toLocaleString("id-ID")}`,
+              image: item.product?.imageUrl?.[0] || "/placeholder-product.png",
+            })) || []
+          }
+          total={`Rp${totalPembayaran.toLocaleString("id-ID")}`}
+          address={{
+            id: alamatAktif.id.toString(),
+            nama: alamatAktif.recipientName || alamatAktif.nama || "Nama tidak tersedia",
+            telp: alamatAktif.phoneNumber || alamatAktif.telp || "Telepon tidak tersedia",
+            alamat: alamatAktif.fullAddress || alamatAktif.alamat || "Alamat tidak tersedia",
+            utama: alamatAktif.isPrimary || alamatAktif.utama || false,
+          }}
+          contact={`${alamatAktif.recipientName || alamatAktif.nama} | ${alamatAktif.phoneNumber || alamatAktif.telp}`}
+          open={openOrderConfirm}
+          onClose={() => {
+            setOpenOrderConfirm(false);
+            if (paymentMethod === PaymentMethod.COD) {
+              router.push("/profil/riwayat-transaksi");
+            }
+          }}
+        />
           
       </div>
     </AuthCheck>

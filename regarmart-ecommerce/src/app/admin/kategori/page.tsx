@@ -1,28 +1,18 @@
-// components/Categories.tsx
 "use client";
 import { useState, useEffect } from "react";
 import AdminLayout from "../AdminLayout";
-import { Search, Plus, Edit, Trash2, X, Filter, ChevronDown, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { Plus, Edit, Trash2, X, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import CategoryUploadForm from "@/components/CategoryUploadForm";
 
-// Add this type definition at the top of your file
 type Toast = {
   id: number;
   type: "success" | "error";
   message: string;
 };
 
-interface CategoryUploadFormProps {
-  initialData?: any;
-  onClose?: () => void;
-  onSuccess?: () => void;
-}
-
 const Categories = () => {
-  const [searchTerm, setSearchTerm] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showFilter, setShowFilter] = useState(false);
   const [error, setError] = useState("");
   const [categories, setCategories] = useState<
     Array<{ id: string; name: string; description: string; imageUrl: string | null }>
@@ -33,12 +23,17 @@ const Categories = () => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<{ id: string; name: string; description: string } | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
-  
-  // Delete success modal states
   const [deleteSuccessOpen, setDeleteSuccessOpen] = useState(false);
   const [deletedCategoryName, setDeletedCategoryName] = useState("");
+  const [saveSuccessOpen, setSaveSuccessOpen] = useState(false);
+  const [savedCategoryInfo, setSavedCategoryInfo] = useState({ name: "", isEdit: false });
 
-  // Add this toast function
+  const handleCategorySaveSuccess = (categoryName: string, isEdit: boolean) => {
+    setSavedCategoryInfo({ name: categoryName, isEdit });
+    setSaveSuccessOpen(true);
+    refreshCategories();
+  };
+
   const showToast = (type: "success" | "error", message: string) => {
     const id = Date.now();
     setToasts((prev) => [...prev, { id, type, message }]);
@@ -46,9 +41,6 @@ const Categories = () => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 4000);
   };
-
-  // filter states
-  const [filterOption, setFilterOption] = useState("Semua");
 
   const refreshCategories = async () => {
     try {
@@ -80,23 +72,6 @@ const Categories = () => {
     fetchCategories();
   }, []);
 
-  const filteredCategories = categories.filter((cat) => {
-    const matchesSearch =
-      cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cat.description.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesFilter =
-      filterOption === "Semua"
-        ? true
-        : filterOption === "Dengan Deskripsi"
-          ? cat.description.trim() !== ""
-          : filterOption === "Tanpa Deskripsi"
-            ? cat.description.trim() === ""
-            : true;
-
-    return matchesSearch && matchesFilter;
-  });
-
   const handleDeleteClick = (category: { id: string; name: string; description: string }) => {
     setCategoryToDelete({
       id: category.id,
@@ -121,12 +96,10 @@ const Categories = () => {
         throw new Error('Failed to delete category');
       }
 
-      // Store deleted category name for success modal
       setDeletedCategoryName(categoryToDelete.name);
 
       await refreshCategories();
-      
-      // Show success modal instead of toast
+
       setDeleteSuccessOpen(true);
     } catch (error) {
       console.error("Error deleting category:", error);
@@ -159,11 +132,10 @@ const Categories = () => {
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg animate-slide-in ${
-              toast.type === "success"
-                ? "bg-green-50 text-green-800 border border-green-200"
-                : "bg-red-50 text-red-800 border border-red-200"
-            }`}
+            className={`flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg animate-slide-in ${toast.type === "success"
+              ? "bg-green-50 text-green-800 border border-green-200"
+              : "bg-red-50 text-red-800 border border-red-200"
+              }`}
           >
             {toast.type === "success" ? (
               <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
@@ -209,12 +181,11 @@ const Categories = () => {
           <div className="p-4 sm:p-6">
             {/* Mobile Card View */}
             <div className="block lg:hidden space-y-4">
-              {filteredCategories.map((cat) => (
+              {categories.map((cat) => (
                 <div
                   key={cat.id}
-                  className={`bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow ${
-                    isDeleting === cat.id ? "opacity-50" : ""
-                  }`}
+                  className={`bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow ${isDeleting === cat.id ? "opacity-50" : ""
+                    }`}
                 >
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex-1 min-w-0">
@@ -251,13 +222,6 @@ const Categories = () => {
                   </div>
                 </div>
               ))}
-
-              {filteredCategories.length === 0 && (
-                <div className="text-center py-12 text-gray-500">
-                  <p className="text-lg font-medium">Tidak ada kategori ditemukan</p>
-                  <p className="text-sm mt-1">Coba ubah kata kunci pencarian Anda</p>
-                </div>
-              )}
             </div>
 
             {/* Desktop Table View */}
@@ -277,12 +241,11 @@ const Categories = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredCategories.map((cat, index) => (
+                  {categories.map((cat, index) => (
                     <tr
                       key={cat.id}
-                      className={`hover:bg-gray-100 transition-colors ${
-                        index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                      } ${isDeleting === cat.id ? "opacity-50" : ""}`}
+                      className={`hover:bg-gray-100 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                        } ${isDeleting === cat.id ? "opacity-50" : ""}`}
                     >
                       <td className="py-5 px-6">
                         <div className="font-medium text-gray-900 text-sm">{cat.name}</div>
@@ -319,17 +282,6 @@ const Categories = () => {
                       </td>
                     </tr>
                   ))}
-
-                  {filteredCategories.length === 0 && (
-                    <tr>
-                      <td colSpan={3} className="py-12 px-6 text-center bg-white">
-                        <div className="text-gray-500">
-                          <p className="text-lg font-medium">Tidak ada kategori ditemukan</p>
-                          <p className="text-sm mt-1">Coba ubah kata kunci pencarian Anda</p>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
                 </tbody>
               </table>
             </div>
@@ -448,7 +400,7 @@ const Categories = () => {
                 {error && <div className="mb-3 text-red-600 text-sm">{error}</div>}
                 <CategoryUploadForm
                   onClose={() => setShowAddModal(false)}
-                  onSuccess={refreshCategories}
+                  onSuccess={handleCategorySaveSuccess}
                 />
               </div>
             </div>
@@ -479,61 +431,40 @@ const Categories = () => {
                 <CategoryUploadForm
                   initialData={editingCategory}
                   onClose={() => setShowEditModal(false)}
-                  onSuccess={refreshCategories}
+                  onSuccess={handleCategorySaveSuccess}
                 />
               </div>
             </div>
           </div>
         )}
 
-        {/* Filter Dropdown */}
-        {showFilter && (
-          <div className="fixed inset-0 z-40 flex items-center justify-center" onClick={() => setShowFilter(false)}>
-            <div
-              className="bg-white rounded-xl shadow-2xl border border-gray-200 p-6 w-full max-w-md mx-4"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Filter Kategori</h3>
+        {/* Save/Edit Success Modal */}
+        {saveSuccessOpen && (
+          <div className="fixed inset-0 bg-transparent backdrop-blur-md flex justify-center items-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[440px] p-6 md:p-8 relative animate-scale-in">
+              <div className="flex flex-col items-center text-center">
+                {/* Success Icon */}
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                  <CheckCircle2 className="w-8 h-8 md:w-10 md:h-10 text-green-600" />
+                </div>
+
+                {/* Title */}
+                <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-2">
+                  {savedCategoryInfo.isEdit ? "Kategori Berhasil Diperbarui!" : "Kategori Berhasil Ditambahkan!"}
+                </h2>
+
+                {/* Description */}
+                <p className="text-sm md:text-base text-gray-600 mb-4">
+                  Kategori <span className="font-semibold text-gray-900">{savedCategoryInfo.name}</span> telah {savedCategoryInfo.isEdit ? "diperbarui" : "ditambahkan"} ke sistem
+                </p>
+
+                {/* OK Button */}
                 <button
-                  onClick={() => setShowFilter(false)}
-                  className="text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="w-full px-4 py-2.5 md:py-3 rounded-xl bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors text-sm md:text-base"
+                  onClick={() => setSaveSuccessOpen(false)}
                 >
-                  <X size={20} />
+                  OK
                 </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Deskripsi</label>
-                  <select
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none focus:border-transparent"
-                    value={filterOption}
-                    onChange={(e) => setFilterOption(e.target.value)}
-                  >
-                    <option>Semua</option>
-                    <option>Dengan Deskripsi</option>
-                    <option>Tanpa Deskripsi</option>
-                  </select>
-                </div>
-
-                <div className="flex gap-3 pt-2">
-                  <button
-                    className="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
-                    onClick={() => setShowFilter(false)}
-                  >
-                    Terapkan
-                  </button>
-                  <button
-                    className="flex-1 bg-gray-100 text-gray-700 py-3 px-4 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
-                    onClick={() => {
-                      setFilterOption("Semua");
-                      setShowFilter(false);
-                    }}
-                  >
-                    Reset
-                  </button>
-                </div>
               </div>
             </div>
           </div>
