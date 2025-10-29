@@ -13,10 +13,12 @@ import {
   CheckCircle,
   AlertCircle,
   Loader2,
-  LogIn,
 } from "lucide-react";
 import Footer from "@/components/Footer";
 import NavSearch from "@/components/NavSearch";
+import RatingSection from "@/components/RatingSection";
+import ReviewSection from "@/components/ReviewSection";
+import FormRating from "@/components/FormRating";
 import { useCart } from "@/context/CartContext";
 
 // Toast Notification Component
@@ -55,72 +57,110 @@ const Toast = ({
   </div>
 );
 
-// Login Confirmation Modal Component
-const LoginModal = ({ 
-  isOpen, 
-  onClose, 
-  onConfirm 
-}: { 
-  isOpen: boolean; 
-  onClose: () => void; 
-  onConfirm: () => void;
-}) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-transparent backdrop-blur-sm"
-        onClick={onClose}
-      ></div>
-      
-      {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-slideUp">
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          <X size={20} />
-        </button>
-
-        {/* Icon */}
-        <div className="flex justify-center mb-4">
-          <div className="w-16 h-16 bg-[#26A81D] rounded-full flex items-center justify-center">
-            <LogIn size={32} className="text-white" />
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="text-center mb-6">
-          <h3 className="text-xl font-bold text-gray-900 mb-2">
-            Login Diperlukan
-          </h3>
-          <p className="text-gray-600 leading-relaxed">
-            Anda harus login terlebih dahulu untuk menambahkan produk ke keranjang.
-          </p>
-        </div>
-
-        {/* Actions */}
+// Loading Skeleton Component
+const ProductSkeleton = () => (
+  <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-8">
+    <div className="px-6 py-4 border-b border-gray-100">
+      <div className="w-24 h-6 bg-gray-200 rounded animate-pulse" />
+    </div>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 lg:ml-10 lg:mr-12">
+      <div className="space-y-7">
+        <div className="aspect-square bg-gray-200 rounded-xl animate-pulse w-full max-w-[500px] max-h-[500px]" />
         <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors"
-          >
-            Batal
-          </button>
-          <button
-            onClick={onConfirm}
-            className="flex-1 px-4 py-3 bg-[#26A81D] hover:bg-green-600 text-white font-semibold rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2"
-          >
-            <LogIn size={18} />
-            Login
-          </button>
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="w-20 h-20 bg-gray-200 rounded-lg animate-pulse" />
+          ))}
+        </div>
+      </div>
+      <div className="space-y-6">
+        <div className="space-y-3">
+          <div className="h-8 bg-gray-200 rounded w-3/4 animate-pulse" />
+          <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse" />
+        </div>
+        <div className="h-10 bg-gray-200 rounded w-1/3 animate-pulse" />
+        <div className="h-12 bg-gray-200 rounded animate-pulse" />
+        <div className="flex gap-4">
+          <div className="flex-1 h-12 bg-gray-200 rounded-xl animate-pulse" />
+          <div className="flex-1 h-12 bg-gray-200 rounded-xl animate-pulse" />
         </div>
       </div>
     </div>
-  );
+  </div>
+);
+
+interface Product {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  imageUrl: string[];
+  stock: number;
+  weight?: string;
+  category?: {
+    name: string;
+  };
+  rating?: number;
+  createdAt?: string;
+}
+
+interface Review {
+  id: number;
+  name: string;
+  profileImage: string;
+  date: string;
+  rating: number;
+  review: string;
+  adminReply?: {
+    name: string;
+    role: string;
+    date: string;
+    message: string;
+  };
+}
+
+interface Rating {
+  star: number;
+  count: number;
+}
+
+// Helper function untuk memproses data ratings
+const processRatingsData = (ratingsData: any): Rating[] => {
+  if (!Array.isArray(ratingsData)) {
+    return [
+      { star: 5, count: 0 },
+      { star: 4, count: 0 },
+      { star: 3, count: 0 },
+      { star: 2, count: 0 },
+      { star: 1, count: 0 },
+    ];
+  }
+
+  if (ratingsData.length === 0) {
+    return [
+      { star: 5, count: 0 },
+      { star: 4, count: 0 },
+      { star: 3, count: 0 },
+      { star: 2, count: 0 },
+      { star: 1, count: 0 },
+    ];
+  }
+
+  return ratingsData.map((item: any) => ({
+    star: Number(item.star) || 0,
+    count: Number(item.count) || 0,
+  }));
+};
+
+// Helper function untuk menghitung rating statistics
+const calculateRatingStats = (ratings: Rating[]) => {
+  const total = ratings.reduce((acc, r) => acc + r.count, 0);
+  const avg = total > 0
+    ? ratings.reduce((acc, r) => acc + r.star * r.count, 0) / total
+    : 0;
+  return {
+    totalReviews: total,
+    averageRating: Number(avg.toFixed(1)),
+  };
 };
 
 const ProductDetailPage = () => {
@@ -128,7 +168,11 @@ const ProductDetailPage = () => {
   const { data: session } = useSession();
   const { incrementCart } = useCart();
   
-  const [product, setProduct] = useState<any>(null);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [ratings, setRatings] = useState<Rating[]>([]);
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalReviews, setTotalReviews] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [showStickyBar, setShowStickyBar] = useState(false);
@@ -136,25 +180,70 @@ const ProductDetailPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [addingToCart, setAddingToCart] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [isRatingOpen, setIsRatingOpen] = useState(false);
 
   useEffect(() => {
     if (!params?.id) return;
 
-    const fetchProduct = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch(`/api/products/${params.id}`);
-        if (!res.ok) throw new Error("Gagal mengambil produk");
-        const data = await res.json();
-        setProduct(data);
-      } catch (err: any) {
-        setError(err.message);
+        setLoading(true);
+        setError(null);
+
+        const productId = params.id as string;
+
+        if (!productId) {
+          setError("Product ID tidak ditemukan");
+          return;
+        }
+
+        // Fetch product data
+        const productResponse = await fetch(`/api/products/${productId}`);
+        if (!productResponse.ok) {
+          throw new Error("Gagal mengambil data produk");
+        }
+        const productData = await productResponse.json();
+        setProduct(productData);
+
+        // Fetch reviews data
+        const reviewsResponse = await fetch(`/api/products/${productId}/reviews`);
+        if (reviewsResponse.ok) {
+          const reviewsData = await reviewsResponse.json();
+          setReviews(Array.isArray(reviewsData) ? reviewsData : []);
+        }
+
+        // Fetch ratings data
+        const ratingsResponse = await fetch(`/api/products/${productId}/ratings`);
+        if (ratingsResponse.ok) {
+          const ratingsData = await ratingsResponse.json();
+          const processedRatings = processRatingsData(ratingsData);
+          setRatings(processedRatings);
+
+          const { totalReviews, averageRating } = calculateRatingStats(processedRatings);
+          setTotalReviews(totalReviews);
+          setAverageRating(averageRating);
+        } else {
+          // Set default ratings jika response tidak ok
+          const defaultRatings = processRatingsData(null);
+          setRatings(defaultRatings);
+          setTotalReviews(0);
+          setAverageRating(0);
+        }
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError(err instanceof Error ? err.message : "Terjadi kesalahan saat memuat data");
+        // Set default values jika error
+        const defaultRatings = processRatingsData(null);
+        setRatings(defaultRatings);
+        setTotalReviews(0);
+        setAverageRating(0);
+        setReviews([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProduct();
+    fetchData();
   }, [params?.id]);
 
   useEffect(() => {
@@ -196,16 +285,59 @@ const ProductDetailPage = () => {
     window.history.back();
   };
 
-  const addToCart = async () => {
+  const showLoginAlert = () => {
+    setToast({ 
+      message: "Anda harus login terlebih dahulu.", 
+      type: 'error' 
+    });
+  };
+
+  const handleBuyNow = () => {
+    if (!session) {
+      showLoginAlert();
+      return;
+    }
+
+    if (session.user?.role === "ADMIN") {
+      setToast({ 
+        message: "Akun admin tidak dapat membeli produk.", 
+        type: 'error' 
+      });
+      return;
+    }
+
+    // Logic untuk Beli Sekarang
+    setToast({ 
+      message: "Fitur Beli Sekarang akan segera diarahkan ke checkout!", 
+      type: 'success' 
+    });
+  };
+
+  const handleAddToCart = async () => {
+    // Cek login
+    if (!session) {
+      showLoginAlert();
+      return;
+    }
+
+    // Cek role user
+    if (session.user?.role === "ADMIN") {
+      setToast({ 
+        message: "Akun admin tidak dapat menambahkan produk ke keranjang.", 
+        type: 'error' 
+      });
+      return;
+    }
+
     setAddingToCart(true);
     try {
       const response = await fetch("/api/cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          productId: product.id,
+          productId: product?.id,
           quantity: quantity,
-          unitPrice: product.price,
+          unitPrice: product?.price,
         }),
         credentials: "include",
       });
@@ -235,32 +367,21 @@ const ProductDetailPage = () => {
     }
   };
 
-  const handleAddToCart = async () => {
-    // Cek login
+  const handleWriteReview = () => {
     if (!session) {
-      setShowLoginModal(true);
+      showLoginAlert();
       return;
     }
 
-    // Cek role user
     if (session.user?.role === "ADMIN") {
       setToast({ 
-        message: "Akun admin tidak dapat menambahkan produk ke keranjang.", 
+        message: "Akun admin tidak dapat memberikan ulasan.", 
         type: 'error' 
       });
       return;
     }
 
-    await addToCart();
-  };
-
-  const handleLoginConfirm = () => {
-    setShowLoginModal(false);
-    window.location.href = "/auth/signin";
-  };
-
-  const handleLoginCancel = () => {
-    setShowLoginModal(false);
+    setIsRatingOpen(true);
   };
 
   if (loading) {
@@ -308,13 +429,6 @@ const ProductDetailPage = () => {
           onClose={() => setToast(null)}
         />
       )}
-
-      <LoginModal
-        isOpen={showLoginModal}
-        onClose={handleLoginCancel}
-        onConfirm={handleLoginConfirm}
-      />
-
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 py-6">
           {/* Product Detail Container */}
@@ -393,7 +507,7 @@ const ProductDetailPage = () => {
 
                 <div>
                   <span className="text-2xl font-bold text-gray-900">
-                    {product.price}
+                    {formatPrice(product.price)}
                   </span>
                 </div>
 
@@ -432,6 +546,7 @@ const ProductDetailPage = () => {
 
                 <div className="flex gap-4">
                   <button 
+                    onClick={handleBuyNow}
                     disabled={product.stock === 0}
                     className="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-2 px-3 rounded-xl transition-colors"
                   >
@@ -462,7 +577,7 @@ const ProductDetailPage = () => {
                   </h3>
                   
                   <div className="text-gray-700 mb-3 leading-relaxed text-sm">
-                    {product.description}
+                    {product.description || "Tidak ada deskripsi produk."}
                   </div>
 
                   {product.category && (
@@ -486,7 +601,7 @@ const ProductDetailPage = () => {
             </div>
           </div>
 
-          {/* Related Products */}
+           {/* Related Products */}
           <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
             <div className="px-6 py-6 border-b border-gray-100">
               <div className="flex items-center justify-between">
@@ -504,8 +619,54 @@ const ProductDetailPage = () => {
               </p>
             </div>
           </div>
+          
+          {/* Rating Section */}
+          <RatingSection
+            averageRating={averageRating}
+            totalReviews={totalReviews}
+            ratings={ratings}
+            product={{
+              id: product.id,
+              name: product.name,
+              image: product.imageUrl[0],
+              qty: 1,
+              price: product.price,
+            }}
+            orderNumber="123"
+          />
+
+          {/* Review Section */}
+          <div className="mb-8 mt-2">
+            {reviews.length > 0 ? (
+              <ReviewSection reviews={reviews} />
+            ) : (
+              <div className="text-center py-8 rounded-lg bg-white">
+                <Star className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500 font-semibold text-lg">
+                  Belum ada ulasan untuk produk ini
+                </p>
+                <p className="text-gray-400 mt-2 mb-4">
+                  Jadilah yang pertama memberikan ulasan!
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
+        {/* FormRating Modal untuk tombol di Review Section */}
+        <FormRating
+          open={isRatingOpen}
+          onClose={() => setIsRatingOpen(false)}
+          product={{
+            id: product.id,
+            name: product.name,
+            image: product.imageUrl[0],
+            qty: 1,
+            price: product.price,
+          }}
+          orderNumber="123"
+        />
+        
         {/* Sticky Bar */}
         <div
           className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg transition-transform duration-300 z-50 ${
@@ -527,7 +688,7 @@ const ProductDetailPage = () => {
                 </h3>
                 <div className="text-gray-500 text-xs">Total Harga</div>
                 <div className="font-bold text-green-600 text-sm">
-                  {product.price}
+                  {formatPrice(product.price * quantity)}
                 </div>
               </div>
               <div className="flex items-center border border-gray-300 rounded-lg">
@@ -551,6 +712,7 @@ const ProductDetailPage = () => {
               </div>
               <div className="flex gap-2">
                 <button 
+                  onClick={handleBuyNow}
                   disabled={product.stock === 0}
                   className="bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm whitespace-nowrap"
                 >
@@ -588,30 +750,6 @@ const ProductDetailPage = () => {
         }
         .animate-slide-in {
           animation: slide-in 0.3s ease-out;
-        }
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.2s ease-out;
-        }
-        .animate-slideUp {
-          animation: slideUp 0.3s ease-out;
         }
       `}</style>
     </>

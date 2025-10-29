@@ -3,14 +3,13 @@
 import { useEffect, useRef, useState } from "react"
 import CardTesti from "@/components/CardTesti"
 
-const testimonials = [
-  { name: "Saefudin", role: "Mahasiswa", testimonial: "Lorem ipsum dolor sit amet...", avatar: "/profile-photo-saefudin.jpeg" },
-  { name: "Darmaji", role: "Penjual Kurma", testimonial: "Lorem ipsum dolor sit amet...", avatar: "/profile-photo-darmaji.jpeg" },
-  { name: "Michele Patrius", role: "Ibu Rumah Tangga", testimonial: "Lorem ipsum dolor sit amet...", avatar: "/profile-photo-michele.jpeg" },
-  { name: "Ahmad", role: "Petani", testimonial: "Lorem ipsum dolor sit amet...", avatar: "/profile-photo-saefudin.jpeg" },
-  { name: "Siti", role: "Pedagang", testimonial: "Lorem ipsum dolor sit amet...", avatar: "/profile-photo-michele.jpeg" },
-  { name: "Budi", role: "Karyawan", testimonial: "Lorem ipsum dolor sit amet...", avatar: "/profile-photo-darmaji.jpeg" },
-  { name: "Rina", role: "Guru", testimonial: "Lorem ipsum dolor sit amet...", avatar: "/profile-photo-michele.jpeg" },
+  const testimonials = [
+  { name: "Chaidar Abdillah", role: "Mahasiswa", testimonial: "Belanja di Regar Mart selalu memuaskan. Sayur segar, harga bersahabat, pelayanan cepat dan ramah!", avatar: "/Chaidar.jpg" },
+  { name: "Setia Cahya", role: "Mahasiswa", testimonial: "Awalnya ragu belanja online, tapi Regar Mart bikin nyaman. Barang cepat datang dan selalu segar!", avatar: "/Setia.jpg" },
+  { name: "Sharon Virginia", role: "Mahasiswa", testimonial: "Regar Mart jadi penyelamat saya yang sibuk! Semua sayur dan sembako fresh, tinggal pesan, langsung diantar", avatar: "/Sharon.jpg" },
+  { name: "Abednego Sinaga", role: "Karyawan", testimonial: "Kualitas sayurannya selalu bagus dan segar. Harganya juga pas di kantong. Mantap banget Regar Mart", avatar: "/Abednego.jpg" },
+  { name: "Steven Silitonga", role: "Karyawan", testimonial: "Coba sekali langsung ketagihan! Sayurannya fresh, pengiriman cepat, dan pelayanan top!", avatar: "/Steven.jpg" },
+  { name: "Ahmad Saddam", role: "Karyawan", testimonial: "Produk selalu segar, kurir sopan, dan pengiriman tepat waktu. Regar Mart memang terbaik!", avatar: "/Ahmad.jpg" },
 ]
 
 export default function TestiSection() {
@@ -57,25 +56,11 @@ export default function TestiSection() {
         </div>
 
         {/* Baris pertama (kiri → kanan) */}
-        <div className="overflow-hidden mb-4 sm:mb-6">
+        <div className="mb-4 sm:mb-6">
           <div className="marquee-left flex gap-3 sm:gap-4">
             {[...testimonials, ...testimonials].map((t, i) => (
               <div
                 key={`row1-${i}`}
-                className="flex-shrink-0 transition-transform duration-500 hover:scale-105"
-              >
-                <CardTesti {...t} />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Baris kedua (kanan → kiri) */}
-        <div className="overflow-hidden">
-          <div className="marquee-right flex gap-3 sm:gap-4">
-            {[...testimonials, ...testimonials].map((t, i) => (
-              <div
-                key={`row2-${i}`}
                 className="flex-shrink-0 transition-transform duration-500 hover:scale-105"
               >
                 <CardTesti {...t} />

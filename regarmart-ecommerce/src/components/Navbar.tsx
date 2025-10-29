@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect, useRef } from "react"
-import { Menu, X, ShoppingCart, User, Settings, LogOut, ChevronDown } from "lucide-react"
+import { Menu, X, ShoppingCart, User, LogOut, ChevronDown } from "lucide-react"
 import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
 import { signOut, useSession } from "next-auth/react";
@@ -68,7 +68,7 @@ const Navbar = () => {
     /* nav links */
     const navItems = [
         { href: "#beranda", label: "Beranda" },
-        { href: "/katalog", label: "Katalog" },
+        { href: "#katalog", label: "Katalog" },
         { href: "#about", label: "Tentang Kami" },
         { href: "#testimoni", label: "Testimoni" },
     ]
@@ -209,16 +209,6 @@ const Navbar = () => {
                                         >
                                             <User className="w-4 h-4" />
                                             Profile
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setIsProfileDropdownOpen(false);
-                                                router.push('/settings');
-                                            }}
-                                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors duration-200"
-                                        >
-                                            <Settings className="w-4 h-4" />
-                                            Settings
                                         </button>
                                         <hr className="my-1 border-gray-100" />
                                         <button

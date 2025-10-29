@@ -1,160 +1,162 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import CardCategory from "@/components/CardCategory" // pastikan path benar
 
 interface Category {
-  title: string
-  description: string
+  id: number
   image: string
-  circleBgColor: string
 }
 
-interface ChevronButtonProps {
-  direction: "left" | "right"
-  onClick: () => void
-  size?: "md" | "sm"
-  className?: string
-}
+const CategoryData: Category[] = [
+  { id: 1, image: "/Sayurktg.png" },
+  { id: 2, image: "/Buahktg.png" },
+  { id: 3, image: "/Proteinktg.png" },
+  { id: 4, image: "/Bumbuktg.png" },
+  { id: 5, image: "/Olahanktg.png" },
+  { id: 6, image: "/Minumanktg.png" },
+]
 
-function ChevronButton({ direction, onClick, size = "md", className }: ChevronButtonProps) {
-  const isLeft = direction === "left"
-  const Icon = isLeft ? ChevronLeft : ChevronRight
-  const baseSize = size === "md" ? 48 : 40
-  const iconSize = size === "md" ? 24 : 20
+// clone first & last slide
+const infiniteData = [CategoryData[CategoryData.length - 1], ...CategoryData, CategoryData[0]]
 
-  return (
-    <button
-      onClick={onClick}
-      className={`group rounded-full bg-white flex items-center justify-center shadow-lg 
-        hover:bg-green-600 active:bg-green-700 
-        transition-colors duration-200 ${className}`}
-      style={{ width: baseSize, height: baseSize }}
-    >
-      <Icon
-        size={iconSize}
-        className="text-green-600 group-hover:text-white group-active:text-white transition-colors duration-200"
-      />
-    </button>
-  )
-}
+const CategorySection: React.FC = () => {
+  const [current, setCurrent] = useState(1)
+  const [enableTransition, setEnableTransition] = useState(true)
+  const [cardWidth, setCardWidth] = useState(812.429)
+  const [gap, setGap] = useState(20)
+  const containerRef = useRef<HTMLDivElement>(null)
 
-export default function CategorySection() {
-  const categories: Category[] = [
-    {
-      title: "Buah Segar",
-      description: "Buah segar tanpa pestisida, berasal dari petani unggulan",
-      image: "/ktgbuah.png",
-      circleBgColor: "/bg1.png",
-    },
-    {
-      title: "Sayuran Segar",
-      description: "Dapatkan berbagai sayuran hijau segar",
-      image: "/ktgsayur.png",
-      circleBgColor: "/bg2.png",
-    },
-    {
-      title: "Frozen Food",
-      description: "Berbagai pilihan Frozen food yang lezat",
-      image: "/ktgfrozen.png",
-      circleBgColor: "/bg3.png",
-    },
-    {
-      title: "Sembako",
-      description: "Dapatkan pilihan sembako yang lengkap",
-      image: "/ktgsembako.png",
-      circleBgColor: "/bg4.png",
-    },
-  ]
-
-  const [animatedIndex, setAnimatedIndex] = useState(0)
-  const [isReturning, setIsReturning] = useState(false)
-  const idleTimer = useRef<NodeJS.Timeout | null>(null)
-  const sectionRef = useRef<HTMLElement | null>(null)
-  const [isVisible, setIsVisible] = useState(false)
-
-  const resetIdleTimer = () => {
-    if (idleTimer.current) clearTimeout(idleTimer.current)
-    setIsReturning(false)
-    idleTimer.current = setTimeout(() => {
-      setIsReturning(true)
-    }, 1500)
-  }
-
-  const handlePrev = () => {
-    setAnimatedIndex((prev) => (prev === 0 ? categories.length - 1 : prev - 1))
-    resetIdleTimer()
-  }
-
-  const handleNext = () => {
-    setAnimatedIndex((prev) => (prev + 1) % categories.length)
-    resetIdleTimer()
-  }
-
+  // hitung ulang ukuran card saat resize
   useEffect(() => {
-    resetIdleTimer()
-    return () => {
-      if (idleTimer.current) clearTimeout(idleTimer.current)
+    const handleResize = () => {
+      const screenWidth = window.innerWidth
+
+      if (screenWidth >= 1200) {
+        setCardWidth(812.429)
+        setGap(20)
+      } else if (screenWidth >= 768) {
+        setCardWidth(600)
+        setGap(16)
+      } else {
+        setCardWidth(320)
+        setGap(12)
+      }
     }
-  }, [animatedIndex])
 
-  // 🔹 Animasi masuk saat muncul di layar
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setIsVisible(true)
-          observer.disconnect()
-        }
-      },
-      { threshold: 0.3 }
-    )
-    if (sectionRef.current) observer.observe(sectionRef.current)
-    return () => observer.disconnect()
+    handleResize()
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
   }, [])
 
+  const handleTransitionEnd = () => {
+    if (current === 0) {
+      setEnableTransition(false)
+      setCurrent(CategoryData.length)
+    } else if (current === infiniteData.length - 1) {
+      setEnableTransition(false)
+      setCurrent(1)
+    }
+  }
+
+  useEffect(() => {
+    if (!enableTransition) {
+      requestAnimationFrame(() => setEnableTransition(true))
+    }
+  }, [enableTransition])
+
+  const prevSlide = () => {
+    setEnableTransition(true)
+    setCurrent((prev) => prev - 1)
+  }
+
+  const nextSlide = () => {
+    setEnableTransition(true)
+    setCurrent((prev) => prev + 1)
+  }
+
+  // auto slide
+  useEffect(() => {
+    const interval = setInterval(nextSlide, 4000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const cardTotal = cardWidth + gap
+
   return (
-    <section
-      ref={sectionRef}
-      id="category"
-      className={`relative py-16 overflow-hidden transition-all duration-700 
-        ${isVisible ? "animate-fade-in-left" : "opacity-0"}`}
-    >
-      {/* Background */}
+    <section className="relative flex justify-center my-10">
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url(/bgktg_beranda.png)" }}
-      ></div>
-      <div className="absolute inset-0"></div>
+        ref={containerRef}
+        className="relative overflow-hidden flex justify-center items-center w-full h-[auto]"
+        style={{ height: `${(cardWidth / 812.429) * 415.179 + 90}px` }} // tinggi proporsional
+      >
+        {/* Carousel content */}
+        <div
+          className={`flex ${
+            enableTransition
+              ? "transition-transform duration-700 ease-in-out"
+              : "transition-none"
+          }`}
+          style={{
+            transform: `translateX(calc(50% - ${current * cardTotal}px - ${cardWidth / 2}px))`,
+            gap: `${gap}px`,
+          }}
+          onTransitionEnd={handleTransitionEnd}
+        >
+          {infiniteData.map((item, index) => {
+            const isActive = index === current
+            const isPrev = index === current - 1
+            const isNext = index === current + 1
+            const shouldShow = isActive || isPrev || isNext
 
-      <div className="max-w-7xl mx-auto px-4 md:px-10 ml-4 md:ml-10 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 relative z-10">
-        {/* Title & desktop chevron */}
-        <div className="flex flex-col md:justify-center w-full md:w-[280px] md:shrink-0 text-center md:text-left relative">
-          <h2 className="text-white font-bold text-2xl md:text-3xl leading-tight mb-2">
-            Pilihan produk kami
-          </h2>
-          <p className="text-white/90 text-base mb-6 md:mb-8">Kategori Produk</p>
-
-          {/* Desktop chevron */}
-          <div className="hidden md:flex gap-3 justify-center md:justify-start">
-            <ChevronButton direction="left" onClick={handlePrev} size="md" />
-            <ChevronButton direction="right" onClick={handleNext} size="md" />
-          </div>
+            return (
+              <div
+                key={`${item.id}-${index}`}
+                className={`flex-shrink-0 relative transition-all duration-500 ease-in-out rounded-[15px] ${
+                  !shouldShow
+                    ? "invisible opacity-0 pointer-events-none"
+                    : isActive
+                    ? "scale-100 opacity-100 z-20"
+                    : "scale-90 opacity-50 z-10"
+                }`}
+                style={{
+                  width: `${cardWidth}px`,
+                  height: `${(cardWidth / 812.429) * 415.179}px`,
+                  background: `url(${item.image}) lightgray 50% / cover no-repeat`,
+                }}
+              ></div>
+            )
+          })}
         </div>
 
-        {/* Slider - Kartu */}
-        <div className="w-full flex gap-4 overflow-x-auto no-scrollbar md:overflow-visible">
-          {categories.map((cat, index) => (
-            <CardCategory
+        {/* Chevron kiri */}
+        <button
+          onClick={prevSlide}
+          className="absolute top-1/2 -translate-y-1/2 bg-[#6EC568] hover:bg-[#5bb456] text-white p-2 rounded-full shadow-md transition-colors duration-300 z-30"
+          style={{ left: `calc(50% - ${cardWidth / 2 + 35}px)` }}
+          aria-label="Slide sebelumnya"
+        >
+          <ChevronLeft />
+        </button>
+
+        {/* Chevron kanan */}
+        <button
+          onClick={nextSlide}
+          className="absolute top-1/2 -translate-y-1/2 bg-[#6EC568] hover:bg-[#5bb456] text-white p-2 rounded-full shadow-md transition-colors duration-300 z-30"
+          style={{ right: `calc(50% - ${cardWidth / 2 + 35}px)` }}
+          aria-label="Slide berikutnya"
+        >
+          <ChevronRight />
+        </button>
+
+        {/* Pagination */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-30">
+          {CategoryData.map((_, index) => (
+            <div
               key={index}
-              index={index}
-              title={cat.title}
-              description={cat.description}
-              image={cat.image}
-              circleBgColor={cat.circleBgColor}
-              isActive={index === animatedIndex}
-              isReturning={isReturning && index === animatedIndex}
+              className={`h-1 rounded-full transition-all duration-300 ${
+                index === current - 1 ? "bg-[#6EC568] w-8" : "bg-gray-300 w-6"
+              }`}
             />
           ))}
         </div>
@@ -162,3 +164,5 @@ export default function CategorySection() {
     </section>
   )
 }
+
+export default CategorySection

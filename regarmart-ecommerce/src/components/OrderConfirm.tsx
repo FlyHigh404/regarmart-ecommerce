@@ -3,7 +3,6 @@ import Image from "next/image";
 import { useState } from "react";
 import { MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Alamat } from "@/types/alamat";
 import {
   OrderStatus,
   OrderStatusLabel,
@@ -11,12 +10,20 @@ import {
   OrderProduct,
 } from "@/types/order";
 
+export interface Alamat {
+  id: string; 
+  nama: string;
+  telp: string;
+  alamat: string;
+  utama: boolean;
+}
+
 export interface OrderConfirmProps {
   orderNumber: string;
   status: OrderStatus;
   paymentMethod: PaymentMethod;
-  address: Alamat;
-  contact: string;
+  address: Alamat; 
+  contact?: string;
   products: OrderProduct[];
   total: string;
   open: boolean;
@@ -27,7 +34,7 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
   orderNumber,
   status,
   paymentMethod,
-  address,
+  address, 
   products,
   total,
   open,
@@ -123,29 +130,33 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
             </div>
           </div>
 
-          {/* Alamat */}
-          <div className="py-4 border-t border-gray-200">
-            <h2 className="font-bold text-sm text-black mb-3">
-              Alamat Pengiriman
-            </h2>
-            <div className="flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-green-600" />
-              <p className="font-medium text-sm text-black">{address.nama}</p>
-              {address.utama && (
-                <span className="bg-green-100 text-green-600 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                  Utama
-                </span>
-              )}
+          {/* Alamat - GUNAKAN address BUKAN alamatAktif */}
+          {address && (
+            <div className="py-4 border-t border-gray-200">
+              <h2 className="font-bold text-sm text-black mb-3">
+                Alamat Pengiriman
+              </h2>
+              <div className="flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-green-600" />
+                <p className="font-medium text-sm text-black">
+                  {address.nama}
+                </p>
+                {address.utama && (
+                  <span className="bg-green-100 text-green-600 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                    Utama
+                  </span>
+                )}
+              </div>
+              <div className="pl-7 mt-2">
+                <p className="font-medium text-sm text-black">
+                  {address.nama}
+                  <span className="mx-2 text-[#8F8F8F]">|</span>
+                  <span className="text-[#8F8F8F]">{address.telp}</span>
+                </p>
+                <p className="text-xs text-[#8F8F8F]">{address.alamat}</p>
+              </div>
             </div>
-            <div className="pl-7 mt-2">
-              <p className="font-medium text-sm text-black">
-                {address.nama}
-                <span className="mx-2 text-[#8F8F8F]">|</span>
-                <span className="text-[#8F8F8F]">{address.telp}</span>
-              </p>
-              <p className="text-xs text-[#8F8F8F]">{address.alamat}</p>
-            </div>
-          </div>
+          )}
 
           {/* Produk */}
           <div className="py-4 border-t border-gray-200">
