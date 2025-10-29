@@ -13,6 +13,7 @@ import {
 import Footer from "@/components/Footer";
 import NavKeranjang from "@/components/NavKeranjang";
 import { useRouter } from "next/navigation";
+import AuthCheck from "@/components/AuthCheck";
 
 interface ToastProps {
   type: "success" | "error";
@@ -482,7 +483,7 @@ const CartPage = () => {
   const selectedCount = selectedItems.length;
 
   return (
-    <>
+    <AuthCheck role="CUSTOMER">
       <NavKeranjang />
 
       {/* Toast Notification */}
@@ -763,7 +764,7 @@ const CartPage = () => {
         </div>
       </div>
       <Footer />
-    </>
+    </AuthCheck>
   );
 };
 

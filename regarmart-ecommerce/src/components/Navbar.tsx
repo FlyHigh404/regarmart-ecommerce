@@ -68,7 +68,7 @@ const Navbar = () => {
     /* nav links */
     const navItems = [
         { href: "#beranda", label: "Beranda" },
-        { href: "/katalog", label: "Katalog" },
+        { href: "#katalog", label: "Katalog" },
         { href: "#about", label: "Tentang Kami" },
         { href: "#testimoni", label: "Testimoni" },
     ]

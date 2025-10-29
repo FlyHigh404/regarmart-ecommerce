@@ -9,7 +9,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     if (!session || session.user?.role !== 'ADMIN') {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const { id } = params;
+    const { id } = await params;
 
     try {
         const order = await prisma.order.findUnique({
@@ -58,7 +58,7 @@ export async function PATCH(
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     try {
         const { status } = await request.json();
@@ -92,7 +92,7 @@ export async function PATCH(
         });
 
         // simpan ke tabel Notification
-        const message = `Your order status has been updated to ${status}`;
+        const message = `Your order ${id} status has been updated to ${status}`;
         const notification = await prisma.notification.create({
             data: {
                 userId: updatedOrder.user.id,

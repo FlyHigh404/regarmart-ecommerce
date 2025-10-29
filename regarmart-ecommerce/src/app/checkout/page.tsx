@@ -92,6 +92,7 @@ const CheckoutPage: React.FC = () => {
       throw new Error(result.error || "Failed to process checkout");
     }
 
+<<<<<<< HEAD
     // Untuk QRIS, tampilkan QR Code
     if (paymentMethod === PaymentMethod.QRIS && result.midtrans?.qrisUrl) {
       setQrisUrl(result.midtrans.qrisUrl);
@@ -114,6 +115,15 @@ const CheckoutPage: React.FC = () => {
   // Hitung total
   const totalHarga = order?.totalAmount || 0;
   const totalPembayaran = totalHarga - diskon;
+=======
+  // Perhitungan total
+  const totalHargaProduk =
+    order?.orderItems?.reduce(
+      (sum: number, item: any) => sum + Number(item.unitPrice) * item.quantity,
+      0
+    ) || 0;
+  const totalPembayaran = totalHargaProduk + ongkir - diskon;
+>>>>>>> 0173f99e8a3beeba0565631ed321b5e5eb2a7724
 
   if (loading) {
     return (
@@ -448,7 +458,13 @@ const CheckoutPage: React.FC = () => {
 
         {/* Order Confirm Modal */}
         <OrderConfirm
+<<<<<<< HEAD
           orderNumber={`#INV-${order?.id?.toString().padStart(4, "0") || "0000"}`}
+=======
+          orderNumber={`#INV-${
+            order?.id?.toString().padStart(4, "0") || "0000"
+          }`}
+>>>>>>> 0173f99e8a3beeba0565631ed321b5e5eb2a7724
           status={OrderStatus.PROCESSING}
           paymentMethod={paymentMethod}
           products={
@@ -462,6 +478,7 @@ const CheckoutPage: React.FC = () => {
           }
           total={`Rp${totalPembayaran.toLocaleString("id-ID")}`}
           address={{
+<<<<<<< HEAD
             id: alamatAktif.id.toString(),
             nama: alamatAktif.recipientName || alamatAktif.nama || "Nama tidak tersedia",
             telp: alamatAktif.phoneNumber || alamatAktif.telp || "Telepon tidak tersedia",
@@ -469,6 +486,16 @@ const CheckoutPage: React.FC = () => {
             utama: alamatAktif.isPrimary || alamatAktif.utama || false,
           }}
           contact={`${alamatAktif.recipientName || alamatAktif.nama} | ${alamatAktif.phoneNumber || alamatAktif.telp}`}
+=======
+            nama: alamatAktif.reciptName, // Mapped to address.nama
+            telp: alamatAktif.phoneNumber, // Mapped to address.telp
+            alamat: alamatAktif.fullAdress, // Mapped to address.alamat
+            utama: alamatAktif.isPrimaary, // Mapped to address.utama
+            // Tambahkan properti wajib lain dari type Alamat jika ada, misal: id: alamatAktif.id
+            id: alamatAktif.id,
+          }}
+          contact={`${alamatAktif.reciptName} | ${alamatAktif.phoneNumber}`}
+>>>>>>> 0173f99e8a3beeba0565631ed321b5e5eb2a7724
           open={openOrderConfirm}
           onClose={() => {
             setOpenOrderConfirm(false);
