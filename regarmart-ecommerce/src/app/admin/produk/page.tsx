@@ -545,31 +545,43 @@ const Products = () => {
               <h3 className="text-xl font-semibold text-gray-900 mb-6">Filter Produk</h3>
               <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
-                  <select
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                  >
-                    {categories.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Status Stok</label>
-                  <select
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    value={selectedStockStatus}
-                    onChange={(e) => setSelectedStockStatus(e.target.value)}
-                  >
-                    <option value="Semua">Semua</option>
-                    <option value="Tersedia">Tersedia</option>
-                    <option value="Stok Habis">Stok Habis</option>
-                  </select>
-                </div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+  <select
+    className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white cursor-pointer"
+    style={{
+      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+      backgroundRepeat: 'no-repeat',
+      backgroundPosition: 'right 0.75rem center',
+      backgroundSize: '1.25rem'
+    }}
+    value={selectedCategory}
+    onChange={(e) => setSelectedCategory(e.target.value)}
+  >
+    {categories.map((category) => (
+      <option key={category} value={category}>
+        {category}
+      </option>
+    ))}
+  </select>
+</div>
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">Status Stok</label>
+  <select
+    className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white cursor-pointer"
+    style={{
+      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+      backgroundRepeat: 'no-repeat',
+      backgroundPosition: 'right 0.75rem center',
+      backgroundSize: '1.25rem'
+    }}
+    value={selectedStockStatus}
+    onChange={(e) => setSelectedStockStatus(e.target.value)}
+  >
+    <option value="Semua">Semua</option>
+    <option value="Tersedia">Tersedia</option>
+    <option value="Stok Habis">Stok Habis</option>
+  </select>
+</div>
                 <div className="flex gap-3 pt-4">
                   <button
                     className="flex-1 bg-green-600 text-white py-3 px-6 rounded-lg text-base font-semibold hover:bg-green-700 transition-colors"
