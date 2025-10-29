@@ -8,40 +8,105 @@ import Link from 'next/link';
 import { useCart } from "@/context/CartContext";
 
 // Toast Notification Component
-const Toast = ({ 
-  message, 
-  type, 
-  onClose 
-}: { 
-  message: string; 
-  type: 'success' | 'error'; 
+const Toast = ({
+  message,
+  type,
+  onClose
+}: {
+  message: string;
+  type: 'success' | 'error';
   onClose: () => void;
 }) => (
   <div className="fixed top-26 right-4 z-[100] animate-slide-in">
-    <div className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${
-      type === 'success' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
-    }`}>
+    <div className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${type === 'success' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
+      }`}>
       {type === 'success' ? (
         <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
       ) : (
         <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
       )}
-      <p className={`text-sm font-medium ${
-        type === 'success' ? 'text-green-800' : 'text-red-800'
-      }`}>
+      <p className={`text-sm font-medium ${type === 'success' ? 'text-green-800' : 'text-red-800'
+        }`}>
         {message}
       </p>
       <button
         onClick={onClose}
-        className={`ml-2 ${
-          type === 'success' ? 'text-green-600 hover:text-green-700' : 'text-red-600 hover:text-red-700'
-        }`}
+        className={`ml-2 ${type === 'success' ? 'text-green-600 hover:text-green-700' : 'text-red-600 hover:text-red-700'
+          }`}
       >
         <X className="w-4 h-4" />
       </button>
     </div>
   </div>
 );
+
+// Login Confirmation Modal Component
+const LoginModal = ({
+  isOpen,
+  onClose,
+  onConfirm
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-transparent backdrop-blur-sm"
+        onClick={onClose}
+      ></div>
+
+      {/* Modal */}
+      <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-slideUp">
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <X size={20} />
+        </button>
+
+        {/* Icon */}
+        <div className="flex justify-center mb-4">
+          <div className="w-16 h-16 bg-[#26A81D] rounded-full flex items-center justify-center">
+            <LogIn size={32} className="text-white" />
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="text-center mb-6">
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
+            Login Diperlukan
+          </h3>
+          <p className="text-gray-600 leading-relaxed">
+            Anda harus login terlebih dahulu untuk menambahkan produk ke keranjang.
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors"
+          >
+            Batal
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 px-4 py-3 bg-[#26A81D] hover:bg-green-600 text-white font-semibold rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2"
+          >
+            <LogIn size={18} />
+            Login
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // Loading Skeleton Component
 const ProductSkeleton = () => (
@@ -68,8 +133,10 @@ export default function ProductPopuler() {
   const [searchQuery, setSearchQuery] = useState("");
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-  const [centerProductIndex, setCenterProductIndex] = useState(1);
-  
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [pendingProduct, setPendingProduct] = useState<any>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
   const { data: session } = useSession();
   const router = useRouter();
   const { incrementCart } = useCart();
@@ -127,9 +194,9 @@ export default function ProductPopuler() {
 
     // Cek role user
     if (session.user?.role === "ADMIN") {
-      setToast({ 
-        message: "Akun admin tidak dapat menambahkan produk ke keranjang.", 
-        type: 'error' 
+      setToast({
+        message: "Akun admin tidak dapat menambahkan produk ke keranjang.",
+        type: 'error'
       });
       return;
     }
@@ -149,22 +216,22 @@ export default function ProductPopuler() {
 
       if (response.ok) {
         setTimeout(() => incrementCart(), 100);
-        setToast({ 
-          message: `${product.name} berhasil ditambahkan ke keranjang!`, 
-          type: 'success' 
+        setToast({
+          message: `${product.name} berhasil ditambahkan ke keranjang!`,
+          type: 'success'
         });
       } else {
         const result = await response.json();
-        setToast({ 
-          message: result.error || "Gagal menambahkan ke keranjang.", 
-          type: 'error' 
+        setToast({
+          message: result.error || "Gagal menambahkan ke keranjang.",
+          type: 'error'
         });
       }
     } catch (error) {
       console.error("Error terjadi:", error);
-      setToast({ 
-        message: "Terjadi kesalahan saat menambahkan ke keranjang.", 
-        type: 'error' 
+      setToast({
+        message: "Terjadi kesalahan saat menambahkan ke keranjang.",
+        type: 'error'
       });
     } finally {
       setAddingToCart(null);
@@ -175,7 +242,9 @@ export default function ProductPopuler() {
   const renderProductCard = (product: any, index: number) => (
     <Link href={`/katalog/${product.id}`} passHref key={product.id}>
       <div
-        className="cursor-pointer bg-white/90 backdrop-blur-sm rounded-lg sm:rounded-xl p-1.5 sm:p-3 lg:p-2 shadow-sm sm:shadow-md hover:shadow-xl transition-all duration-500 hover:-translate-y-2 group"
+        className={`cursor-pointer bg-white/90 backdrop-blur-sm rounded-lg sm:rounded-xl p-1.5 sm:p-3 lg:p-2 shadow-sm sm:shadow-md hover:shadow-xl transition-all duration-500 hover:-translate-y-2 mb-2 group ${isMounted ? 'animate-card-appear' : ''
+          }`}
+        style={isMounted ? { animationDelay: `${index * 100}ms` } : undefined}
       >
         {/* Gambar */}
         <div className="mb-2 sm:mb-4 bg-gray-50 rounded-lg overflow-hidden transform transition-transform duration-300 group-hover:scale-105">
@@ -251,8 +320,8 @@ export default function ProductPopuler() {
   // Filter products based on search and category
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = !activeCategory || product.category?.name === activeCategory;
+      product.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = !activeCategory || product.categoryName === activeCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -299,11 +368,11 @@ export default function ProductPopuler() {
       <div className="flex flex-wrap justify-center lg:justify-start lg:ml-42 gap-2 sm:gap-2.5 lg:gap-2 mb-4 animate-fade-in-up animation-delay-500">
         <button
           onClick={() => setActiveCategory(null)}
-          className={`px-3.5 sm:px-5 lg:px-4 py-1.5 sm:py-2.5 lg:py-2 rounded-full font-medium text-sm sm:text-sm lg:text-[0.8rem] transition-all duration-300 ${
-            activeCategory === null
+          className={`px-3.5 sm:px-5 lg:px-4 py-1.5 sm:py-2.5 lg:py-2 rounded-full font-medium text-sm sm:text-sm lg:text-[0.8rem] transition-all duration-300 ${activeCategory === null
               ? "bg-green-500 text-white shadow-lg scale-105"
               : "bg-green-50 text-green-600 border border-green-300 hover:bg-green-100 hover:scale-105"
-          }`}
+            }`}
+          suppressHydrationWarning
         >
           Semua
         </button>
@@ -311,11 +380,10 @@ export default function ProductPopuler() {
           <button
             key={category.id}
             onClick={() => setActiveCategory(category.name)}
-            className={`px-3.5 sm:px-5 lg:px-4 py-1.5 sm:py-2.5 lg:py-2 rounded-full font-medium text-sm sm:text-sm lg:text-[0.8rem] transition-all duration-300 animate-slide-in-category ${
-              activeCategory === category.name
+            className={`px-3.5 sm:px-5 lg:px-4 py-1.5 sm:py-2.5 lg:py-2 rounded-full font-medium text-sm sm:text-sm lg:text-[0.8rem] transition-all duration-300 animate-slide-in-category ${activeCategory === category.name
                 ? "bg-green-500 text-white shadow-lg scale-105"
                 : "bg-green-50 text-green-600 border border-green-300 hover:bg-green-100 hover:scale-105"
-            }`}
+              }`}
             style={{ animationDelay: `${600 + index * 100}ms` }}
           >
             {category.name}

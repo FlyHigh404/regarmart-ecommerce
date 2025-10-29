@@ -20,87 +20,84 @@ const activityLogs: ActivityLogEntry[] = [
 const getTypeStyle = (type: string): string => {
   switch (type) {
     case 'Update Pesanan':
-      return 'bg-blue-100 text-blue-800';
+      return 'bg-green-50 text-green-800 border border-green-200';
     case 'Update Produk':
-      return 'bg-green-100 text-green-800';
+      return 'bg-orange-50 text-orange-800 border border-orange-200';
     case 'Update Kategori':
-      return 'bg-purple-100 text-purple-800';
+      return 'bg-blue-50 text-blue-800 border border-blue-200';
     case 'Update Notifikasi':
-      return 'bg-orange-100 text-orange-800';
+      return 'bg-yellow-50 text-yellow-800 border border-yellow-200';
     default:
-      return 'bg-gray-100 text-gray-800';
+      return 'bg-gray-50 text-gray-800 border border-gray-200';
   }
 };
 
 const ActivityLogCard: React.FC = () => {
   return (
-    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+     <div className="bg-white rounded-lg sm:rounded-xl shadow-sm overflow-hidden w-full p-6">
       {/* Header */}
-      <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-200">
-        <h2 className="text-lg sm:text-xl font-bold text-gray-900">Log Aktivitas Terakhir</h2>
-        <p className="text-sm sm:text-base text-gray-500 mt-1">Ini adalah daftar aktivitas terbaru.</p>
+      <div className="pb-5 mb-6 border-b border-dashed border-gray-300">
+        <h2 className="text-xl font-bold text-gray-900 mb-1">Log Aktivitas Terakhir</h2>
+        <p className="text-gray-600 text-sm">Ini adalah daftar aktivitas terbaru.</p>
       </div>
 
-      {/* Content */}
-      <div className="p-4 sm:p-6">
-        {/* Desktop Table Header - Hidden on mobile */}
-        <div className="hidden lg:grid lg:grid-cols-12 lg:gap-4 lg:px-4 lg:py-3 lg:bg-gray-50 lg:rounded-lg lg:mb-4">
-          <div className="lg:col-span-2 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-            WAKTU
-          </div>
-          <div className="lg:col-span-7 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-            AKTIVITAS
-          </div>
-          <div className="lg:col-span-3 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-            TIPE AKTIVITAS
-          </div>
+      {/* Desktop Header */}
+      <div className="hidden md:grid md:grid-cols-12 md:gap-4 mb-4 px-2 py-3 bg-gray-50 rounded-lg">
+        <div className="md:col-span-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          WAKTU
         </div>
+        <div className="md:col-span-7 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          AKTIVITAS
+        </div>
+        <div className="md:col-span-3 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right pr-32">
+          TIPE AKTIVITAS
+        </div>
+      </div>
 
-        {/* Log Entries */}
-        <div className="space-y-3 sm:space-y-4">
-          {activityLogs.map((log, index) => (
-            <React.Fragment key={index}>
-              {/* Mobile Layout */}
-              <div className="block lg:hidden bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                <div className="space-y-2">
-                  <div className="flex justify-between items-start">
-                    <span className="text-xs text-gray-500 font-medium">{log.time}</span>
-                    <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${getTypeStyle(log.type)}`}>
-                      {log.type}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-900 leading-relaxed">{log.activity}</p>
-                </div>
-              </div>
-
-              {/* Desktop Layout */}
-              <div className="hidden lg:grid lg:grid-cols-12 lg:gap-4 lg:px-4 lg:py-4 lg:items-center lg:hover:bg-gray-50 lg:rounded-lg lg:transition-colors">
-                <div className="lg:col-span-2 text-sm text-gray-600">
-                  {log.time}
-                </div>
-                <div className="lg:col-span-7 text-sm text-gray-900">
-                  {log.activity}
-                </div>
-                <div className="lg:col-span-3">
-                  <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${getTypeStyle(log.type)}`}>
+      {/* Log Entries */}
+      <div className="space-y-3">
+        {activityLogs.map((log, index) => (
+          <React.Fragment key={index}>
+            {/* Mobile Layout */}
+            <div className="block md:hidden bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+              <div className="space-y-3">
+                <div className="flex justify-between items-start">
+                  <span className="text-xs text-gray-500 font-medium">{log.time}</span>
+                  <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${getTypeStyle(log.type)}`}>
                     {log.type}
                   </span>
                 </div>
+                <p className="text-sm text-gray-900 leading-relaxed">{log.activity}</p>
               </div>
-            </React.Fragment>
-          ))}
-        </div>
-
-        {/* Empty State (if no logs) */}
-        {activityLogs.length === 0 && (
-          <div className="text-center py-8 sm:py-12">
-            <div className="text-gray-500">
-              <p className="text-base sm:text-lg font-medium">Tidak ada aktivitas</p>
-              <p className="text-sm mt-1">Log aktivitas akan muncul di sini</p>
             </div>
-          </div>
-        )}
+
+            {/* Desktop Layout */}
+            <div className="hidden md:grid md:grid-cols-12 md:gap-4 md:px-2 md:py-4 md:items-center hover:bg-gray-50 rounded-xl transition-colors duration-200 border-b border-gray-100 last:border-b-0">
+              <div className="md:col-span-2 text-sm text-gray-600 font-medium">
+                {log.time}
+              </div>
+              <div className="md:col-span-7 text-sm text-gray-900">
+                {log.activity}
+              </div>
+              <div className="md:col-span-3 text-center pr-24">
+                <span className={`inline-flex px-3 py-1.5 rounded-full text-xs font-semibold ${getTypeStyle(log.type)}`}>
+                  {log.type}
+                </span>
+              </div>
+            </div>
+          </React.Fragment>
+        ))}
       </div>
+
+      {/* Empty State */}
+      {activityLogs.length === 0 && (
+        <div className="text-center py-12">
+          <div className="text-gray-400">
+            <p className="text-lg font-medium mb-1">Tidak ada aktivitas</p>
+            <p className="text-sm">Log aktivitas akan muncul di sini</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
