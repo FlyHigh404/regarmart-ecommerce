@@ -2,17 +2,18 @@
 import NavAuth from "@/components/NavAuth";
 import { signIn } from "next-auth/react";
 import React, { useState } from "react";
-import { useRouter } from "next/navigation"; // To redirect after login
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react"; // Import Lucide icons
 
 const Login = () => {
-    const [showPassword, setShowPassword] = useState(false); // Toggle password visibility
+    const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
         password: ''
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const router = useRouter(); // Hook for redirection
+    const router = useRouter();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -26,14 +27,14 @@ const Login = () => {
         const result = await signIn('credentials', {
             email: formData.email,
             password: formData.password,
-            redirect: false // Disable auto-redirect
+            redirect: false
         });
 
         if (result?.error) {
             setError(result.error);
             setLoading(false);
         } else {
-            router.push('/'); // Redirect to homepage after successful login
+            router.push('/');
         }
     }
 
@@ -124,52 +125,16 @@ const Login = () => {
                                     >
                                         Password
                                     </label>
-                                    {/* Toggle show/hide password */}
+                                    {/* Toggle show/hide password dengan Lucide icons */}
                                     <button
                                         type="button"
-                                        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                                         onClick={() => setShowPassword(!showPassword)}
                                     >
                                         {showPassword ? (
-                                            <svg
-                                                className="w-5 h-5"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={1.5}
-                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                                />
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={1.5}
-                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                                />
-                                            </svg>
+                                            <EyeOff className="w-5 h-5" />
                                         ) : (
-                                            <svg
-                                                className="w-5 h-5"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={1.5}
-                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                                />
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={1.5}
-                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                                />
-                                            </svg>
+                                            <Eye className="w-5 h-5" />
                                         )}
                                     </button>
                                 </div>
@@ -220,7 +185,7 @@ const Login = () => {
                                 <p className="text-gray-600 text-sm">
                                     Belum punya akun?{" "}
                                     <a
-                                        href="/register"
+                                        href="/auth/signup"
                                         className="text-green-600 hover:text-green-700 font-semibold transition-colors"
                                     >
                                         Daftar

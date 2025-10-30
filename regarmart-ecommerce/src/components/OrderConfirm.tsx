@@ -2,13 +2,14 @@
 import Image from "next/image";
 import { useState } from "react";
 import { MapPin } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   OrderStatus,
   OrderStatusLabel,
   PaymentMethod,
   OrderProduct,
 } from "@/types/order";
+import Link from "next/link";
 
 export interface Alamat {
   id: string; 
@@ -42,6 +43,7 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
 }) => {
   const [showAll, setShowAll] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   if (!open) return null;
 
@@ -204,44 +206,69 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
           </div>
 
           {/* Tombol */}
-          {status === OrderStatus.PROCESSING ? (
-            <button
-              onClick={onClose}
-              className="w-full bg-[#26A81D] hover:bg-green-700 text-white font-semibold rounded-lg h-10"
-            >
-              Liaht Riwayat Pesanan
-            </button>
-          ) : status === OrderStatus.SHIPPED ? (
-            <div className="flex gap-3">
-              <button
-                disabled
-                className="flex-1 bg-green-100 text-green-500 font-semibold rounded-lg h-10"
-              >
-                Selesaikan Pesanan
-              </button>
-              <button
-                onClick={onClose}
-                className="flex-1 bg-[#26A81D] hover:bg-green-700 text-white font-semibold rounded-lg h-10"
-              >
-                Kembali
-              </button>
-            </div>
-          ) : (
-            <div className="flex gap-3">
-              <button
-                onClick={onClose}
-                className="flex-1 bg-green-100 text-green-500 font-semibold rounded-lg h-10"
-              >
-                Kembali
-              </button>
-              <button
-                onClick={handleBeliLagi}
-                className="flex-1 bg-[#26A81D] hover:bg-green-700 text-white font-semibold rounded-lg h-10"
-              >
-                Beli Lagi
-              </button>
-            </div>
-          )}
+{status === OrderStatus.PROCESSING ? (
+  <>
+    {pathname.includes("/checkout") ? (
+      <>
+        {/* Tombol saat di halaman checkout */}
+        <button
+          onClick={() => router.push("/beranda")}
+          className="flex-1 bg-green-100 text-green-500 font-semibold rounded-lg h-10 w-[280px]"
+        >
+          Kembali ke Beranda
+        </button>
+        <button
+          onClick={() => router.push("/profil/riwayat-transaksi")}
+          className="flex-1 bg-[#26A81D] hover:bg-green-700 text-white font-semibold rounded-lg h-10 w-[280px] ml-3"
+        >
+          Riwayat Transaksi
+        </button>
+      </>
+    ) : pathname.includes("/profil/riwayat-transaksi") ? (
+      <>
+        {/* Tombol saat di halaman riwayat transaksi */}
+        <button
+           onClick={onClose}
+          className="w-full bg-[#26A81D] hover:bg-green-700 text-white font-semibold rounded-lg h-10"
+        >
+          Kembali
+        </button>
+      </>
+    ) : null}
+  </>
+) : status === OrderStatus.SHIPPED ? (
+  <div className="flex gap-3">
+    <button
+      disabled
+      className="flex-1 bg-green-100 text-green-500 font-semibold rounded-lg h-10"
+    >
+      Selesaikan Pesanan
+    </button>
+    <button
+      onClick={onClose}
+      className="flex-1 bg-[#26A81D] hover:bg-green-700 text-white font-semibold rounded-lg h-10"
+    >
+      Kembali
+    </button>
+  </div>
+) : (
+  <div className="flex gap-3">
+    <button
+      onClick={onClose}
+      className="flex-1 bg-green-100 text-green-500 font-semibold rounded-lg h-10"
+    >
+      Kembali
+    </button>
+    <button
+      onClick={handleBeliLagi}
+      className="flex-1 bg-[#26A81D] hover:bg-green-700 text-white font-semibold rounded-lg h-10"
+    >
+      Beli Lagi
+    </button>
+  </div>
+)}
+
+          
         </div>
       </div>
     </div>

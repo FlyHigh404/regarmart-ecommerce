@@ -57,6 +57,7 @@ const NotifikasiItem: React.FC<NotifItemProps> = ({
 
   const { orderNumber, productName, status } = extractOrderInfo(message);
 
+
   return (
     <div
       className={`flex p-2.5 border-b border-gray-200 cursor-pointer ${rowClass}`}
@@ -128,6 +129,12 @@ const NotifikasiCust: React.FC<NotifikasiCustProps> = ({
     }
   }, []);
 
+  // Fetch notifications ketika dropdown dibuka
+  useEffect(() => {
+    if (isDropdownVisible) {
+      fetchNotifications();
+    }
+  }, [isDropdownVisible, fetchNotifications]);
   // Fetch notifications ketika dropdown dibuka
   useEffect(() => {
     if (isDropdownVisible) {
@@ -247,7 +254,26 @@ const NotifikasiCust: React.FC<NotifikasiCustProps> = ({
               <p className="text-sm text-gray-500 mt-2">Memuat notifikasi...</p>
             </div>
           )}
+          {/* Loading State */}
+          {loading && (
+            <div className="p-4 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+              <p className="text-sm text-gray-500 mt-2">Memuat notifikasi...</p>
+            </div>
+          )}
 
+          {/* Error State */}
+          {error && !loading && (
+            <div className="p-4 text-center">
+              <p className="text-red-500 text-sm mb-2">{error}</p>
+              <button
+                onClick={fetchNotifications}
+                className="text-green-600 text-sm font-semibold hover:text-green-700"
+              >
+                Coba Lagi
+              </button>
+            </div>
+          )}
           {/* Error State */}
           {error && !loading && (
             <div className="p-4 text-center">
