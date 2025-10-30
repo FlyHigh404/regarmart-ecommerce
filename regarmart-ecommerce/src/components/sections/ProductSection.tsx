@@ -7,7 +7,6 @@ import { useSession } from "next-auth/react";
 import Link from 'next/link';
 import { useCart } from "@/context/CartContext";
 
-// ---------------- Interfaces ----------------
 interface Product {
   id: string;
   name: string;

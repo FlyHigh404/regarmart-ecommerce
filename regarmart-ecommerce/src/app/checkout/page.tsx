@@ -44,7 +44,7 @@ const CheckoutPage: React.FC = () => {
         setLoading(true);
         const [cartResponse, addressResponse] = await Promise.all([
           fetch("/api/cart"),
-          fetch("/api/profile/address-primary")
+          fetch("/api/profile/address-primary"),
         ]);
 
         if (!cartResponse.ok || !addressResponse.ok) {
@@ -69,61 +69,51 @@ const CheckoutPage: React.FC = () => {
   }, []);
 
   const processCheckout = async () => {
-  if (!alamatAktif?.id) {
-    alert("Silakan pilih alamat pengiriman terlebih dahulu");
-    return;
-  }
-
-  try {
-    setProcessingCheckout(true);
-
-    const response = await fetch("/api/cart/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        paymentMethod,
-        addressId: alamatAktif.id
-      }),
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.error || "Failed to process checkout");
-    }
-
-<<<<<<< HEAD
-    // Untuk QRIS, tampilkan QR Code
-    if (paymentMethod === PaymentMethod.QRIS && result.midtrans?.qrisUrl) {
-      setQrisUrl(result.midtrans.qrisUrl);
+    if (!alamatAktif?.id) {
+      alert("Silakan pilih alamat pengiriman terlebih dahulu");
       return;
     }
 
-    // Untuk COD, update order state dengan data yang benar
-    if (paymentMethod === PaymentMethod.COD) {
-      setOrder(result);
-      setOpenOrderConfirm(true);
+    try {
+      setProcessingCheckout(true);
+
+      const response = await fetch("/api/cart/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          paymentMethod,
+          addressId: alamatAktif.id,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to process checkout");
+      }
+
+      // Untuk QRIS, tampilkan QR Code
+      if (paymentMethod === PaymentMethod.QRIS && result.midtrans?.qrisUrl) {
+        setQrisUrl(result.midtrans.qrisUrl);
+        return;
+      }
+
+      // Untuk COD, update order state dengan data yang benar
+      if (paymentMethod === PaymentMethod.COD) {
+        setOrder(result);
+        setOpenOrderConfirm(true);
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+      alert("Terjadi kesalahan saat memproses checkout");
+    } finally {
+      setProcessingCheckout(false);
     }
-  } catch (error) {
-    console.error("Checkout error:", error);
-    alert("Terjadi kesalahan saat memproses checkout");
-  } finally {
-    setProcessingCheckout(false);
-  }
-};
+  };
 
   // Hitung total
   const totalHarga = order?.totalAmount || 0;
   const totalPembayaran = totalHarga - diskon;
-=======
-  // Perhitungan total
-  const totalHargaProduk =
-    order?.orderItems?.reduce(
-      (sum: number, item: any) => sum + Number(item.unitPrice) * item.quantity,
-      0
-    ) || 0;
-  const totalPembayaran = totalHargaProduk + ongkir - diskon;
->>>>>>> 0173f99e8a3beeba0565631ed321b5e5eb2a7724
 
   if (loading) {
     return (
@@ -386,7 +376,7 @@ const CheckoutPage: React.FC = () => {
                 <button
                   onClick={processCheckout}
                   disabled={
-                    processingCheckout || 
+                    processingCheckout ||
                     !order?.orderItems?.length ||
                     !alamatAktif
                   }
@@ -415,9 +405,7 @@ const CheckoutPage: React.FC = () => {
           <button
             onClick={processCheckout}
             disabled={
-              processingCheckout || 
-              !order?.orderItems?.length ||
-              !alamatAktif
+              processingCheckout || !order?.orderItems?.length || !alamatAktif
             }
             className="bg-green-600 text-white px-4 h-11 rounded-lg text-medium font-semibold flex-1 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
@@ -436,19 +424,36 @@ const CheckoutPage: React.FC = () => {
 
         {/* Modal QRIS */}
         {qrisUrl && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-4 rounded-lg">
-              <h2 className="text-lg font-bold mb-4">
-                Scan QRIS untuk Pembayaran
-              </h2>
-              <img
-                src={qrisUrl}
-                alt="QRIS"
-                className="w-64 h-64 object-contain"
-              />
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-zinc-900 p-6 rounded-2xl shadow-xl w-80 sm:w-96 text-center relative">
               <button
                 onClick={() => setQrisUrl(null)}
-                className="mt-4 bg-green-600 text-white px-4 py-2 rounded"
+                className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition"
+              >
+                ✕
+              </button>
+
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">
+                Scan QRIS untuk Pembayaran
+              </h2>
+
+              <div className="flex justify-center mb-4">
+                <img
+                  src={qrisUrl}
+                  alt="QRIS"
+                  className="w-60 h-60 rounded-xl border border-gray-200 dark:border-zinc-700 shadow-sm object-contain"
+                />
+              </div>
+
+              <p className="text-xs text-gray-500 dark:text-gray-400 break-all">
+                For testing simulation:
+                <br />
+                {qrisUrl}
+              </p>
+
+              <button
+                onClick={() => setQrisUrl(null)}
+                className="mt-5 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-xl font-medium transition shadow-sm"
               >
                 Tutup
               </button>
@@ -458,13 +463,9 @@ const CheckoutPage: React.FC = () => {
 
         {/* Order Confirm Modal */}
         <OrderConfirm
-<<<<<<< HEAD
-          orderNumber={`#INV-${order?.id?.toString().padStart(4, "0") || "0000"}`}
-=======
           orderNumber={`#INV-${
             order?.id?.toString().padStart(4, "0") || "0000"
           }`}
->>>>>>> 0173f99e8a3beeba0565631ed321b5e5eb2a7724
           status={OrderStatus.PROCESSING}
           paymentMethod={paymentMethod}
           products={
@@ -478,24 +479,24 @@ const CheckoutPage: React.FC = () => {
           }
           total={`Rp${totalPembayaran.toLocaleString("id-ID")}`}
           address={{
-<<<<<<< HEAD
             id: alamatAktif.id.toString(),
-            nama: alamatAktif.recipientName || alamatAktif.nama || "Nama tidak tersedia",
-            telp: alamatAktif.phoneNumber || alamatAktif.telp || "Telepon tidak tersedia",
-            alamat: alamatAktif.fullAddress || alamatAktif.alamat || "Alamat tidak tersedia",
+            nama:
+              alamatAktif.recipientName ||
+              alamatAktif.nama ||
+              "Nama tidak tersedia",
+            telp:
+              alamatAktif.phoneNumber ||
+              alamatAktif.telp ||
+              "Telepon tidak tersedia",
+            alamat:
+              alamatAktif.fullAddress ||
+              alamatAktif.alamat ||
+              "Alamat tidak tersedia",
             utama: alamatAktif.isPrimary || alamatAktif.utama || false,
           }}
-          contact={`${alamatAktif.recipientName || alamatAktif.nama} | ${alamatAktif.phoneNumber || alamatAktif.telp}`}
-=======
-            nama: alamatAktif.reciptName, // Mapped to address.nama
-            telp: alamatAktif.phoneNumber, // Mapped to address.telp
-            alamat: alamatAktif.fullAdress, // Mapped to address.alamat
-            utama: alamatAktif.isPrimaary, // Mapped to address.utama
-            // Tambahkan properti wajib lain dari type Alamat jika ada, misal: id: alamatAktif.id
-            id: alamatAktif.id,
-          }}
-          contact={`${alamatAktif.reciptName} | ${alamatAktif.phoneNumber}`}
->>>>>>> 0173f99e8a3beeba0565631ed321b5e5eb2a7724
+          contact={`${alamatAktif.recipientName || alamatAktif.nama} | ${
+            alamatAktif.phoneNumber || alamatAktif.telp
+          }`}
           open={openOrderConfirm}
           onClose={() => {
             setOpenOrderConfirm(false);
@@ -504,7 +505,6 @@ const CheckoutPage: React.FC = () => {
             }
           }}
         />
-          
       </div>
     </AuthCheck>
   );

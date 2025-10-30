@@ -13,7 +13,6 @@ export async function GET() {
             where: {
                 userId: session.user.id,
                 NOT: { status: "PENDING" },
-                status: { in: ["PROCESSING", "SHIPPED"] } // Hanya ambil yang diproses, dikirim
             },
             include: {
                 orderItems: { include: { product: true } },

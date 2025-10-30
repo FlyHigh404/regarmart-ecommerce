@@ -22,33 +22,41 @@ import FormRating from "@/components/FormRating";
 import { useCart } from "@/context/CartContext";
 
 // Toast Notification Component
-const Toast = ({ 
-  message, 
-  type, 
-  onClose 
-}: { 
-  message: string; 
-  type: 'success' | 'error'; 
+const Toast = ({
+  message,
+  type,
+  onClose,
+}: {
+  message: string;
+  type: "success" | "error";
   onClose: () => void;
 }) => (
   <div className="fixed top-24 right-4 z-[100] animate-slide-in">
-    <div className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${
-      type === 'success' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
-    }`}>
-      {type === 'success' ? (
+    <div
+      className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${
+        type === "success"
+          ? "bg-green-50 border border-green-200"
+          : "bg-red-50 border border-red-200"
+      }`}
+    >
+      {type === "success" ? (
         <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
       ) : (
         <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
       )}
-      <p className={`text-sm font-medium ${
-        type === 'success' ? 'text-green-800' : 'text-red-800'
-      }`}>
+      <p
+        className={`text-sm font-medium ${
+          type === "success" ? "text-green-800" : "text-red-800"
+        }`}
+      >
         {message}
       </p>
       <button
         onClick={onClose}
         className={`ml-2 ${
-          type === 'success' ? 'text-green-600 hover:text-green-700' : 'text-red-600 hover:text-red-700'
+          type === "success"
+            ? "text-green-600 hover:text-green-700"
+            : "text-red-600 hover:text-red-700"
         }`}
       >
         <X className="w-4 h-4" />
@@ -68,7 +76,10 @@ const ProductSkeleton = () => (
         <div className="aspect-square bg-gray-200 rounded-xl animate-pulse w-full max-w-[500px] max-h-[500px]" />
         <div className="flex gap-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="w-20 h-20 bg-gray-200 rounded-lg animate-pulse" />
+            <div
+              key={i}
+              className="w-20 h-20 bg-gray-200 rounded-lg animate-pulse"
+            />
           ))}
         </div>
       </div>
@@ -104,62 +115,122 @@ interface Product {
 }
 
 interface Review {
-  id: number;
-  name: string;
-  profileImage: string;
-  date: string;
-  rating: number;
-  review: string;
-  adminReply?: {
+  id: string;
+  content: string;
+  createdAt: string;
+  user: {
     name: string;
-    role: string;
-    date: string;
-    message: string;
+    image?: string | null;
   };
+  reply?: string | null;
+  replyBy?: string | null;
+  admin?: {
+    name: string;
+    role?: string;
+  } | null;
 }
 
 interface Rating {
-  star: number;
+  value: number;
   count: number;
 }
 
-// Helper function untuk memproses data ratings
+// Helper function untuk memproses data ratings dari API
 const processRatingsData = (ratingsData: any): Rating[] => {
-  if (!Array.isArray(ratingsData)) {
+  // Jika data tidak valid, return default struktur
+  if (!ratingsData || typeof ratingsData !== "object") {
     return [
-      { star: 5, count: 0 },
-      { star: 4, count: 0 },
-      { star: 3, count: 0 },
-      { star: 2, count: 0 },
-      { star: 1, count: 0 },
+      { value: 5, count: 0 },
+      { value: 4, count: 0 },
+      { value: 3, count: 0 },
+      { value: 2, count: 0 },
+      { value: 1, count: 0 },
     ];
   }
 
-  if (ratingsData.length === 0) {
+  // Jika data berupa array
+  if (Array.isArray(ratingsData)) {
+    if (ratingsData.length === 0) {
+      return [
+        { value: 5, count: 0 },
+        { value: 4, count: 0 },
+        { value: 3, count: 0 },
+        { value: 2, count: 0 },
+        { value: 1, count: 0 },
+      ];
+    }
+
+    // Map data array ke format yang diinginkan
+    const ratingsMap: Record<number, number> = {
+      5: 0,
+      4: 0,
+      3: 0,
+      2: 0,
+      1: 0,
+    };
+
+    ratingsData.forEach((item: any) => {
+      const star = Number(item.value);
+      const count = Number(item._count?.value || item.count || 0);
+
+      if (star >= 1 && star <= 5) {
+        ratingsMap[star] = count;
+      }
+    });
+
     return [
-      { star: 5, count: 0 },
-      { star: 4, count: 0 },
-      { star: 3, count: 0 },
-      { star: 2, count: 0 },
-      { star: 1, count: 0 },
+      { value: 5, count: ratingsMap[5] },
+      { value: 4, count: ratingsMap[4] },
+      { value: 3, count: ratingsMap[3] },
+      { value: 2, count: ratingsMap[2] },
+      { value: 1, count: ratingsMap[1] },
     ];
   }
 
-  return ratingsData.map((item: any) => ({
-    star: Number(item.star) || 0,
-    count: Number(item.count) || 0,
-  }));
+  // Jika data berupa object dengan key star/rating
+  const ratingsMap: Record<number, number> = {
+    5: 0,
+    4: 0,
+    3: 0,
+    2: 0,
+    1: 0,
+  };
+
+  Object.entries(ratingsData).forEach(([key, value]) => {
+    const star = Number(key);
+    const count = Number(value);
+
+    if (star >= 1 && star <= 5 && !isNaN(count)) {
+      ratingsMap[star] = count;
+    }
+  });
+
+  return [
+    { value: 5, count: ratingsMap[5] },
+    { value: 4, count: ratingsMap[4] },
+    { value: 3, count: ratingsMap[3] },
+    { value: 2, count: ratingsMap[2] },
+    { value: 1, count: ratingsMap[1] },
+  ];
 };
 
 // Helper function untuk menghitung rating statistics
 const calculateRatingStats = (ratings: Rating[]) => {
-  const total = ratings.reduce((acc, r) => acc + r.count, 0);
-  const avg = total > 0
-    ? ratings.reduce((acc, r) => acc + r.star * r.count, 0) / total
-    : 0;
+  const totalReviews = ratings.reduce((acc, r) => acc + r.count, 0);
+
+  if (totalReviews === 0) {
+    return {
+      totalReviews: 0,
+      averageRating: 0,
+    };
+  }
+
+  const totalStars = ratings.reduce((acc, r) => acc + r.value * r.count, 0);
+  const averageRating = totalStars / totalReviews;
+
   return {
-    totalReviews: total,
-    averageRating: Number(avg.toFixed(1)),
+    totalReviews,
+    averageRating: Number(averageRating.toFixed(1)),
   };
 };
 
@@ -167,7 +238,7 @@ const ProductDetailPage = () => {
   const params = useParams();
   const { data: session } = useSession();
   const { incrementCart } = useCart();
-  
+
   const [product, setProduct] = useState<Product | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [ratings, setRatings] = useState<Rating[]>([]);
@@ -179,7 +250,10 @@ const ProductDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [addingToCart, setAddingToCart] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
   const [isRatingOpen, setIsRatingOpen] = useState(false);
 
   useEffect(() => {
@@ -205,34 +279,76 @@ const ProductDetailPage = () => {
         const productData = await productResponse.json();
         setProduct(productData);
 
-        // Fetch reviews data
-        const reviewsResponse = await fetch(`/api/products/${productId}/reviews`);
+        // Fetch reviews dan ratings secara parallel
+        const [reviewsResponse, ratingsResponse] = await Promise.all([
+          fetch(`/api/products/${productId}/reviews`),
+          fetch(`/api/products/${productId}/ratings`),
+        ]);
+
+        // Process reviews data
+        let reviewsData: Review[] = [];
         if (reviewsResponse.ok) {
-          const reviewsData = await reviewsResponse.json();
-          setReviews(Array.isArray(reviewsData) ? reviewsData : []);
+          const reviewsJson = await reviewsResponse.json();
+          reviewsData = Array.isArray(reviewsJson)
+            ? reviewsJson.map((r: any) => ({
+                id: r.id,
+                content: r.content,
+                createdAt: r.createdAt,
+                user: {
+                  name: r.user?.name || "Anonim",
+                  image: r.user?.image || null,
+                },
+                reply: r.reply,
+                replyBy: r.replyBy,
+                admin: r.admin ? { name: r.admin.name, role: "Admin" } : null,
+              }))
+            : [];
+
+          setReviews(reviewsData);
+        } else {
+          console.warn("Failed to fetch reviews, using empty array");
+          setReviews([]);
         }
 
-        // Fetch ratings data
-        const ratingsResponse = await fetch(`/api/products/${productId}/ratings`);
+        // Process ratings data
+        let processedRatings: Rating[];
         if (ratingsResponse.ok) {
-          const ratingsData = await ratingsResponse.json();
-          const processedRatings = processRatingsData(ratingsData);
-          setRatings(processedRatings);
+          const ratingsJson = await ratingsResponse.json();
+          console.log("Raw ratings data:", ratingsJson); // Debug log
 
-          const { totalReviews, averageRating } = calculateRatingStats(processedRatings);
-          setTotalReviews(totalReviews);
-          setAverageRating(averageRating);
+          processedRatings = processRatingsData(ratingsJson);
+          console.log("Processed ratings:", processedRatings); // Debug log
         } else {
-          // Set default ratings jika response tidak ok
-          const defaultRatings = processRatingsData(null);
-          setRatings(defaultRatings);
-          setTotalReviews(0);
-          setAverageRating(0);
+          console.warn("Failed to fetch ratings, using default");
+          processedRatings = processRatingsData(null);
+        }
+
+        setRatings(processedRatings);
+
+        // Calculate statistics dari ratings yang sudah diproses
+        const { totalReviews: calculatedTotal, averageRating: calculatedAvg } =
+          calculateRatingStats(processedRatings);
+
+        console.log("Calculated stats:", { calculatedTotal, calculatedAvg }); // Debug log
+
+        setTotalReviews(calculatedTotal);
+        setAverageRating(calculatedAvg);
+
+        // Update product rating jika berbeda
+        if (productData.rating !== calculatedAvg) {
+          setProduct((prev) =>
+            prev ? { ...prev, rating: calculatedAvg } : null
+          );
         }
       } catch (err) {
         console.error("Error fetching data:", err);
-        setError(err instanceof Error ? err.message : "Terjadi kesalahan saat memuat data");
-        // Set default values jika error
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Terjadi kesalahan saat memuat data"
+        );
+
+        // Set default values on error
         const defaultRatings = processRatingsData(null);
         setRatings(defaultRatings);
         setTotalReviews(0);
@@ -286,9 +402,9 @@ const ProductDetailPage = () => {
   };
 
   const showLoginAlert = () => {
-    setToast({ 
-      message: "Anda harus login terlebih dahulu.", 
-      type: 'error' 
+    setToast({
+      message: "Anda harus login terlebih dahulu.",
+      type: "error",
     });
   };
 
@@ -299,32 +415,29 @@ const ProductDetailPage = () => {
     }
 
     if (session.user?.role === "ADMIN") {
-      setToast({ 
-        message: "Akun admin tidak dapat membeli produk.", 
-        type: 'error' 
+      setToast({
+        message: "Akun admin tidak dapat membeli produk.",
+        type: "error",
       });
       return;
     }
 
-    // Logic untuk Beli Sekarang
-    setToast({ 
-      message: "Fitur Beli Sekarang akan segera diarahkan ke checkout!", 
-      type: 'success' 
+    setToast({
+      message: "Fitur Beli Sekarang akan segera diarahkan ke checkout!",
+      type: "success",
     });
   };
 
   const handleAddToCart = async () => {
-    // Cek login
     if (!session) {
       showLoginAlert();
       return;
     }
 
-    // Cek role user
     if (session.user?.role === "ADMIN") {
-      setToast({ 
-        message: "Akun admin tidak dapat menambahkan produk ke keranjang.", 
-        type: 'error' 
+      setToast({
+        message: "Akun admin tidak dapat menambahkan produk ke keranjang.",
+        type: "error",
       });
       return;
     }
@@ -344,23 +457,23 @@ const ProductDetailPage = () => {
 
       if (response.ok) {
         setTimeout(() => incrementCart(), 100);
-        setToast({ 
-          message: `${quantity} produk berhasil ditambahkan ke keranjang!`, 
-          type: 'success' 
+        setToast({
+          message: `${quantity} produk berhasil ditambahkan ke keranjang!`,
+          type: "success",
         });
-        setQuantity(1); // Reset quantity
+        setQuantity(1);
       } else {
         const result = await response.json();
-        setToast({ 
-          message: result.error || "Gagal menambahkan ke keranjang.", 
-          type: 'error' 
+        setToast({
+          message: result.error || "Gagal menambahkan ke keranjang.",
+          type: "error",
         });
       }
     } catch (error) {
       console.error("Error terjadi:", error);
-      setToast({ 
-        message: "Terjadi kesalahan saat menambahkan ke keranjang.", 
-        type: 'error' 
+      setToast({
+        message: "Terjadi kesalahan saat menambahkan ke keranjang.",
+        type: "error",
       });
     } finally {
       setAddingToCart(false);
@@ -374,9 +487,9 @@ const ProductDetailPage = () => {
     }
 
     if (session.user?.role === "ADMIN") {
-      setToast({ 
-        message: "Akun admin tidak dapat memberikan ulasan.", 
-        type: 'error' 
+      setToast({
+        message: "Akun admin tidak dapat memberikan ulasan.",
+        type: "error",
       });
       return;
     }
@@ -389,7 +502,7 @@ const ProductDetailPage = () => {
       <>
         <NavSearch />
         <div className="min-h-screen bg-gray-50">
-
+          <ProductSkeleton />
         </div>
         <Footer />
       </>
@@ -449,7 +562,9 @@ const ProductDetailPage = () => {
               <div className="space-y-7">
                 <div className="aspect-square relative bg-gray-50 rounded-xl overflow-hidden w-full max-w-[500px] max-h-[500px]">
                   <img
-                    src={product.imageUrl?.[selectedImage] || "/placeholder.svg"}
+                    src={
+                      product.imageUrl?.[selectedImage] || "/placeholder.svg"
+                    }
                     alt={product.name}
                     className="w-full h-full object-contain"
                   />
@@ -494,11 +609,14 @@ const ProductDetailPage = () => {
                     <span className="text-gray-500">
                       Kategori: {product.category?.name || "Tidak ada kategori"}
                     </span>
-                    {product.rating && (
+                    {averageRating > 0 && (
                       <div className="flex items-center gap-1">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                         <span className="font-medium text-gray-900">
-                          {product.rating}
+                          {averageRating}
+                        </span>
+                        <span className="text-gray-500">
+                          ({totalReviews} ulasan)
                         </span>
                       </div>
                     )}
@@ -536,23 +654,25 @@ const ProductDetailPage = () => {
                     <span className="font-medium text-gray-900">
                       {product.stock}
                     </span>
-                    <span className={`ml-2 font-medium ${
-                      product.stock > 0 ? 'text-green-600' : 'text-red-600'
-                    }`}>
+                    <span
+                      className={`ml-2 font-medium ${
+                        product.stock > 0 ? "text-green-600" : "text-red-600"
+                      }`}
+                    >
                       {product.stock > 0 ? "Tersedia" : "Habis"}
                     </span>
                   </div>
                 </div>
 
                 <div className="flex gap-4">
-                  <button 
+                  <button
                     onClick={handleBuyNow}
                     disabled={product.stock === 0}
                     className="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-2 px-3 rounded-xl transition-colors"
                   >
                     Beli Sekarang
                   </button>
-                  <button 
+                  <button
                     onClick={handleAddToCart}
                     disabled={product.stock === 0 || addingToCart}
                     className="flex-1 border-2 border-green-500 text-green-500 hover:bg-green-50 disabled:border-gray-300 disabled:text-gray-300 disabled:cursor-not-allowed font-medium py-2 px-4 rounded-xl transition-colors flex items-center justify-center gap-2"
@@ -575,7 +695,7 @@ const ProductDetailPage = () => {
                   <h3 className="font-semibold text-green-600 mb-3 text-sm">
                     Deskripsi Produk
                   </h3>
-                  
+
                   <div className="text-gray-700 mb-3 leading-relaxed text-sm">
                     {product.description || "Tidak ada deskripsi produk."}
                   </div>
@@ -584,16 +704,15 @@ const ProductDetailPage = () => {
                     <div className="bg-gray-50 rounded-lg p-3 mb-3">
                       <div className="text-xs text-gray-600">
                         <span className="font-medium">Kategori:</span>
-                        <span className="ml-2">
-                          {product.category.name}
-                        </span>
+                        <span className="ml-2">{product.category.name}</span>
                       </div>
                     </div>
                   )}
-                  
+
                   {product.createdAt && (
                     <div className="text-xs text-gray-500 mt-2">
-                      Ditambahkan: {new Date(product.createdAt).toLocaleDateString('id-ID')}
+                      Ditambahkan:{" "}
+                      {new Date(product.createdAt).toLocaleDateString("id-ID")}
                     </div>
                   )}
                 </div>
@@ -601,7 +720,7 @@ const ProductDetailPage = () => {
             </div>
           </div>
 
-           {/* Related Products */}
+          {/* Related Products */}
           <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
             <div className="px-6 py-6 border-b border-gray-100">
               <div className="flex items-center justify-between">
@@ -619,7 +738,7 @@ const ProductDetailPage = () => {
               </p>
             </div>
           </div>
-          
+
           {/* Rating Section */}
           <RatingSection
             averageRating={averageRating}
@@ -653,7 +772,7 @@ const ProductDetailPage = () => {
           </div>
         </div>
 
-        {/* FormRating Modal untuk tombol di Review Section */}
+        {/* FormRating Modal */}
         <FormRating
           open={isRatingOpen}
           onClose={() => setIsRatingOpen(false)}
@@ -666,7 +785,7 @@ const ProductDetailPage = () => {
           }}
           orderNumber="123"
         />
-        
+
         {/* Sticky Bar */}
         <div
           className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg transition-transform duration-300 z-50 ${
@@ -711,14 +830,14 @@ const ProductDetailPage = () => {
                 </button>
               </div>
               <div className="flex gap-2">
-                <button 
+                <button
                   onClick={handleBuyNow}
                   disabled={product.stock === 0}
                   className="bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm whitespace-nowrap"
                 >
                   Beli Sekarang
                 </button>
-                <button 
+                <button
                   onClick={handleAddToCart}
                   disabled={product.stock === 0 || addingToCart}
                   className="border border-green-500 text-green-500 hover:bg-green-50 disabled:border-gray-300 disabled:text-gray-300 disabled:cursor-not-allowed font-medium py-2 px-3 rounded-lg transition-colors flex items-center justify-center"
@@ -736,7 +855,7 @@ const ProductDetailPage = () => {
         </div>
       </div>
       <Footer />
-      
+
       <style jsx global>{`
         @keyframes slide-in {
           from {

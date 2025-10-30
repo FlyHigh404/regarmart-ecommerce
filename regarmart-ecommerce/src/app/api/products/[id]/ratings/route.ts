@@ -9,9 +9,10 @@ export async function GET(
   req: Request,
   { params }: { params: { id: string } }
 ) {
+  const { id } = await params;
   try {
     const ratings = await prisma.rating.findMany({
-      where: { productId: params.id },
+      where: { productId: id },
       include: {
         user: { select: { id: true, name: true, image: true } },
       },

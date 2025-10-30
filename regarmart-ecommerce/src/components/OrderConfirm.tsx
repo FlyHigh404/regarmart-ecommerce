@@ -9,6 +9,7 @@ import {
   PaymentMethod,
   OrderProduct,
 } from "@/types/order";
+import Link from "next/link";
 
 export interface Alamat {
   id: string; 
@@ -205,12 +206,12 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
 
           {/* Tombol */}
           {status === OrderStatus.PROCESSING ? (
-            <button
-              onClick={onClose}
+            <Link
+              href='/profile/riwayat-transaksi'
               className="w-full bg-[#26A81D] hover:bg-green-700 text-white font-semibold rounded-lg h-10"
             >
               Liaht Riwayat Pesanan
-            </button>
+            </Link>
           ) : status === OrderStatus.SHIPPED ? (
             <div className="flex gap-3">
               <button
