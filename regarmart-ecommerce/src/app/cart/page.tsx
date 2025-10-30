@@ -304,6 +304,7 @@ const CartPage = () => {
   }
 
   const selectedItems = cartItems.filter((item) => item.selected);
+  const totalQuantity = selectedItems.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = selectedItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
@@ -710,7 +711,7 @@ const CartPage = () => {
                   <div className="space-y-2 md:space-y-3 mb-4 md:mb-5 text-xs md:text-sm">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600">
-                        Total harga ({selectedCount} Produk)
+                        Total harga ({totalQuantity} Produk)
                       </span>
                       <span className="font-semibold text-gray-900">
                         Rp{totalPrice.toLocaleString("id-ID")}
@@ -741,7 +742,7 @@ const CartPage = () => {
 
                   <button
                     disabled={
-                      selectedCount === 0 ||
+                      totalQuantity === 0 ||
                       deletingItems.length > 0 ||
                       updatingItems.length > 0
                     }

@@ -14,10 +14,7 @@ import AuthCheck from "@/components/AuthCheck";
 const CheckoutPage: React.FC = () => {
   const router = useRouter();
   const [openOrderConfirm, setOpenOrderConfirm] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
-    PaymentMethod.COD
-  );
-
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.COD);
   const [alamatAktif, setAlamatAktif] = useState<Alamat | null>(null);
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -27,6 +24,12 @@ const CheckoutPage: React.FC = () => {
 
   const ongkir = 20000;
   const diskon = 0;
+  const totalHarga = Number(order?.totalAmount) || 0;
+  const totalQuantity = order?.orderItems?.reduce((total: number, item: any) => {
+    return total + item.quantity;
+  }, 0) || 0;
+  const totalPembayaran = totalHarga - diskon;
+  const subtotal = totalHarga - ongkir; 
 
   useOrderSocket(order?.id, (status) => {
     if (status === "PROCESSING") {
@@ -92,13 +95,11 @@ const CheckoutPage: React.FC = () => {
         throw new Error(result.error || "Failed to process checkout");
       }
 
-      // Untuk QRIS, tampilkan QR Code
       if (paymentMethod === PaymentMethod.QRIS && result.midtrans?.qrisUrl) {
         setQrisUrl(result.midtrans.qrisUrl);
         return;
       }
 
-      // Untuk COD, update order state dengan data yang benar
       if (paymentMethod === PaymentMethod.COD) {
         setOrder(result);
         setOpenOrderConfirm(true);
@@ -110,10 +111,6 @@ const CheckoutPage: React.FC = () => {
       setProcessingCheckout(false);
     }
   };
-
-  // Hitung total
-  const totalHarga = order?.totalAmount || 0;
-  const totalPembayaran = totalHarga - diskon;
 
   if (loading) {
     return (
@@ -136,6 +133,7 @@ const CheckoutPage: React.FC = () => {
       <div className="min-h-screen bg-gray-100 max-sm:bg-white flex flex-col">
         <CheckoutNavbar />
 
+        {/* ======== ISI CHECKOUT ========= */}
         <div className="p-6 max-w-6xl mx-auto flex-1 w-full pb-24 md:pb-6">
           <h1 className="text-lg font-bold mb-3">Checkout Produk</h1>
 
@@ -285,10 +283,14 @@ const CheckoutPage: React.FC = () => {
 
                 <div className="pt-1 text-xs space-y-1">
                   <div className="flex justify-between">
-                    <span>
-                      Total harga ({order?.orderItems?.length || 0} Produk)
-                    </span>
-                    <span>Rp{totalHarga.toLocaleString("id-ID")}</span>
+                     <span>
+                      Total harga ({totalQuantity} Produk)
+                      </span>
+                    <span>Rp{subtotal.toLocaleString("id-ID")}</span>
+                  </div>
+                  <div className="flex justify-between text-green-600">
+                    <span>Potongan Diskon</span>
+                    <span>-Rp{diskon.toLocaleString("id-ID")}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Ongkos Kirim</span>
@@ -354,10 +356,8 @@ const CheckoutPage: React.FC = () => {
                 {/* Detail Pembayaran */}
                 <div className="pt-2 text-xs space-y-2">
                   <div className="flex justify-between">
-                    <span>
-                      Total harga ({order?.orderItems?.length || 0} Produk)
-                    </span>
-                    <span>Rp{totalHarga.toLocaleString("id-ID")}</span>
+                    <span>Total harga ({totalQuantity} Produk)</span>
+                    <span>Rp{subtotal.toLocaleString("id-ID")}</span>
                   </div>
                   <div className="flex justify-between text-green-600">
                     <span>Potongan Diskon</span>
@@ -389,28 +389,9 @@ const CheckoutPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Footer Desktop */}
+        {/* Footer */}
         <div className="hidden md:block">
           <Footer />
-        </div>
-
-        {/* Sticky Bottom Mobile */}
-        <div className="md:hidden bg-white border-t border-gray-200 p-3 fixed bottom-0 left-0 right-0 flex justify-between items-center">
-          <div className="pr-2">
-            <p className="text-[10px] text-gray-500">Total</p>
-            <p className="text-sm font-bold text-green-600">
-              Rp{totalPembayaran.toLocaleString("id-ID")}
-            </p>
-          </div>
-          <button
-            onClick={processCheckout}
-            disabled={
-              processingCheckout || !order?.orderItems?.length || !alamatAktif
-            }
-            className="bg-green-600 text-white px-4 h-11 rounded-lg text-medium font-semibold flex-1 disabled:bg-gray-400 disabled:cursor-not-allowed"
-          >
-            {processingCheckout ? "Memproses..." : "Konfirmasi"}
-          </button>
         </div>
 
         {/* Modal Daftar Alamat */}
@@ -424,8 +405,12 @@ const CheckoutPage: React.FC = () => {
 
         {/* Modal QRIS */}
         {qrisUrl && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-zinc-900 p-6 rounded-2xl shadow-xl w-80 sm:w-96 text-center relative">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-4 rounded-lg">
+              <h2 className="text-lg font-bold mb-4">
+                Scan QRIS untuk Pembayaran
+              </h2>
+              <img src={qrisUrl} alt="QRIS" className="w-64 h-64 object-contain" />
               <button
                 onClick={() => setQrisUrl(null)}
                 className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition"
@@ -463,9 +448,7 @@ const CheckoutPage: React.FC = () => {
 
         {/* Order Confirm Modal */}
         <OrderConfirm
-          orderNumber={`#INV-${
-            order?.id?.toString().padStart(4, "0") || "0000"
-          }`}
+          orderNumber={`#INV-${order?.orderId?.toString().padStart(4, "0") || "0000"}`}
           status={OrderStatus.PROCESSING}
           paymentMethod={paymentMethod}
           products={
@@ -500,9 +483,6 @@ const CheckoutPage: React.FC = () => {
           open={openOrderConfirm}
           onClose={() => {
             setOpenOrderConfirm(false);
-            if (paymentMethod === PaymentMethod.COD) {
-              router.push("/profil/riwayat-transaksi");
-            }
           }}
         />
       </div>
