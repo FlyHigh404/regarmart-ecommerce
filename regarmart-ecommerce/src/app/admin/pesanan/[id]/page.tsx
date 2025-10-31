@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
-import { ArrowLeft, Phone, MapPin, Truck, Clock, CheckCircle, X, AlertCircle } from "lucide-react"
+import { ArrowLeft, Phone, MapPin, Truck, Clock, CheckCircle, X, AlertCircle, XCircle } from "lucide-react"
 import { useRouter, useParams } from "next/navigation"
 import AdminLayout from "../../AdminLayout"
 
@@ -64,12 +64,12 @@ interface NotificationModalProps {
 }
 
 // Notification Modal Component (Success/Error)
-const NotificationModal = ({ 
-  isOpen, 
-  onClose, 
-  title, 
-  message, 
-  type 
+const NotificationModal = ({
+  isOpen,
+  onClose,
+  title,
+  message,
+  type
 }: NotificationModalProps) => {
   if (!isOpen) return null
 
@@ -93,11 +93,11 @@ const NotificationModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
-      <div 
+      <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       ></div>
-      
+
       <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-slideUp">
         <button
           onClick={onClose}
@@ -133,12 +133,12 @@ const NotificationModal = ({
 }
 
 // Modern Confirmation Modal Component
-const ConfirmationModal = ({ 
-  isOpen, 
-  onClose, 
-  onConfirm, 
-  title, 
-  message, 
+const ConfirmationModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  message,
   confirmText = "Ya, Lanjutkan",
   cancelText = "Batal",
   type = "default"
@@ -178,11 +178,11 @@ const ConfirmationModal = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       ></div>
-      
+
       {/* Modal */}
       <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-slideUp">
         {/* Close Button */}
@@ -238,7 +238,7 @@ const PesananDetailPage = () => {
   const params = useParams()
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
-  
+
   // Ubah updating menjadi object untuk melacak status masing-masing button
   const [updating, setUpdating] = useState<{
     tugaskanKurir: boolean
@@ -249,7 +249,7 @@ const PesananDetailPage = () => {
     selesaikanPesanan: false,
     batalkanPesanan: false
   })
-  
+
   // Modal state
   const [modalConfig, setModalConfig] = useState<ModalConfig>({
     isOpen: false,
@@ -258,7 +258,7 @@ const PesananDetailPage = () => {
     confirmText: "Ya, Lanjutkan",
     cancelText: "Batal",
     type: "default",
-    onConfirm: () => {}
+    onConfirm: () => { }
   })
 
   // Notification state
@@ -275,25 +275,25 @@ const PesananDetailPage = () => {
   })
 
   const statusConfig: Record<string, { label: string; color: string; icon?: any }> = {
-    PROCESSING: { 
-      label: "SEDANG PROSES", 
+    PROCESSING: {
+      label: "SEDANG PROSES",
       color: "bg-[#FFDD62]",
       icon: Clock
     },
-    SHIPPED: { 
-      label: "DIKIRIM KURIR", 
+    SHIPPED: {
+      label: "DIKIRIM KURIR",
       color: "bg-[#FFAA62]",
       icon: Truck
     },
-    COMPLETED: { 
-      label: "PESANAN SELESAI", 
+    COMPLETED: {
+      label: "PESANAN SELESAI",
       color: "bg-[#26A81D]",
       icon: CheckCircle
     },
-    CANCELED: { 
-      label: "DIBATALKAN", 
+    CANCELED: {
+      label: "DIBATALKAN",
       color: "bg-red-400",
-      icon: null
+      icon: XCircle
     },
   }
 
@@ -353,7 +353,7 @@ const PesananDetailPage = () => {
 
       const updatedOrder = await res.json()
       setOrder(updatedOrder)
-      
+
       // Show success notification
       setNotification({
         isOpen: true,
@@ -363,7 +363,7 @@ const PesananDetailPage = () => {
       })
     } catch (error) {
       console.error('Error updating order status:', error)
-      
+
       // Show error notification
       setNotification({
         isOpen: true,
@@ -459,7 +459,7 @@ const PesananDetailPage = () => {
     tugaskanKurir: {
       enabled: currentStatus === "PROCESSING" && !updating.tugaskanKurir,
       loading: updating.tugaskanKurir,
-      style: currentStatus === "PROCESSING" 
+      style: currentStatus === "PROCESSING"
         ? "bg-indigo-50 border-2 border-indigo-500 hover:bg-indigo-100 text-indigo-600"
         : "bg-gray-200 text-gray-400 cursor-not-allowed"
     },

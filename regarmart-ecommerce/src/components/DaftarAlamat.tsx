@@ -1,9 +1,8 @@
 "use client"
-import { useState } from "react"
-import { MapPin, X } from "lucide-react"
-import InputBox from "@/components/InputBox"
+import { useState, useEffect } from "react"
+import { MapPin } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { Alamat } from "@/types/alamat"
-import TambahAlamat from "@/components/TambahAlamat"
 
 interface DaftarAlamatProps {
   open: boolean
@@ -11,66 +10,110 @@ interface DaftarAlamatProps {
   onSelectAlamat?: (alamat: Alamat) => void
 }
 
+const normalizeAlamat = (item: any): Alamat => ({
+  id: String(item.id),
+  label: item.label || item.judul || "Alamat",
+  nama: item.nama || item.recipientName || "",
+  telp: item.telp || item.phoneNumber || "",
+  alamat: item.alamat || item.fullAddress || "",
+  catatan: item.catatan || item.note || "",
+  utama: item.utama || item.isPrimary || false,
+  recipientName: item.recipientName || item.nama || "",
+  phoneNumber: item.phoneNumber || item.telp || "",
+  fullAddress: item.fullAddress || item.alamat || "",
+  isPrimary: item.isPrimary || item.utama || false,
+})
+
 export default function DaftarAlamat({
   open,
   setOpen,
   onSelectAlamat,
 }: DaftarAlamatProps) {
-  const [selected, setSelected] = useState<number | null>(null)
-  const [editOpen, setEditOpen] = useState(false)
-  const [alamatEdit, setAlamatEdit] = useState<Alamat | null>(null)
-  const [tambahOpen, setTambahOpen] = useState(false)
+  const router = useRouter()
+  const [selected, setSelected] = useState<string | number | null>(null)
+  const [alamatList, setAlamatList] = useState<Alamat[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const [alamatList, setAlamatList] = useState<Alamat[]>([
-    {
-      id: 1,
-      label: "Rumah",
-      nama: "Team Genesis",
-      telp: "0895360577489",
-      alamat:
-        "Jl. Merpati No.40ab, Kepuh, Betro, Kec. Sedati, Kabupaten Sidoarjo, Jawa Timur 61253, Indonesia",
-      catatan: "Dekat Masjid, Warna cat rumah hijau",
-      utama: true,
-    },
-    {
-      id: 2,
-      label: "Kantor",
-      nama: "Team Genesis",
-      telp: "0895360577489",
-      alamat:
-        "Jl. Merpati No.40ab, Kepuh, Betro, Kec. Sedati, Kabupaten Sidoarjo, Jawa Timur 61253, Indonesia",
-      utama: false,
-    },
-  ])
+  // Fetch data dari API
+  useEffect(() => {
+    if (open) {
+      fetchAlamat()
+    }
+  }, [open])
 
-  if (!open) return null
-
-  const handleDelete = (id: number) => {
-    setAlamatList(alamatList.filter((a) => a.id !== id))
-  }
-
-  const handleSaveEdit = () => {
-    if (alamatEdit) {
-      setAlamatList((prev) =>
-        prev.map((a) => (a.id === alamatEdit.id ? alamatEdit : a))
-      )
-      setEditOpen(false)
+  const fetchAlamat = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await fetch("/api/profile/address")
+      if (!response.ok) {
+        throw new Error("Gagal mengambil data alamat")
+      }
+      const data = await response.json()
+      
+      // Transform API response menggunakan helper function
+      const transformedData: Alamat[] = data.map((item: any) => normalizeAlamat(item))
+      
+      setAlamatList(transformedData)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan")
+      console.error("Error fetching alamat:", err)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const setSebagaiUtama = (id: number) => {
-    setAlamatList((prev) =>
-      prev.map((a) => ({
-        ...a,
-        utama: a.id === id,
-      }))
-    )
+  if (!open) return null
+
+  const handleDelete = async (id: string | number) => {
+    try {
+      const response = await fetch(`/api/profile/address/${id}`, {
+        method: "DELETE",
+      })
+      
+      if (!response.ok) {
+        throw new Error("Gagal menghapus alamat")
+      }
+      
+      setAlamatList(alamatList.filter((a) => a.id !== id))
+    } catch (err) {
+      console.error("Error deleting alamat:", err)
+      alert("Gagal menghapus alamat")
+    }
+  }
+
+  const handleSaveEdit = async () => {
+    // Redirect ke halaman edit alamat
+    router.push("/profil/alamat")
+  }
+
+  const setSebagaiUtama = async (id: string | number) => {
+    try {
+      const response = await fetch(`/api/profile/address/${id}/set-primary`, {
+        method: "PATCH",
+      })
+      
+      if (!response.ok) {
+        throw new Error("Gagal mengatur alamat utama")
+      }
+      
+      setAlamatList((prev) =>
+        prev.map((a) => ({
+          ...a,
+          utama: a.id === id,
+        }))
+      )
+    } catch (err) {
+      console.error("Error setting primary address:", err)
+      alert("Gagal mengatur alamat utama")
+    }
   }
 
   return (
     <>
       {/* Modal Daftar Alamat */}
-      <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+      <div className="fixed inset-0 backdrop-blur-2xl bg-opacity-40 flex justify-center items-center z-50">
         <div className="bg-white rounded-xl shadow-lg w-[95%] sm:w-[650px] max-h-[85vh] overflow-y-auto p-4 sm:p-6 relative">
           {/* Tombol close */}
           <button
@@ -90,92 +133,125 @@ export default function DaftarAlamat({
           <div className="w-full flex justify-center mb-4">
             <button
               className="px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl w-full bg-green-100 text-green-600 text-sm sm:text-base font-semibold hover:bg-green-200"
-              onClick={() => setTambahOpen(true)}
+              onClick={() => router.push("/profil/alamat")}
             >
               + Tambah Alamat
             </button>
           </div>
 
-          {/* List Alamat */}
-          <div className="space-y-3 sm:space-y-4">
-            {alamatList.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => setSelected(item.id)}
-                className={`bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 cursor-pointer transition border ${
-                  selected === item.id
-                    ? "border-green-500 shadow-[0_0_10px_rgba(38,168,29,0.2)]"
-                    : "border-gray-200"
-                }`}
+          {/* Loading State */}
+          {loading && (
+            <div className="text-center py-8">
+              <p className="text-gray-500">Memuat alamat...</p>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div className="text-center py-8">
+              <p className="text-red-500">{error}</p>
+              <button
+                className="mt-2 text-green-600 hover:underline"
+                onClick={fetchAlamat}
               >
-                <div className="flex justify-between items-center w-full">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
-                    <p className="font-medium text-sm sm:text-[15px] font-jakarta text-[#8F8F8F]">
-                      {item.nama}
-                    </p>
-                    {item.utama && (
-                      <span className="bg-green-100 text-green-600 text-[10px] sm:text-xs font-medium px-2 py-0.5 rounded-full">
-                        Utama
-                      </span>
-                    )}
-                  </div>
-                  {!item.utama && (
-                    <button
-                      className="text-[11px] sm:text-xs text-green-600 hover:underline"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setSebagaiUtama(item.id)
-                      }}
-                    >
-                      Jadikan Utama
-                    </button>
-                  )}
-                </div>
+                Coba lagi
+              </button>
+            </div>
+          )}
 
-                <div className="pl-6 sm:pl-8 mt-1 sm:mt-2">
-                  <p className="font-medium text-xs sm:text-sm font-jakarta text-black">
-                    {item.nama}
-                    <span className="after:content-['|'] after:mx-1 sm:after:mx-2 text-[#8F8F8F]"></span>
-                    <span className="font-medium text-[12px] sm:text-[14px] font-jakarta text-[#8F8F8F]">
-                      {item.telp}
-                    </span>
-                  </p>
-                  <p className="font-normal text-[11px] sm:text-[13px] font-jakarta text-[#8F8F8F]">
-                    {item.alamat}
-                  </p>
-
-                  <div className="flex gap-2 mt-1 sm:mt-2 text-[11px] sm:text-sm">
-                    <button
-                      className="text-green-600 hover:text-green-800 font-medium"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setAlamatEdit(item)
-                        setEditOpen(true)
-                      }}
-                    >
-                      Ubah
-                    </button>
-                    <span className="text-gray-400">|</span>
-                    <button
-                      className="text-gray-500 hover:text-red-600 font-medium"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleDelete(item.id)
-                      }}
-                    >
-                      Hapus
-                    </button>
-                  </div>
+          {/* List Alamat */}
+          {!loading && !error && (
+            <div className="space-y-3 sm:space-y-4">
+              {alamatList.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">Belum ada alamat tersimpan</p>
                 </div>
-              </div>
-            ))}
-          </div>
+              ) : (
+                alamatList.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => setSelected(item.id)}
+                    className={`bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 cursor-pointer transition border ${
+                      selected === item.id
+                        ? "border-green-500 shadow-[0_0_10px_rgba(38,168,29,0.2)]"
+                        : "border-gray-200"
+                    }`}
+                  >
+                    <div className="flex justify-between items-center w-full">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
+                        <p className="font-medium text-sm sm:text-[15px] font-jakarta text-[#8F8F8F]">
+                          {item.label}
+                        </p>
+                        {(item.utama || item.isPrimary) && (
+                          <span className="bg-green-100 text-green-600 text-[10px] sm:text-xs font-medium px-2 py-0.5 rounded-full">
+                            Utama
+                          </span>
+                        )}
+                      </div>
+                      {!(item.utama || item.isPrimary) && (
+                        <button
+                          className="text-[11px] sm:text-xs text-green-600 hover:underline"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSebagaiUtama(item.id)
+                          }}
+                        >
+                          Jadikan Utama
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="pl-6 sm:pl-8 mt-1 sm:mt-2">
+                      <p className="font-medium text-xs sm:text-sm font-jakarta text-black">
+                        {item.recipientName || item.nama}
+                        <span className="after:content-['|'] after:mx-1 sm:after:mx-2 text-[#8F8F8F]"></span>
+                        <span className="font-medium text-[12px] sm:text-[14px] font-jakarta text-[#8F8F8F]">
+                          {item.phoneNumber || item.telp}
+                        </span>
+                      </p>
+                      <p className="font-normal text-[11px] sm:text-[13px] font-jakarta text-[#8F8F8F]">
+                        {item.fullAddress || item.alamat}
+                      </p>
+                      {(item.catatan) && (
+                        <p className="font-normal text-[11px] sm:text-[12px] font-jakarta text-gray-400 mt-1">
+                          Catatan: {item.catatan}
+                        </p>
+                      )}
+
+                      <div className="flex gap-2 mt-1 sm:mt-2 text-[11px] sm:text-sm">
+                        <button
+                          className="text-green-600 hover:text-green-800 font-medium"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            router.push("/profil/alamat")
+                          }}
+                        >
+                          Ubah
+                        </button>
+                        <span className="text-gray-400">|</span>
+                        <button
+                          className="text-gray-500 hover:text-red-600 font-medium"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDelete(item.id)
+                          }}
+                        >
+                          Hapus
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
 
           {/* Konfirmasi Pilih Alamat */}
           <div className="mt-5 flex justify-center">
             <button
-              className="w-full bg-green-600 text-white px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl text-sm sm:text-base font-semibold hover:bg-green-700"
+              className="w-full bg-green-600 text-white px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl text-sm sm:text-base font-semibold hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              disabled={!selected}
               onClick={() => {
                 const alamatTerpilih = alamatList.find((a) => a.id === selected)
                 if (alamatTerpilih && onSelectAlamat) {
@@ -189,97 +265,6 @@ export default function DaftarAlamat({
           </div>
         </div>
       </div>
-
-      {/* Modal Tambah Alamat */}
-      <TambahAlamat
-        isOpen={tambahOpen}
-        onClose={() => setTambahOpen(false)}
-        onSave={(alamatBaru: Alamat) =>
-          setAlamatList([...alamatList, alamatBaru])
-        }
-      />
-
-      {/* Modal Edit Alamat */}
-     {editOpen && alamatEdit && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-          <div
-            className="
-             bg-white rounded-xl shadow-lg
-              w-[95%] sm:w-[650px] max-h-[85vh] overflow-y-auto
-              p-4 sm:p-6 relative     
-            "
-          >
-            <button
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-xl"
-              onClick={() => setEditOpen(false)}
-            >
-              <X size={20} />
-            </button>
-
-            <h2 className="text-md font-bold text-black mb-4 text-center">
-              Ubah Alamat
-            </h2>
-            <hr className="border-gray-200 my-3" />
-
-            <div className="space-y-4">
-              <InputBox
-                label="Label Alamat"
-                value={alamatEdit.label || ""}
-                onChange={(e) =>
-                  setAlamatEdit({ ...alamatEdit, label: e.target.value })
-                }
-                placeholder="Contoh: Rumah, Kantor"
-              />
-
-              <InputBox
-                label="Alamat Lengkap"
-                value={alamatEdit.alamat}
-                onChange={(e) =>
-                  setAlamatEdit({ ...alamatEdit, alamat: e.target.value })
-                }
-                placeholder="Tulis alamat lengkap"
-              />
-
-              <InputBox
-                label="Catatan untuk kurir (Opsional)"
-                value={alamatEdit.catatan || ""}
-                onChange={(e) =>
-                  setAlamatEdit({ ...alamatEdit, catatan: e.target.value })
-                }
-                placeholder="Contoh: warna rumah, patokan masjid"
-              />
-
-              <InputBox
-                label="Nama Penerima"
-                value={alamatEdit.nama}
-                onChange={(e) =>
-                  setAlamatEdit({ ...alamatEdit, nama: e.target.value })
-                }
-                placeholder="Nama lengkap"
-              />
-
-              <InputBox
-                label="No HP penerima"
-                value={alamatEdit.telp}
-                onChange={(e) =>
-                  setAlamatEdit({ ...alamatEdit, telp: e.target.value })
-                }
-                placeholder="08xxxxxxxxxx"
-              />
-            </div>
-
-            <div className="mt-6 flex justify-center">
-              <button
-                className="w-full bg-green-600 text-white px-10 py-3 rounded-xl font-semibold hover:bg-green-700"
-                onClick={handleSaveEdit}
-              >
-                Simpan
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
     </>
   )
 }
