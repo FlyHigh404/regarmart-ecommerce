@@ -24,24 +24,24 @@ const Navbar = () => {
 
   useEffect(() => setMounted(true), []);
 
- useEffect(() => {
-  const fetchProfile = async () => {
-    if (!session) return; 
-    try {
-      const res = await fetch("/api/profile", { credentials: "include" });
-      if (!res.ok) {
-        console.warn("Profile fetch failed:", res.status);
-        return;
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!session) return;
+      try {
+        const res = await fetch("/api/profile", { credentials: "include" });
+        if (!res.ok) {
+          console.warn("Profile fetch failed:", res.status);
+          return;
+        }
+        const data = await res.json();
+        if (data?.image) setProfileImage(data.image);
+      } catch (error) {
+        console.error("Error fetching profile:", error);
       }
-      const data = await res.json();
-      if (data?.image) setProfileImage(data.image);
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-    }
-  };
+    };
 
-  fetchProfile();
-}, [session]);
+    fetchProfile();
+  }, [session]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -51,7 +51,7 @@ const Navbar = () => {
     }
   }, [mounted]);
 
-  // Close dropdown when clicking outside
+  // Tutup dropdown saat klik di luar
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -106,7 +106,7 @@ const Navbar = () => {
 
         {/* ---------------- DESKTOP NAV ---------------- */}
         <ul className="hidden md:flex items-center gap-10 lg:gap-12">
-          {navItems.map((item, i) => {
+          {navItems.map((item) => {
             const isActive =
               pathname && (pathname === item.href || pathname.startsWith(item.href + "/"));
             return (
@@ -140,11 +140,11 @@ const Navbar = () => {
 
         {/* ---------------- DESKTOP ICONS ---------------- */}
         <div className="hidden md:flex items-center gap-3">
-          {showCustomerIcons && <NotifikasiCust notificationCount={notificationCount} />}
-          {showCustomerIcons && <CartCust />}
+          {session ? (
+            <>
+              {showCustomerIcons && <NotifikasiCust notificationCount={notificationCount} />}
+              {showCustomerIcons && <CartCust />}
 
-          <div className="flex items-center gap-3 ml-2">
-            {session ? (
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
@@ -208,15 +208,23 @@ const Navbar = () => {
                   </button>
                 </div>
               </div>
-            ) : (
+            </>
+          ) : (
+            <div className="flex items-center gap-3">
               <Link
                 href="/auth/signin"
                 className="cursor-pointer bg-gradient-to-r from-green-500 to-green-600 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-all hover:scale-105"
               >
                 Log in
               </Link>
-            )}
-          </div>
+              <Link
+                href="/auth/signup"
+                className="cursor-pointer border border-green-600 text-green-600 px-5 py-2.5 rounded-lg font-medium text-sm transition-all hover:bg-green-50"
+              >
+                Sign up
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* ---------------- MOBILE BUTTON ---------------- */}
@@ -230,7 +238,7 @@ const Navbar = () => {
 
       {/* ---------------- MOBILE MENU ---------------- */}
       <div
-        className={`fixed inset-0 bg-black/40 backdrop-blur-md z-30 transition-all duration-300 md:hidden ${
+        className={`fixed inset-0 bg-black/40 backdrop-blur-md z-40 transition-all duration-300 md:hidden ${
           isMobileMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={() => setIsMobileMenuOpen(false)}
@@ -280,7 +288,7 @@ const Navbar = () => {
           </ul>
 
           {/* ---------------- MOBILE ACTION BUTTONS ---------------- */}
-          {session && (
+          {session ? (
             <div className="mt-6 flex flex-col gap-3">
               <button
                 onClick={() => router.push("/profil")}
@@ -316,6 +324,21 @@ const Navbar = () => {
               >
                 <LogOut className="w-5 h-5" /> Logout
               </button>
+            </div>
+          ) : (
+            <div className="mt-8 flex flex-col gap-3">
+              <Link
+                href="/auth/signin"
+                className="w-full text-center py-2.5 rounded-lg bg-gradient-to-r from-green-500 to-green-600 text-white font-medium hover:scale-105 transition-all"
+              >
+                Log in
+              </Link>
+              <Link
+                href="/auth/signup"
+                className="w-full text-center py-2.5 rounded-lg border border-green-600 text-green-600 font-medium hover:bg-green-50 transition-all"
+              >
+                Sign up
+              </Link>
             </div>
           )}
         </div>
