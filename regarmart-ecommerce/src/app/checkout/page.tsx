@@ -24,12 +24,19 @@ const CheckoutPage: React.FC = () => {
 
   const ongkir = 20000;
   const diskon = 0;
-  const totalHarga = Number(order?.totalAmount) || 0;
+  const totalAmount = Number(order?.totalAmount) || 0;
   const totalQuantity = order?.orderItems?.reduce((total: number, item: any) => {
     return total + item.quantity;
   }, 0) || 0;
-  const totalPembayaran = totalHarga - diskon;
-  const subtotal = totalHarga - ongkir; 
+  const productTotal =
+  order?.orderItems?.reduce(
+    (sum: number, item: any) =>
+      sum + Number(item.unitPrice) * item.quantity,
+    0
+  ) || 0;
+
+const subtotal = productTotal;
+const totalPembayaran = subtotal + ongkir - diskon;
 
   useOrderSocket(order?.id, (status) => {
     if (status === "PROCESSING") {
@@ -286,7 +293,7 @@ const CheckoutPage: React.FC = () => {
                      <span>
                       Total harga ({totalQuantity} Produk)
                       </span>
-                    <span>Rp{subtotal.toLocaleString("id-ID")}</span>
+                    <span>Rp{totalAmount.toLocaleString("id-ID")}</span>
                   </div>
                   <div className="flex justify-between text-green-600">
                     <span>Potongan Diskon</span>

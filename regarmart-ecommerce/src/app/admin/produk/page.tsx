@@ -316,7 +316,7 @@ const Products = () => {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => setEditingProduct(product)}
-                            className="p-2 text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-200"
+                            className="p-2 text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-200 cursor-pointer"
                             title="Edit"
                             disabled={isDeleting === product.id}
                           >
@@ -324,7 +324,7 @@ const Products = () => {
                           </button>
                           <button
                             onClick={() => handleDeleteClick(product)}
-                            className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 disabled:opacity-50"
+                            className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 disabled:opacity-50 cursor-pointer"
                             title="Delete"
                             disabled={isDeleting === product.id}
                           >
@@ -488,8 +488,10 @@ const Products = () => {
 
             {/* Modal */}
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
-              <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-4 rounded-t-xl">
-                <h2 className="text-lg sm:text-xl font-semibold text-gray-900 text-center">Tambah Produk</h2>
+              <div className="sticky top-0 bg-white z-20 border-b border-gray-200 px-4 sm:px-6 py-4 rounded-t-xl">
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900 text-center">
+                  Tambah Produk
+                </h2>
                 <button
                   onClick={() => setShowAddModal(false)}
                   className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -499,7 +501,6 @@ const Products = () => {
                   </svg>
                 </button>
               </div>
-
               <div className="p-4 sm:p-6">
                 <ProductUploadForm onClose={() => setShowAddModal(false)} onSuccess={handleProductSaveSuccess} />
               </div>
@@ -512,13 +513,17 @@ const Products = () => {
           <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setEditingProduct(null)} />
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
-              <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-4 rounded-t-xl">
-                <h2 className="text-lg sm:text-xl font-semibold text-gray-900 text-center">Edit Produk</h2>
+              <div className="sticky top-0 bg-white z-20 border-b border-gray-200 px-4 sm:px-6 py-4 rounded-t-xl">
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900 text-center">
+                  Edit Produk
+                </h2>
                 <button
                   onClick={() => setEditingProduct(null)}
                   className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  ✕
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
               </div>
               <div className="p-4 sm:p-6">
@@ -545,43 +550,43 @@ const Products = () => {
               <h3 className="text-xl font-semibold text-gray-900 mb-6">Filter Produk</h3>
               <div className="space-y-5">
                 <div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
-  <select
-    className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white cursor-pointer"
-    style={{
-      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-      backgroundRepeat: 'no-repeat',
-      backgroundPosition: 'right 0.75rem center',
-      backgroundSize: '1.25rem'
-    }}
-    value={selectedCategory}
-    onChange={(e) => setSelectedCategory(e.target.value)}
-  >
-    {categories.map((category) => (
-      <option key={category} value={category}>
-        {category}
-      </option>
-    ))}
-  </select>
-</div>
-<div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">Status Stok</label>
-  <select
-    className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white cursor-pointer"
-    style={{
-      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-      backgroundRepeat: 'no-repeat',
-      backgroundPosition: 'right 0.75rem center',
-      backgroundSize: '1.25rem'
-    }}
-    value={selectedStockStatus}
-    onChange={(e) => setSelectedStockStatus(e.target.value)}
-  >
-    <option value="Semua">Semua</option>
-    <option value="Tersedia">Tersedia</option>
-    <option value="Stok Habis">Stok Habis</option>
-  </select>
-</div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+                  <select
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white cursor-pointer"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'right 0.75rem center',
+                      backgroundSize: '1.25rem'
+                    }}
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                  >
+                    {categories.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Status Stok</label>
+                  <select
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white cursor-pointer"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'right 0.75rem center',
+                      backgroundSize: '1.25rem'
+                    }}
+                    value={selectedStockStatus}
+                    onChange={(e) => setSelectedStockStatus(e.target.value)}
+                  >
+                    <option value="Semua">Semua</option>
+                    <option value="Tersedia">Tersedia</option>
+                    <option value="Stok Habis">Stok Habis</option>
+                  </select>
+                </div>
                 <div className="flex gap-3 pt-4">
                   <button
                     className="flex-1 bg-green-600 text-white py-3 px-6 rounded-lg text-base font-semibold hover:bg-green-700 transition-colors"

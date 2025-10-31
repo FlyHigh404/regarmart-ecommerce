@@ -1,3 +1,4 @@
+// api/admin/categories/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
@@ -12,15 +13,12 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { name, description, imageUrl } = await req.json();
-
-    const imageUrlValue: string | null = typeof imageUrl === 'string' ? imageUrl : null;
+    const { name, description } = await req.json();
 
     const newCategory = await prisma.category.create({
       data: {
         name,
         description,
-        imageUrl: imageUrlValue,
       },
     });
 
@@ -42,8 +40,24 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const categories = await prisma.category.findMany();
-    return NextResponse.json(categories);
+    // Fetch categories with product count
+    const categories = await prisma.category.findMany({
+      include: {
+        _count: {
+          select: { products: true }
+        }
+      }
+    });
+
+    // Transform the response to include productCount
+    const categoriesWithCount = categories.map(category => ({
+      id: category.id,
+      name: category.name,
+      description: category.description,
+      productCount: category._count.products
+    }));
+
+    return NextResponse.json(categoriesWithCount);
   } catch (error) {
     console.error("Error fetching categories:", error);
     return NextResponse.json(
