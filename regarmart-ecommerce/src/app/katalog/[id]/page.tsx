@@ -255,6 +255,7 @@ const ProductDetailPage = () => {
     type: "success" | "error";
   } | null>(null);
   const [isRatingOpen, setIsRatingOpen] = useState(false);
+  const [RelatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     if (!params?.id) return;
@@ -280,10 +281,14 @@ const ProductDetailPage = () => {
         setProduct(productData);
 
         // Fetch reviews dan ratings secara parallel
-        const [reviewsResponse, ratingsResponse] = await Promise.all([
+        const [reviewsResponse, ratingsResponse, productRelatedResponse] = await Promise.all([
           fetch(`/api/products/${productId}/reviews`),
           fetch(`/api/products/${productId}/ratings`),
+          fetch(`/api/products/${productId}/produk-terkait?categoryId=${productData.categoryId}`)
         ]);
+
+        const relatedProductsData = await productRelatedResponse.json();
+        setRelatedProducts(relatedProductsData);
 
         // Process reviews data
         let reviewsData: Review[] = [];
@@ -721,23 +726,48 @@ const ProductDetailPage = () => {
           </div>
 
           {/* Related Products */}
-          <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-8">
             <div className="px-6 py-6 border-b border-gray-100">
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Produk Terkait
-                </h2>
-                <button className="text-green-600 hover:text-green-700 font-medium text-sm py-1 px-2 transition-colors">
-                  Lihat Semua →
-                </button>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Produk Terkait
+              </h2>
               </div>
             </div>
             <div className="p-6">
-              <p className="text-gray-500 text-sm">
-                (Belum terhubung ke API, masih placeholder)
+              {RelatedProducts.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {RelatedProducts.map((relatedProduct) => (
+                <a 
+                  key={relatedProduct.id}
+                  href={`/katalog/${relatedProduct.id}`}
+                  className="group block bg-white rounded-lg overflow-hidden border border-gray-200 hover:shadow-md transition-shadow"
+                >
+                  <div className="aspect-square bg-gray-50 relative">
+                  <img
+                    src={relatedProduct.imageUrl[0] || '/placeholder.svg'}
+                    alt={relatedProduct.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  </div>
+                  <div className="p-4">
+                  <h3 className="text-sm font-medium text-gray-900 line-clamp-2 mb-2">
+                    {relatedProduct.name}
+                  </h3>
+                  <p className="text-green-600 font-bold">
+                    {formatPrice(relatedProduct.price)}
+                  </p>
+                  </div>
+                </a>
+                ))}
+              </div>
+              ) : (
+              <p className="text-gray-500 text-center py-4">
+                Tidak ada produk terkait
               </p>
+              )}
             </div>
-          </div>
+            </div>
 
           {/* Rating Section */}
           <RatingSection
@@ -757,7 +787,7 @@ const ProductDetailPage = () => {
           {/* Review Section */}
           <div className="mb-8 mt-2">
             {reviews.length > 0 ? (
-              <ReviewSection reviews={reviews} />
+              <ReviewSection reviews={reviews} userRole={session?.user.role} />
             ) : (
               <div className="text-center py-8 rounded-lg bg-white">
                 <Star className="w-12 h-12 text-gray-300 mx-auto mb-4" />
