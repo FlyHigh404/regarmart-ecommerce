@@ -10,6 +10,7 @@ import Footer from "@/components/Footer";
 import { useRouter } from "next/navigation";
 import useOrderSocket from "@/hooks/useOrderSocket";
 import AuthCheck from "@/components/AuthCheck";
+import { transformOrder } from "@/lib/transformOrder";
 
 const CheckoutPage: React.FC = () => {
   const router = useRouter();
@@ -78,46 +79,60 @@ const totalPembayaran = subtotal + ongkir - diskon;
     fetchCheckoutData();
   }, []);
 
-  const processCheckout = async () => {
-    if (!alamatAktif?.id) {
-      alert("Silakan pilih alamat pengiriman terlebih dahulu");
+ const processCheckout = async () => {
+  if (!alamatAktif?.id) {
+    alert("Silakan pilih alamat pengiriman terlebih dahulu");
+    return;
+  }
+
+  try {
+    setProcessingCheckout(true);
+
+    const response = await fetch("/api/cart/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        paymentMethod,
+        addressId: alamatAktif.id,
+      }),
+    });
+
+    const result = await response.json();
+
+    // 🔥 DEBUG DETAILED
+    console.log("=== CHECKOUT DEBUG ===");
+    console.log("Response status:", response.status);
+    console.log("Full result:", result);
+    console.log("Result ID:", result.id);
+    console.log("Result orderItems:", result.orderItems);
+    console.log("Result orderItems length:", result.orderItems?.length);
+    console.log("Result selectedAddress:", result.selectedAddress);
+    console.log("Result totalAmount:", result.totalAmount);
+    console.log("=== END DEBUG ===");
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to process checkout");
+    }
+
+    if (paymentMethod === PaymentMethod.QRIS && result.midtrans?.qrisUrl) {
+      setQrisUrl(result.midtrans.qrisUrl);
       return;
     }
 
-    try {
-      setProcessingCheckout(true);
-
-      const response = await fetch("/api/cart/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          paymentMethod,
-          addressId: alamatAktif.id,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to process checkout");
-      }
-
-      if (paymentMethod === PaymentMethod.QRIS && result.midtrans?.qrisUrl) {
-        setQrisUrl(result.midtrans.qrisUrl);
-        return;
-      }
-
-      if (paymentMethod === PaymentMethod.COD) {
-        setOrder(result);
-        setOpenOrderConfirm(true);
-      }
-    } catch (error) {
-      console.error("Checkout error:", error);
-      alert("Terjadi kesalahan saat memproses checkout");
-    } finally {
-      setProcessingCheckout(false);
+    if (paymentMethod === PaymentMethod.COD) {
+      const transformedOrder = transformOrder(result, alamatAktif);
+      console.log("Transformed order:", transformedOrder);
+      
+      setOrder(transformedOrder);
+      setOpenOrderConfirm(true);
     }
-  };
+  } catch (error) {
+    console.error("Checkout error:", error);
+    alert("Terjadi kesalahan saat memproses checkout");
+  } finally {
+    setProcessingCheckout(false);
+  }
+};
 
   if (loading) {
     return (
@@ -312,6 +327,21 @@ const totalPembayaran = subtotal + ongkir - diskon;
               </div>
             </div>
 
+            {/* 5. Tombol konfirmasi - mobile */}
+  <div className="md:hidden bg-white p-4 mt-3 sticky bottom-0 z-10 border-t border-gray-200 shadow-lg">
+    <button
+      onClick={processCheckout}
+      disabled={
+        processingCheckout ||
+        !order?.orderItems?.length ||
+        !alamatAktif
+      }
+      className="bg-green-600 hover:bg-green-700 text-white px-6 h-12 rounded-lg font-semibold w-full disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+    >
+      {processingCheckout ? "Memproses..." : "Konfirmasi Pesanan"}
+    </button>
+  </div>
+
             {/* Kolom Kanan - Desktop */}
             <div className="hidden md:block">
               <div className="bg-white shadow rounded-xl p-4 space-y-3 border border-gray-200">
@@ -413,39 +443,34 @@ const totalPembayaran = subtotal + ongkir - diskon;
         {/* Modal QRIS */}
         {qrisUrl && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-4 rounded-lg">
-              <h2 className="text-lg font-bold mb-4">
-                Scan QRIS untuk Pembayaran
-              </h2>
-              <img src={qrisUrl} alt="QRIS" className="w-64 h-64 object-contain" />
-              <button
-                onClick={() => setQrisUrl(null)}
-                className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition"
-              >
-                ✕
-              </button>
-
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">
-                Scan QRIS untuk Pembayaran
-              </h2>
+            <div className="bg-white p-6 rounded-xl max-w-md w-full mx-4">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-bold text-gray-800">
+                  Scan QRIS untuk Pembayaran
+                </h2>
+                <button
+                  onClick={() => setQrisUrl(null)}
+                  className="text-gray-500 hover:text-gray-700 text-xl"
+                >
+                  ✕
+                </button>
+              </div>
 
               <div className="flex justify-center mb-4">
                 <img
                   src={qrisUrl}
                   alt="QRIS"
-                  className="w-60 h-60 rounded-xl border border-gray-200 dark:border-zinc-700 shadow-sm object-contain"
+                  className="w-64 h-64 rounded-lg border border-gray-200 object-contain"
                 />
               </div>
 
-              <p className="text-xs text-gray-500 dark:text-gray-400 break-all">
-                For testing simulation:
-                <br />
-                {qrisUrl}
+              <p className="text-xs text-gray-500 text-center mb-4">
+                Scan QR code di atas untuk menyelesaikan pembayaran
               </p>
 
               <button
                 onClick={() => setQrisUrl(null)}
-                className="mt-5 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-xl font-medium transition shadow-sm"
+                className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-medium transition"
               >
                 Tutup
               </button>
@@ -453,45 +478,42 @@ const totalPembayaran = subtotal + ongkir - diskon;
           </div>
         )}
 
-        {/* Order Confirm Modal */}
-        <OrderConfirm
-          orderNumber={`#INV-${order?.orderId?.toString().padStart(4, "0") || "0000"}`}
-          status={OrderStatus.PROCESSING}
-          paymentMethod={paymentMethod}
-          products={
-            order?.orderItems?.map((item: any) => ({
-              id: item.productId || item.id,
-              name: item.product?.name,
-              qty: item.quantity,
-              price: `Rp${Number(item.unitPrice).toLocaleString("id-ID")}`,
-              image: item.product?.imageUrl?.[0] || "/placeholder-product.png",
-            })) || []
-          }
-          total={`Rp${totalPembayaran.toLocaleString("id-ID")}`}
-          address={{
-            id: alamatAktif.id.toString(),
-            nama:
-              alamatAktif.recipientName ||
-              alamatAktif.nama ||
-              "Nama tidak tersedia",
-            telp:
-              alamatAktif.phoneNumber ||
-              alamatAktif.telp ||
-              "Telepon tidak tersedia",
-            alamat:
-              alamatAktif.fullAddress ||
-              alamatAktif.alamat ||
-              "Alamat tidak tersedia",
-            utama: alamatAktif.isPrimary || alamatAktif.utama || false,
-          }}
-          contact={`${alamatAktif.recipientName || alamatAktif.nama} | ${
-            alamatAktif.phoneNumber || alamatAktif.telp
-          }`}
-          open={openOrderConfirm}
-          onClose={() => {
-            setOpenOrderConfirm(false);
-          }}
-        />
+ {/* Order Confirm Modal - FIXED */}
+{openOrderConfirm && order && (
+  <OrderConfirm
+    open={openOrderConfirm}
+    onClose={() => {
+      setOpenOrderConfirm(false);
+      if (paymentMethod === PaymentMethod.COD) {
+        router.push("/profil/riwayat-transaksi");
+      }
+    }}
+    orderNumber={order.orderNumber || `#INV-${order?.id?.toString().padStart(4, "0")}`}
+    status={order.status || OrderStatus.PROCESSING}
+    paymentMethod={order.paymentMethod || paymentMethod}
+    products={
+      // 🔥 PRIORITASKAN order.products DARI TRANSFORMORDER
+      order.products && order.products.length > 0 
+        ? order.products 
+        : order?.orderItems?.map((item: any) => ({
+            id: item.productId || item.id,
+            name: item.product?.name || "Produk",
+            qty: item.quantity || 0,
+            price: `Rp${Number(item.unitPrice || 0).toLocaleString("id-ID")}`,
+            image: item.product?.imageUrl?.[0] || "/placeholder-product.png",
+          })) || []
+    }
+    total={order.total || `Rp${Number(order.totalAmount || totalPembayaran).toLocaleString("id-ID")}`}
+    address={order.address || {
+      id: alamatAktif?.id || "",
+      nama: alamatAktif?.recipientName || "Nama tidak tersedia",
+      telp: alamatAktif?.phoneNumber || "Telepon tidak tersedia",
+      alamat: alamatAktif?.fullAddress || "Alamat tidak tersedia",
+      utama: alamatAktif?.isPrimary || false,
+    }}
+    contact={order.contact || `${alamatAktif?.recipientName || ""} | ${alamatAktif?.phoneNumber || ""}`.trim()}
+  />
+)}
       </div>
     </AuthCheck>
   );

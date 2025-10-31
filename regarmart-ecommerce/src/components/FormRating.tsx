@@ -107,11 +107,10 @@ const FormRating: React.FC<FormRatingProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 font-jakarta">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 font-jakarta p-4">
       <div
-        className="relative flex flex-col p-6"
+        className="relative flex flex-col p-6 w-full max-w-[564px] scale-90 sm:scale-100"
         style={{
-          width: "564px",
           height: "380px",
           borderRadius: "10px",
           background: "#F8F8FA",
@@ -192,12 +191,7 @@ const FormRating: React.FC<FormRatingProps> = ({
         {/* Textarea */}
         <div className="mt-4 flex flex-col items-center">
           <div
-            className="relative"
-            style={{
-              width: "514.35px",
-              height: "58.195px",
-              flexShrink: 0,
-            }}
+            className="relative w-full max-w-[514px]"
           >
             <textarea
               placeholder="Isi ulasan.."
@@ -207,7 +201,7 @@ const FormRating: React.FC<FormRatingProps> = ({
                 setError(""); // Clear error ketika user mengetik
               }}
               maxLength={500}
-              className="w-full h-full rounded-lg border border-gray-300 pl-3 pr-10 pt-3 pb-3 text-[14px] resize-none focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full h-[58px] rounded-lg border border-gray-300 pl-3 pr-10 py-3 text-[14px] resize-none focus:outline-none focus:ring-2 focus:ring-green-500"
             />
             {/* Icon pena */}
             <Image
@@ -215,26 +209,23 @@ const FormRating: React.FC<FormRatingProps> = ({
               alt="Icon edit"
               width={22}
               height={22}
-              className="absolute right-3 bottom-1 opacity-60"
+              className="absolute right-3 bottom-3 opacity-60"
             />
           </div>
 
-          <div className="mt-1 w-[514.35px] text-right text-[12px] text-gray-400">
+          <div className="mt-1 w-full max-w-[514px] text-right text-[12px] text-gray-400">
             {review.length}/500
           </div>
         </div>
 
         {/* Button */}
-        <div className="mt-4 flex justify-between">
+        <div className="mt-4 flex justify-between gap-4">
           <button
             onClick={handleClose}
             disabled={loading}
             className="flex justify-center items-center rounded-md font-semibold text-green-700 bg-green-100
-                       hover:bg-green-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{
-              width: "242px",
-              height: "45px",
-            }}
+                       hover:bg-green-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed
+                       flex-1 h-[45px]"
           >
             Nanti Saja
           </button>
@@ -243,11 +234,8 @@ const FormRating: React.FC<FormRatingProps> = ({
             onClick={handleSubmit}
             disabled={loading}
             className="flex justify-center items-center rounded-md font-semibold text-white bg-green-600
-                      hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{
-              width: "242px",
-              height: "45px",
-            }}
+                      hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed
+                      flex-1 h-[45px]"
           >
             {loading ? "Mengirim..." : "Kirim"}
           </button>

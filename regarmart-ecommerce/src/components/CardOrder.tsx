@@ -4,7 +4,6 @@ import Image from "next/image";
 import React, { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Alamat } from "@/types/alamat";
-import OrderConfirm from "@/components/OrderConfirm";
 import FormRating from "@/components/FormRating";
 import { OrderStatus, PaymentMethod, OrderProduct } from "@/types/order";
 
@@ -18,6 +17,7 @@ interface CardOrderProps {
   address: Alamat;
   contact: string;
   dateCompleted?: string;
+  onShowDetail?: () => void;
 }
 
 const CardOrder: React.FC<CardOrderProps> = ({
@@ -30,45 +30,89 @@ const CardOrder: React.FC<CardOrderProps> = ({
   address,
   contact,
   dateCompleted,
+  onShowDetail,
 }) => {
   const router = useRouter();
   const pathname = usePathname();
 
-  const [openConfirm, setOpenConfirm] = useState(false);
   const [openCancelPopup, setOpenCancelPopup] = useState(false);
   const [openRating, setOpenRating] = useState<null | OrderProduct>(null);
   const [loading, setLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
 
-  const updateOrderStatus = async (newStatus: "CANCELED" | "COMPLETED") => {
+  // ✅ PERBAIKAN: Fungsi update order status yang benar
+ const updateOrderStatus = async (newStatus: "CANCELED" | "COMPLETED") => {
+  try {
+    setLoading(true);
+    
+    // Extract ID dari orderNumber
+    const orderId = orderNumber.replace('#INV-', '');
+    
+    console.log("🔄 Updating order status:", { 
+      orderId, 
+      newStatus,
+      orderNumber,
+      endpoint: `/api/profile/order/${orderId}`
+    });
+    
+    const res = await fetch(`/api/profile/order/${orderId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: newStatus }),
+    });
+
+    console.log("📡 Response status:", res.status);
+    console.log("📡 Response ok:", res.ok);
+
+    // Try to get response text first for debugging
+    const responseText = await res.text();
+    console.log("📡 Raw response:", responseText);
+
+    let result;
     try {
-      setLoading(true);
-      const res = await fetch("/api/profile/riwayat-transaksi", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
+      result = JSON.parse(responseText);
+      console.log("📡 Parsed response:", result);
+    } catch (parseError) {
+      console.error("❌ JSON parse error:", parseError);
+      console.log("📡 Response was:", responseText.substring(0, 200));
+      throw new Error("Response tidak valid dari server");
+    }
+
+    if (!res.ok) {
+      console.error("❌ API Error:", {
+        status: res.status,
+        statusText: res.statusText,
+        message: result?.message,
+        error: result?.error
       });
+      throw new Error(result?.message || `HTTP ${res.status}: Gagal update status`);
+    }
 
-      if (!res.ok) throw new Error("Gagal update status");
+    console.log("✅ Update success:", result);
 
-      const updated =
-        newStatus === "CANCELED" ? OrderStatus.CANCELED : OrderStatus.COMPLETED;
-      setCurrentStatus(updated);
+    const updated = newStatus === "CANCELED" ? OrderStatus.CANCELED : OrderStatus.COMPLETED;
+    setCurrentStatus(updated);
 
+    // Tutup popup sebelum redirect
+    setOpenCancelPopup(false);
+
+    // Redirect setelah update berhasil
+    setTimeout(() => {
       if (updated === OrderStatus.CANCELED) {
         router.push("/profil/riwayat-transaksi/transaksi-dibatalkan");
       } else if (updated === OrderStatus.COMPLETED) {
         router.push("/profil/riwayat-transaksi/transaksi-selesai");
       }
-    } catch (err) {
-      console.error(err);
-      alert("Terjadi kesalahan saat mengubah status pesanan");
-    } finally {
-      setLoading(false);
-      setOpenCancelPopup(false);
-      setOpenConfirm(false);
-    }
-  };
+    }, 100);
+    
+  } catch (err: any) {
+    console.error("❌ Update failed:", err);
+    alert(err.message || "Terjadi kesalahan saat mengubah status pesanan");
+    setOpenCancelPopup(false);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleCancelOrder = () => updateOrderStatus("CANCELED");
   const handleCompleteOrder = () => updateOrderStatus("COMPLETED");
@@ -110,13 +154,19 @@ const CardOrder: React.FC<CardOrderProps> = ({
         return (
           <div className="mt-3 flex justify-end gap-2 sm:gap-3">
             <button
-              onClick={() => setOpenCancelPopup(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenCancelPopup(true);
+              }}
               className="rounded-[10px] sm:rounded-[13px] bg-red-100 text-red-500 px-3 sm:px-4 py-1 text-[11px] sm:text-[12px] font-semibold hover:bg-red-200 transition-all"
             >
               Batalkan pesanan
             </button>
             <button
-              onClick={() => setOpenConfirm(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onShowDetail?.()
+              }}
               className="rounded-[10px] sm:rounded-[13px] bg-green-600 text-white px-3 sm:px-4 py-1 text-[11px] sm:text-[12px] font-semibold hover:bg-green-700 transition-all"
             >
               Lihat detail
@@ -127,14 +177,20 @@ const CardOrder: React.FC<CardOrderProps> = ({
         return (
           <div className="mt-3 flex justify-end gap-2 sm:gap-3">
             <button
-              onClick={handleCompleteOrder}
+              onClick={(e) => {
+                e.stopPropagation(); 
+                handleCompleteOrder();
+              }}
               disabled={loading}
               className="rounded-[10px] sm:rounded-[13px] bg-green-100 text-green-600 px-3 sm:px-4 py-1 text-[11px] sm:text-[12px] font-semibold hover:bg-green-200 transition-all disabled:opacity-70"
             >
               {loading ? "Memproses..." : "Selesaikan pesanan"}
             </button>
             <button
-              onClick={() => setOpenConfirm(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onShowDetail?.()
+              }}
               className="rounded-[10px] sm:rounded-[13px] bg-green-600 text-white px-3 sm:px-4 py-1 text-[11px] sm:text-[12px] font-semibold hover:bg-green-700 transition-all"
             >
               Lihat detail
@@ -145,7 +201,23 @@ const CardOrder: React.FC<CardOrderProps> = ({
         return (
           <div className="mt-3 text-right">
             <button
-              onClick={() => window.open(`/katalog/${products[0]?.id}`)}
+              onClick={(e) => {
+                e.stopPropagation(); 
+                window.open(`/katalog/${products[0]?.id}`);
+              }}
+              className="rounded-[10px] sm:rounded-[13px] bg-green-600 text-white px-3 sm:px-4 py-1 text-[11px] sm:text-[12px] font-semibold hover:bg-green-700 transition-all"
+            >
+              Beli lagi
+            </button>
+          </div>
+        );
+        return (
+          <div className="mt-3 text-right">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open(`/katalog/${products[0]?.id}`);
+              }}
               className="rounded-[10px] sm:rounded-[13px] bg-green-600 text-white px-3 sm:px-4 py-1 text-[11px] sm:text-[12px] font-semibold hover:bg-green-700 transition-all"
             >
               Beli lagi
@@ -183,53 +255,65 @@ const CardOrder: React.FC<CardOrderProps> = ({
         {/* Header nomor pesanan & status */}
         <div className="flex flex-wrap items-center justify-between mb-3 sm:mb-4">
           <div className="text-[10px] sm:text-[14px] font-bold text-[#1B1F1B] break-words max-w-[200px] sm:max-w-none">
-          No Pesanan : <span>#INV {orderNumber}</span>
-        </div>
+            No Pesanan : <span>#INV {orderNumber}</span>
+          </div>
           {renderStatus()}
         </div>
 
         {/* Produk */}
         <div className="space-y-2 sm:space-y-3">
-          {products.map((product: OrderProduct) => (
-            <div key={product.id} className="flex items-center gap-2 sm:gap-3">
-              <Image
-                src={product.image || "/placeholder.svg"}
-                alt={product.name}
-                width={50}
-                height={50}
-                className="h-[50px] w-[50px] sm:h-[58px] sm:w-[58px] rounded-md object-cover"
-              />
-              <div className="flex-1">
-                <div className="text-[12px] sm:text-[13px] font-medium text-black">
-                  {product.name}
+          {products.length > 0 ? (
+            products.map((product: OrderProduct) => (
+              <div key={product.id} className="flex items-center gap-2 sm:gap-3">
+                <Image
+                  src={product.image || "/placeholder.svg"}
+                  alt={product.name}
+                  width={50}
+                  height={50}
+                  className="h-[50px] w-[50px] sm:h-[58px] sm:w-[58px] rounded-md object-cover"
+                />
+                <div className="flex-1">
+                  <div className="text-[12px] sm:text-[13px] font-medium text-black">
+                    {product.name}
+                  </div>
+                  <div className="mt-1 text-[11px] sm:text-[12px] text-gray-500">
+                    Qty: x{product.qty}
+                  </div>
                 </div>
-                <div className="mt-1 text-[11px] sm:text-[12px] text-gray-500">
-                  Qty: x{product.qty}
-                </div>
-              </div>
 
-              {currentStatus === OrderStatus.COMPLETED ? (
-                <div className="flex flex-row gap-2 items-center">
-                  <button
-                    onClick={() => setOpenRating(product)}
-                    className="rounded-lg border border-green-600 text-green-600 px-3 py-1 text-[11px] sm:text-[12px] font-semibold hover:bg-green-50 transition-all"
-                  >
-                    Beri rating
-                  </button>
-                  <button
-                    onClick={() => router.push(`/katalog/${product.id}`)}
-                    className="rounded-lg bg-green-600 text-white px-3 py-1 text-[11px] sm:text-[12px] font-semibold hover:bg-green-700 transition-all"
-                  >
-                    Beli lagi
-                  </button>
-                </div>
-              ) : (
-                <div className="text-[13px] sm:text-[14px] font-medium text-black">
-                  {product.price}
-                </div>
-              )}
+                {currentStatus === OrderStatus.COMPLETED ? (
+                  <div className="flex flex-row gap-2 items-center">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation(); 
+                        setOpenRating(product);
+                      }}
+                      className="rounded-lg border border-green-600 text-green-600 px-3 py-1 text-[11px] sm:text-[12px] font-semibold hover:bg-green-50 transition-all"
+                    >
+                      Beri rating
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/katalog/${product.id}`);
+                      }}
+                      className="rounded-lg bg-green-600 text-white px-3 py-1 text-[11px] sm:text-[12px] font-semibold hover:bg-green-700 transition-all"
+                    >
+                      Beli lagi
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-[13px] sm:text-[14px] font-medium text-black">
+                    {product.price}
+                  </div>
+                )}
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-4 text-gray-500">
+              Tidak ada produk
             </div>
-          ))}
+          )}
         </div>
 
         <hr className="my-3 border-gray-200" />
@@ -267,23 +351,25 @@ const CardOrder: React.FC<CardOrderProps> = ({
                 No Pesanan:{" "}
                 <span className="text-green-700">#{orderNumber}</span>
               </p>
-              <div className="flex items-center gap-2 mt-2">
-                <Image
-                  src={products[0]?.image || "/placeholder.svg"}
-                  alt={products[0]?.name || "Produk"}
-                  width={40}
-                  height={40}
-                  className="rounded-md object-cover"
-                />
-                <div>
-                  <p className="text-xs text-gray-800">
-                    {products[0]?.name || "Nama produk"}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Qty: x{products[0]?.qty}
-                  </p>
+              {products.length > 0 && (
+                <div className="flex items-center gap-2 mt-2">
+                  <Image
+                    src={products[0]?.image || "/placeholder.svg"}
+                    alt={products[0]?.name || "Produk"}
+                    width={40}
+                    height={40}
+                    className="rounded-md object-cover"
+                  />
+                  <div>
+                    <p className="text-xs text-gray-800">
+                      {products[0]?.name || "Nama produk"}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Qty: x{products[0]?.qty}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             <div className="flex gap-3">
@@ -298,29 +384,11 @@ const CardOrder: React.FC<CardOrderProps> = ({
                 disabled={loading}
                 className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg h-10 transition disabled:opacity-70"
               >
-                {loading ? "Memproses..." : "Iya"}
+                {loading ? "Memproses..." : "Iya, Batalkan"}
               </button>
             </div>
           </div>
         </div>
-      )}
-
-      {/* Modal Detail Pesanan */}
-      {openConfirm && (
-        <OrderConfirm
-          open={openConfirm}
-          onClose={() => setOpenConfirm(false)}
-          status={currentStatus}
-          orderNumber={orderNumber}
-          products={products}
-          total={total}
-          paymentMethod={paymentMethod}
-          address={{
-            ...address,
-            utama: address.utama ?? false,
-          }}
-          contact={contact}
-        />
       )}
 
       {/* Form Rating */}
