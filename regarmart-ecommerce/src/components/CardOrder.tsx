@@ -268,7 +268,7 @@ const CardOrder: React.FC<CardOrderProps> = ({
       {/* Modal Konfirmasi Pembatalan */}
       {openCancelPopup && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white w-[90%] max-w-sm rounded-xl p-5 shadow-xl text-center">
+          <div className="bg-white w-[100%] max-w-sm rounded-xl p-5 shadow-xl text-center">
             <XCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
             <h2 className="text-lg font-bold text-gray-800 mb-1">
               Batalkan pesanan?
@@ -329,7 +329,10 @@ const CardOrder: React.FC<CardOrderProps> = ({
           products={products}
           total={total}
           paymentMethod={paymentMethod}
-          address={address}
+          address={{
+            ...address,
+            utama: address.utama ?? false,
+          }}
           contact={contact}
         />
       )}

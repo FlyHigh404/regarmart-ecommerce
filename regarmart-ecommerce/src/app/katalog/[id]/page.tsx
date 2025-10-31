@@ -20,6 +20,7 @@ import RatingSection from "@/components/RatingSection";
 import ReviewSection from "@/components/ReviewSection";
 import FormRating from "@/components/FormRating";
 import { useCart } from "@/context/CartContext";
+import { useRouter } from "next/navigation";
 
 // Toast Notification Component
 const Toast = ({
@@ -237,6 +238,7 @@ const calculateRatingStats = (ratings: Rating[]) => {
 const ProductDetailPage = () => {
   const params = useParams();
   const { data: session } = useSession();
+  const router = useRouter();
   const { incrementCart } = useCart();
 
   const [product, setProduct] = useState<Product | null>(null);
@@ -409,24 +411,24 @@ const ProductDetailPage = () => {
   };
 
   const handleBuyNow = () => {
-    if (!session) {
-      showLoginAlert();
-      return;
-    }
+  if (!session) {
+    showLoginAlert();
+    return;
+  }
 
-    if (session.user?.role === "ADMIN") {
-      setToast({
-        message: "Akun admin tidak dapat membeli produk.",
-        type: "error",
-      });
-      return;
-    }
-
+  if (session.user?.role === "ADMIN") {
     setToast({
-      message: "Fitur Beli Sekarang akan segera diarahkan ke checkout!",
-      type: "success",
+      message: "Akun admin tidak dapat membeli produk.",
+      type: "error",
     });
-  };
+    return;
+  }
+
+  // Arahkan langsung ke halaman checkout
+  router.push(
+    `/checkout?productId=${product?.id}&quantity=${quantity}`
+  );
+};
 
   const handleAddToCart = async () => {
     if (!session) {
