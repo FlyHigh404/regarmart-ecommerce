@@ -232,7 +232,7 @@ const Pengguna = () => {
                         <div className="flex items-center gap-2 ml-4">
                           <button
                             onClick={() => handlePreviewCustomer(customer)}
-                            className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-all duration-200"
+                            className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-all duration-200 cursor-pointer"
                             title="View"
                           >
                             <img src="/receipt-item.png" alt="View" className="" width="30"/>

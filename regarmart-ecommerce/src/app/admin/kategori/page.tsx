@@ -15,7 +15,7 @@ const Categories = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [error, setError] = useState("");
   const [categories, setCategories] = useState<
-    Array<{ id: string; name: string; description: string; imageUrl: string | null }>
+    Array<{ id: string; name: string; description: string; productCount: number }>
   >([]);
   const [editingCategory, setEditingCategory] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
@@ -193,6 +193,7 @@ const Categories = () => {
                       <p className="text-gray-600 text-xs mt-1 line-clamp-2">
                         {cat.description || "Tidak ada deskripsi"}
                       </p>
+                      <p>{cat.productCount}</p>
                     </div>
                     <div className="flex items-center gap-2 ml-3">
                       <button
@@ -200,7 +201,7 @@ const Categories = () => {
                           setEditingCategory(cat);
                           setShowEditModal(true);
                         }}
-                        className="p-2 text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-200"
+                        className="p-2 text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-200 cursor-pointer"
                         title="Edit"
                         disabled={isDeleting === cat.id}
                       >
@@ -208,7 +209,7 @@ const Categories = () => {
                       </button>
                       <button
                         onClick={() => handleDeleteClick(cat)}
-                        className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 disabled:opacity-50"
+                        className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 disabled:opacity-50 cursor-pointer"
                         title="Delete"
                         disabled={isDeleting === cat.id}
                       >
@@ -236,6 +237,9 @@ const Categories = () => {
                       DESKRIPSI
                     </th>
                     <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">
+                      JUMLAH PRODUK
+                    </th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">
                       TINDAKAN
                     </th>
                   </tr>
@@ -254,13 +258,16 @@ const Categories = () => {
                         <span className="text-gray-600 text-sm">{cat.description}</span>
                       </td>
                       <td className="py-5 px-6">
+                        <span className="text-gray-600 text-sm">{cat.productCount}</span>
+                      </td>
+                      <td className="py-5 px-6">
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => {
                               setEditingCategory(cat);
                               setShowEditModal(true);
                             }}
-                            className="p-2 text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-200"
+                            className="p-2 text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-200 cursor-pointer"
                             title="Edit"
                             disabled={isDeleting === cat.id}
                           >
@@ -268,7 +275,7 @@ const Categories = () => {
                           </button>
                           <button
                             onClick={() => handleDeleteClick(cat)}
-                            className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 disabled:opacity-50"
+                            className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 disabled:opacity-50 cursor-pointer"
                             title="Delete"
                             disabled={isDeleting === cat.id}
                           >

@@ -12,10 +12,19 @@ interface AdminLayoutProps {
   children: ReactNode;
 }
 
+interface AdminProfile {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+}
+
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [admin, setAdmin] = useState<AdminProfile | null>(null);
+
 
   useEffect(() => {
     const checkIsMobile = () => {
@@ -35,6 +44,19 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     }
   }, [isMobile]);
 
+  useEffect(() => {
+    const fetchAdminProfile = async () => {
+      try {
+        const res = await fetch("/api/admin/profile");
+        if (!res.ok) throw new Error("Failed to fetch admin profile");
+        const data: AdminProfile = await res.json();
+        setAdmin(data);
+      } catch (err) {
+        console.error("Error fetching admin profile:", err);
+      }
+    };
+    fetchAdminProfile();
+  }, []);
   return (
     <AuthCheck role="ADMIN">
       <div className="bg-gray-50 flex font-plusJakartaSans min-h-screen">
@@ -76,43 +98,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
 
           {/* Desktop Header */}
-          <div className="hidden lg:flex items-center justify-between px-6 py-8 bg-white shadow-sm">
-            {/* Left Section - Search Bar */}
-            {/* <div className="flex-1 max-w-3xl">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                <input
-                  type="text"
-                  placeholder="Cari Disini"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent focus:bg-white transition-all duration-200"
-                />
-              </div>
-            </div> */}
-
+          <div className="hidden lg:flex items-center justify-between px-12 py-8 bg-white shadow-sm">
             {/* Right Section - Notification & User Info */}
             <div className="flex items-center ml-210 space-x-6 mr-6">
-              {/* Notification */}
-              <div className="relative">
-                <Bell
-                  size={28} 
-                  className="text-gray-600 hover:text-orange-500 cursor-pointer transition-colors"
-                />
-                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-orange-500 rounded-full flex items-center justify-center">
-                  <span className="w-2 h-2 bg-white rounded-full"></span>
-                </span>
-              </div>
-               <div className="border-r border-gray-300 h-6" />
-
               {/* User Info */}
               <div className="flex items-center space-x-6">
                 <span className="text-base text-gray-600">
-                  Hello, <span className="font-semibold text-gray-800">Admin</span>
+                  Hello, <span className="font-semibold text-gray-800">{admin ? admin.name : "Loading..."}</span>
                 </span>
                 <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-green-200">
                   <img
-                    src="/icon.png"
+                    src={admin?.image || "/icon.png"}
                     alt="Admin Avatar"
                     className="w-full h-full object-cover"
                   />
@@ -122,26 +118,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
 
           {/* Mobile Header Bar */}
-          <div className="lg:hidden flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 p-3 sm:p-4 mb-4 sm:mb-6 bg-white shadow-sm">
-            {/* Mobile Notifikasi dan Avatar */}
-            <div className="flex items-center justify-center gap-65 sm:justify-end space-x-3 sm:space-x-4">
-              <div className="flex items-center space-x-3">
-                <div className="relative">
-                  <Bell
-                    size={20}
-                    className="text-gray-600 hover:text-orange-500 cursor-pointer transition-colors"
-                  />
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
-                </div>
-                <span className="text-sm sm:text-base font-medium text-gray-800 hidden sm:block">
-                  Hello, <span className="font-bold">Admin</span>
-                </span>
-              </div>
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-green-500 flex items-center justify-center text-white font-bold overflow-hidden">
+          <div className="lg:hidden flex items-center justify-end p-4 bg-white shadow-sm">
+            {/* Mobile User Info */}
+            <div className="flex items-center space-x-3">
+              <span className="text-sm font-medium text-gray-600">
+                Hello, <span className="font-bold text-gray-800">{admin ? admin.name : "Loading..."}</span>
+              </span>
+              <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-green-200 flex-shrink-0">
                 <img
-                  src="/icon.png"
+                  src={admin?.image || "/icon.png"}
                   alt="Admin Avatar"
-                  className="w-full h-full rounded-full object-cover"
+                  className="w-full h-full object-cover"
                 />
               </div>
             </div>

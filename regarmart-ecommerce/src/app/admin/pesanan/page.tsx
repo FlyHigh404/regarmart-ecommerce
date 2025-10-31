@@ -1,12 +1,11 @@
 "use client"
 import { useState, useEffect } from "react"
 import AdminLayout from "../AdminLayout"
-import { Search, Filter, ChevronDown, Eye, Calendar, DollarSign, User, Package } from "lucide-react"
+import { Eye, Package } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 export default function Pesanan() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [showFilter, setShowFilter] = useState(false)
   const [orders, setOrders] = useState<any[]>([])
   const [filterStatus, setFilterStatus] = useState("Semua")
   const router = useRouter()
@@ -242,7 +241,7 @@ export default function Pesanan() {
                         <div className="flex items-center gap-2 ml-3">
                           <button
                             onClick={() => handlePreviewOrder(order)}
-                            className="p-2 text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                            className="p-2 text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 cursor-pointer"
                             title="View"
                           >
                             <Eye size={16} />
