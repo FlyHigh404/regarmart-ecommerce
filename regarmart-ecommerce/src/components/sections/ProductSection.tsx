@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import Link from 'next/link';
 import { useCart } from "@/context/CartContext";
 
+// Toast Notification Component
 const Toast = ({
   message,
   type,
