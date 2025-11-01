@@ -1,3 +1,5 @@
+// api/admin/reply-review/route.ts
+
 import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
@@ -16,7 +18,7 @@ export async function POST(req: NextRequest) {
     // Cek review
     const review = await prisma.review.findUnique({
       where: { id: reviewId },
-      select: { id: true, userId: true }, // ambil userId dari review
+      select: { id: true, userId: true },
     });
 
     if (!review) {

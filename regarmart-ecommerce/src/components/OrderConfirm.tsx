@@ -11,7 +11,7 @@ import {
 } from "@/types/order";
 
 export interface Alamat {
-  id: string; 
+  id: string;
   nama: string;
   telp: string;
   alamat: string;
@@ -22,7 +22,7 @@ export interface OrderConfirmProps {
   orderNumber: string;
   status: OrderStatus;
   paymentMethod: PaymentMethod;
-  address: Alamat; 
+  address: Alamat;
   contact?: string;
   products: OrderProduct[];
   total: string;
@@ -34,7 +34,7 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
   orderNumber,
   status,
   paymentMethod,
-  address, 
+  address,
   products,
   total,
   open,
@@ -61,7 +61,7 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
     }
   };
 
-  const totalQty = products.reduce((acc, p) => acc + p.qty, 0);
+  const totalQty = products?.reduce((acc, p) => acc + p.qty, 0) || 0;
 
   const handleBeliLagi = () => {
     if (products.length > 0) {
@@ -139,9 +139,7 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
               </h2>
               <div className="flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-green-600" />
-                <p className="font-medium text-sm text-black">
-                  {address.nama}
-                </p>
+                <p className="font-medium text-sm text-black">{address.nama}</p>
                 {address.utama && (
                   <span className="bg-green-100 text-green-600 text-xs font-medium px-2.5 py-0.5 rounded-full">
                     Utama
@@ -159,9 +157,26 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
             </div>
           )}
 
+           {/* address={{
+            id: alamatAktif.id.toString(),
+            nama:
+              alamatAktif.recipientName ||
+              alamatAktif.nama ||
+              "Nama tidak tersedia",
+            telp:
+              alamatAktif.phoneNumber ||
+              alamatAktif.telp ||
+              "Telepon tidak tersedia",
+            alamat:
+              alamatAktif.fullAddress ||
+              alamatAktif.alamat ||
+              "Alamat tidak tersedia",
+            utama: alamatAktif.isPrimary || alamatAktif.utama || false,
+          }} */}
+
           {/* Produk */}
           <div className="py-4 border-t border-gray-200">
-            {(showAll ? products : products.slice(0, 1)).map((p) => (
+            {((products ?? [])).length > 0 && (showAll ? (products ?? []) : (products ?? []).slice(0, 1)).map((p) => (
               <div
                 key={p.id}
                 className="flex items-center justify-between border-b border-gray-100 py-2 last:border-none"
@@ -185,7 +200,7 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
               </div>
             ))}
 
-            {products.length > 1 && (
+            {(products ?? []).length > 1 && (
               <button
                 onClick={() => setShowAll(!showAll)}
                 className="text-green-600 text-sm font-medium mt-2"
@@ -204,70 +219,67 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
             <span className="font-bold text-black">{total}</span>
           </div>
 
-
-{status === OrderStatus.PROCESSING ? (
-  <>
-    {pathname.includes("/checkout") ? (
-      <>
-        {/* Tombol saat di halaman checkout */}
-        <button
-          onClick={() => router.push("/beranda")}
-          className="flex-1 bg-green-100 text-green-500 font-semibold rounded-lg h-10 w-[280px]"
-        >
-          Kembali ke Beranda
-        </button>
-        <button
-          onClick={() => router.push("/profil/riwayat-transaksi")}
-          className="flex-1 bg-[#26A81D] hover:bg-green-700 text-white font-semibold rounded-lg h-10 w-[280px] ml-3"
-        >
-          Riwayat Transaksi
-        </button>
-      </>
-    ) : pathname.includes("/profil/riwayat-transaksi") ? (
-      <>
-        {/* Tombol saat di halaman riwayat transaksi */}
-        <button
-           onClick={onClose}
-          className="w-full bg-[#26A81D] hover:bg-green-700 text-white font-semibold rounded-lg h-10"
-        >
-          Kembali
-        </button>
-      </>
-    ) : null}
-  </>
-) : status === OrderStatus.SHIPPED ? (
-  <div className="flex gap-3">
-    <button
-      disabled
-      className="flex-1 bg-green-100 text-green-500 font-semibold rounded-lg h-10"
-    >
-      Selesaikan Pesanan
-    </button>
-    <button
-      onClick={onClose}
-      className="flex-1 bg-[#26A81D] hover:bg-green-700 text-white font-semibold rounded-lg h-10"
-    >
-      Kembali
-    </button>
-  </div>
-) : (
-  <div className="flex gap-3">
-    <button
-      onClick={onClose}
-      className="flex-1 bg-green-100 text-green-500 font-semibold rounded-lg h-10"
-    >
-      Kembali
-    </button>
-    <button
-      onClick={handleBeliLagi}
-      className="flex-1 bg-[#26A81D] hover:bg-green-700 text-white font-semibold rounded-lg h-10"
-    >
-      Beli Lagi
-    </button>
-  </div>
-)}
-
-          
+          {status === OrderStatus.PROCESSING ? (
+            <>
+              {pathname.includes("/checkout") ? (
+                <>
+                  {/* Tombol saat di halaman checkout */}
+                  <button
+                    onClick={() => router.push("/beranda")}
+                    className="flex-1 bg-green-100 text-green-500 font-semibold rounded-lg h-10 w-[280px]"
+                  >
+                    Kembali ke Beranda
+                  </button>
+                  <button
+                    onClick={() => router.push("/profil/riwayat-transaksi")}
+                    className="flex-1 bg-[#26A81D] hover:bg-green-700 text-white font-semibold rounded-lg h-10 w-[280px] ml-3"
+                  >
+                    Riwayat Transaksi
+                  </button>
+                </>
+              ) : pathname.includes("/profil/riwayat-transaksi") ? (
+                <>
+                  {/* Tombol saat di halaman riwayat transaksi */}
+                  <button
+                    onClick={onClose}
+                    className="w-full bg-[#26A81D] hover:bg-green-700 text-white font-semibold rounded-lg h-10"
+                  >
+                    Kembali
+                  </button>
+                </>
+              ) : null}
+            </>
+          ) : status === OrderStatus.SHIPPED ? (
+            <div className="flex gap-3">
+              <button
+                disabled
+                className="flex-1 bg-green-100 text-green-500 font-semibold rounded-lg h-10"
+              >
+                Selesaikan Pesanan
+              </button>
+              <button
+                onClick={onClose}
+                className="flex-1 bg-[#26A81D] hover:bg-green-700 text-white font-semibold rounded-lg h-10"
+              >
+                Kembali
+              </button>
+            </div>
+          ) : (
+            <div className="flex gap-3">
+              <button
+                onClick={onClose}
+                className="flex-1 bg-green-100 text-green-500 font-semibold rounded-lg h-10"
+              >
+                Kembali
+              </button>
+              <button
+                onClick={handleBeliLagi}
+                className="flex-1 bg-[#26A81D] hover:bg-green-700 text-white font-semibold rounded-lg h-10"
+              >
+                Beli Lagi
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

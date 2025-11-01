@@ -1,3 +1,4 @@
+// components/KategoriSide.tsx
 "use client"
 import { useState } from "react"
 import { ChevronDown, ChevronUp, Star, SlidersHorizontal } from "lucide-react"
@@ -10,28 +11,63 @@ interface Category {
 interface KategoriSideProps {
   categories: Category[]
   onSelectCategory: (categoryId: string) => void
+  onApplyFilters?: (filters: any) => void // ✅ TAMBAHKAN INI OPTIONAL
 }
 
 export default function KategoriSide({
   categories,
   onSelectCategory,
+  onApplyFilters // ✅ TERIMA PROP INI
 }: KategoriSideProps) {
   const [openKategori, setOpenKategori] = useState(true)
   const [openHarga, setOpenHarga] = useState(true)
   const [openRating, setOpenRating] = useState(true)
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [selectedRatings, setSelectedRatings] = useState<number[]>([])
+  const [minPrice, setMinPrice] = useState<string>("")
+  const [maxPrice, setMaxPrice] = useState<string>("")
 
   const handleCategoryToggle = (categoryId: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId],
-    )
+    const newCategories = selectedCategories.includes(categoryId) 
+      ? selectedCategories.filter((id) => id !== categoryId)
+      : [...selectedCategories, categoryId]
+    
+    setSelectedCategories(newCategories)
     onSelectCategory(categoryId)
   }
 
   const handleRatingToggle = (rating: number) => {
-    setSelectedRatings((prev) => (prev.includes(rating) ? prev.filter((r) => r !== rating) : [...prev, rating]))
+    const newRatings = selectedRatings.includes(rating) 
+      ? selectedRatings.filter((r) => r !== rating)
+      : [...selectedRatings, rating]
+    
+    setSelectedRatings(newRatings)
   }
+
+  const handleApplyFilters = () => {
+    // ✅ JIKA ADA onApplyFilters, GUNAKAN
+    if (onApplyFilters) {
+      const filters = {
+        categories: selectedCategories,
+        minPrice: minPrice ? parseInt(minPrice) : null,
+        maxPrice: maxPrice ? parseInt(maxPrice) : null,
+        ratings: selectedRatings,
+      }
+      onApplyFilters(filters)
+    }
+  }
+
+  const formatPrice = (value: string) => {
+    return value.replace(/\D/g, "")
+  }
+
+  const displayPrice = (value: string) => {
+    if (!value) return ""
+    return parseInt(value).toLocaleString("id-ID")
+  }
+
+  // ✅ PERBAIKAN: FIX TYPESCRIPT ERROR DI DISABLED
+  const isInvalidPriceRange = minPrice && maxPrice && parseInt(minPrice) > parseInt(maxPrice)
 
   return (
     <div className="w-64 bg-white rounded-lg shadow-md p-4 space-y-4">
@@ -93,16 +129,30 @@ export default function KategoriSide({
         </button>
         {openHarga && (
           <div className="mt-3 space-y-2">
-            <input
-              type="number"
-              placeholder="Rp Minimum"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
-            />
-            <input
-              type="number"
-              placeholder="Rp Maksimal"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">Rp</span>
+              <input
+                type="text"
+                placeholder="Minimum"
+                value={displayPrice(minPrice)}
+                onChange={(e) => setMinPrice(formatPrice(e.target.value))}
+                className="w-full border border-gray-300 rounded-md pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
+              />
+            </div>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">Rp</span>
+              <input
+                type="text"
+                placeholder="Maksimal"
+                value={displayPrice(maxPrice)}
+                onChange={(e) => setMaxPrice(formatPrice(e.target.value))}
+                className="w-full border border-gray-300 rounded-md pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
+              />
+            </div>
+            
+            {minPrice && maxPrice && parseInt(minPrice) > parseInt(maxPrice) && (
+              <p className="text-red-500 text-xs mt-1">Harga minimum tidak boleh lebih besar dari maksimal</p>
+            )}
           </div>
         )}
       </div>
@@ -155,7 +205,11 @@ export default function KategoriSide({
       </div>
 
       {/* Apply Button */}
-      <button className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-full transition-colors duration-300">
+      <button 
+        onClick={handleApplyFilters}
+        disabled={!!isInvalidPriceRange} 
+        className="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-full transition-colors duration-300"
+      >
         Terapkan Filter
       </button>
     </div>

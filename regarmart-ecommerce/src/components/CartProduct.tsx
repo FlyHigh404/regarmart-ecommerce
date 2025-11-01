@@ -1,5 +1,5 @@
 "use client";
-import { LogIn, Plus, X } from "lucide-react";
+import { LogIn, Plus, X, Star } from "lucide-react";
 import Image from "next/image";
 import React, { useState } from "react";
 import { Product } from "@/types/product";
@@ -20,6 +20,40 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
   const { data: session } = useSession();
   const router = useRouter();
   const { incrementCart } = useCart();
+
+  // ✅ FUNGSI UNTUK MENAMPILKAN RATING SEDERHANA
+  const renderRating = () => {
+    // Handle undefined dengan lebih safe
+    const averageRating = (product as any).averageRating as number | undefined;
+    
+    // Jika tidak ada rating atau rating = 0, jangan tampilkan apa-apa
+    if (!averageRating || averageRating === 0) {
+      return null;
+    }
+
+    return (
+      <div className="flex items-center gap-1 mb-1">
+        {/* Bintang rating */}
+        <div className="flex items-center gap-0.5">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <Star
+              key={star}
+              className={`w-3 h-3 ${
+                star <= Math.floor(averageRating)
+                  ? "text-yellow-400 fill-yellow-400"
+                  : "text-gray-300"
+              }`}
+            />
+          ))}
+        </div>
+        
+        {/* Teks rating saja tanpa review count */}
+        <span className="text-xs text-gray-600">
+          {averageRating.toFixed(1)}
+        </span>
+      </div>
+    );
+  };
 
   const handleAddToCart = async (product: Product) => {
     if (!session) {
@@ -163,6 +197,9 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
             {product.name}{" "}
             <span className="font-normal text-gray-600 text-xs sm:text-sm">{product.weight}</span>
           </h4>
+
+          {/* ✅ RATING - TAMBAHKAN DI SINI */}
+          {renderRating()}
 
           {/* Stok */}
           <p className="text-gray-500 text-xs sm:text-sm lg:text-xs mb-1">

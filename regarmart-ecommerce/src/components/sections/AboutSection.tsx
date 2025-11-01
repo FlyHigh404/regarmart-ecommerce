@@ -62,11 +62,11 @@ export default function AboutSection() {
           </h1>
 
           <p
-            className="mt-4 md:mt-6 font-jakarta text-base md:text-[25px] font-light text-center md:text-left"
+            className="mt-4 md:mt-6 font-jakarta text-base md:text-[23px] font-light text-center md:text-left"
             style={{
-              color: "black",
+              color: "rgba(20, 20, 20, 0.7)",
               textShadow: "0 1px 4px rgba(0, 0, 0, 0.10)",
-            }}
+            }}
           >
             Regar Mart adalah oasis bagi mereka yang mencari kesegaran dan kualitas dalam setiap gigitan. Dengan
             sayuran segar dan sembako pilihan, kami menghidupkan rumah Anda dengan cinta dan dedikasi. Setiap produk
