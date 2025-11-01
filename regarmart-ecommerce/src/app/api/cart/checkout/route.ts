@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import midtransClient from "midtrans-client";
+import { stat } from "fs";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -110,6 +111,7 @@ export async function POST(req: Request) {
       await prisma.order.update({
         where: { id: order.id },
         data: { status: "PROCESSING" },
+        include: { orderItems: true },
       });
 
       return NextResponse.json({
@@ -118,6 +120,8 @@ export async function POST(req: Request) {
         paymentMethod: "COD",
         totalAmount: finalTotal,
         shippingCost: ONGKIR,
+        orderItems: order.orderItems,
+        status: "PROCESSING",
         message: "Order placed successfully with Cash on Delivery",
       });
     }

@@ -4,47 +4,20 @@ import { Alamat } from "@/types/alamat";
 export const transformOrder = (order: any, alamatAktif?: any, cartItems?: OrderProduct[]) => {
   console.log("Raw order data for transform:", order);
 
-  // HANDLE ORDER NUMBER UNTUK CHECKOUT RESPONSE
   const orderNumber = order.orderNumber || `${(order.id || order.orderId || '').slice(0, 8)}`;
 
-  // HANDLE PRODUCTS - prioritaskan data dari parameter cartItems
   let products: OrderProduct[] = [];
-  
-  // Priority 1: Data dari parameter cartItems (paling reliable)
-  if (cartItems && cartItems.length > 0) {
-    console.log("Using cart items from parameter:", cartItems);
-    products = cartItems;
-  }
-  // Priority 2: Data dari backend (jika ada)
-  else if (order.products && order.products.length > 0) {
-    console.log("Using products from order.products");
-    products = order.products;
-  }
-  else if (order.orderItems && order.orderItems.length > 0) {
-    console.log("Using products from order.orderItems");
-    products = order.orderItems.map((item: any) => ({
-      id: item.productId || item.id,
-      name: item.product?.name || "Produk tidak tersedia",
-      qty: Number(item.quantity) || 0,
-      price: `Rp${Number(item.unitPrice || 0).toLocaleString("id-ID")}`,
-      image: item.product?.imageUrl?.[0] || "/placeholder-product.png",
-    }));
-  }
-  else if (order.items && order.items.length > 0) {
-    console.log("Using products from order.items");
-    products = order.items.map((item: any) => ({
-      id: item.productId || item.id,
-      name: item.product?.name || item.name || "Produk tidak tersedia",
-      qty: Number(item.quantity || item.qty) || 0,
-      price: item.price || `Rp${Number(item.unitPrice || 0).toLocaleString("id-ID")}`,
-      image: item.product?.imageUrl?.[0] || item.image || "/placeholder-product.png",
-    }));
-  }
-  // Priority 3: Kosong (fallback)
-  else {
-    console.warn("No product data available in order response");
-    products = [];
-  }
+
+if (order.orderItems && order.orderItems.length > 0) {
+  console.log("Using products from order.orderItems");
+  products = order.orderItems.map((item: any) => ({
+    id: item.productId || item.id,
+    name: item.product?.name || "Produk",
+    qty: item.quantity || 0, // ← GUNAKAN 'qty' BUKAN 'quantity'
+    price: `Rp${Number(item.unitPrice || 0).toLocaleString("id-ID")}`,
+    image: item.product?.imageUrl?.[0] || "/placeholder-product.png",
+  }));
+}
 
   // HANDLE TOTAL
   const totalAmount = Number(order.totalAmount) || 0;
@@ -73,7 +46,7 @@ export const transformOrder = (order: any, alamatAktif?: any, cartItems?: OrderP
     resolvedAddress = order.shippingAddress;
   }
 
-  // Format alamat untuk display
+  // Format alamat 
   const formattedAddress = {
     id: resolvedAddress?.id || "",
     nama: resolvedAddress?.recipientName || resolvedAddress?.nama || "Nama tidak tersedia",

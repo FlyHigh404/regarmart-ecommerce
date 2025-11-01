@@ -520,7 +520,7 @@ const ProductDetailPage = () => {
     return (
       <>
         <NavSearch />
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="min-h-screen flex items-center justify-center  bg-gray-50">
           <div className="text-center">
             <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
             <p className="text-lg font-medium text-gray-900 mb-2">
@@ -552,7 +552,7 @@ const ProductDetailPage = () => {
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 py-6">
           {/* Product Detail Container */}
-          <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-8 mt-22">
+          <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-8 md:mt-22">
             {/* Back Button */}
             <div className="px-6 py-4 border-b border-gray-100">
               <button

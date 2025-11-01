@@ -1,4 +1,5 @@
 export interface Product {
+  averageRating?: number;
   id: string | number;
   imageUrl: string;
   name: string;

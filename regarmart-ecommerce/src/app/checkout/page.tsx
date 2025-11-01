@@ -122,6 +122,11 @@ const totalPembayaran = subtotal + ongkir - diskon;
     if (paymentMethod === PaymentMethod.COD) {
       const transformedOrder = transformOrder(result, alamatAktif);
       console.log("Transformed order:", transformedOrder);
+       console.log("=== ORDER CONFIRM DEBUG ===");
+  console.log("Transformed products:", transformedOrder.products);
+  console.log("First product structure:", transformedOrder.products[0]);
+  console.log("Product keys:", transformedOrder.products[0] && Object.keys(transformedOrder.products[0]));
+  console.log("=== END DEBUG ===");
       
       setOrder(transformedOrder);
       setOpenOrderConfirm(true);
@@ -308,7 +313,7 @@ const totalPembayaran = subtotal + ongkir - diskon;
                      <span>
                       Total harga ({totalQuantity} Produk)
                       </span>
-                    <span>Rp{totalAmount.toLocaleString("id-ID")}</span>
+                    <span>Rp{subtotal.toLocaleString("id-ID")}</span>
                   </div>
                   <div className="flex justify-between text-green-600">
                     <span>Potongan Diskon</span>
@@ -328,19 +333,19 @@ const totalPembayaran = subtotal + ongkir - diskon;
             </div>
 
             {/* 5. Tombol konfirmasi - mobile */}
-  <div className="md:hidden bg-white p-4 mt-3 sticky bottom-0 z-10 border-t border-gray-200 shadow-lg">
-    <button
-      onClick={processCheckout}
-      disabled={
-        processingCheckout ||
-        !order?.orderItems?.length ||
-        !alamatAktif
-      }
-      className="bg-green-600 hover:bg-green-700 text-white px-6 h-12 rounded-lg font-semibold w-full disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-    >
-      {processingCheckout ? "Memproses..." : "Konfirmasi Pesanan"}
-    </button>
-  </div>
+          <div className="md:hidden bg-white p-4 mt-3 sticky bottom-0 z-10 border-t border-gray-200 shadow-lg">
+            <button
+              onClick={processCheckout}
+              disabled={
+                processingCheckout ||
+                !order?.orderItems?.length ||
+                !alamatAktif
+              }
+              className="bg-green-600 hover:bg-green-700 text-white px-6 h-12 rounded-lg font-semibold w-full disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+            >
+              {processingCheckout ? "Memproses..." : "Konfirmasi Pesanan"}
+            </button>
+          </div>
 
             {/* Kolom Kanan - Desktop */}
             <div className="hidden md:block">

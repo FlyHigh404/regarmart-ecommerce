@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Filter, X, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
-import Navbar from "@/components/Navbar";
 import CartProduct from "@/components/CartProduct";
 import KategoriSide from "@/components/KategoriSide";
 import KategoriMobile from "@/components/KategoriMobile"; 
@@ -86,6 +85,11 @@ export default function KatalogPage() {
   const [categories, setCategories] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>(["all"]);
+  const [priceRange, setPriceRange] = useState<{
+    min: number | null;
+    max: number | null;
+  }>({ min: null, max: null });
+  const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
   const [scrolled, setScrolled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(false);
@@ -130,58 +134,201 @@ export default function KatalogPage() {
     fetchCategories();
   }, []);
 
-  // fetch produk
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoadingProducts(true);
-        const params = new URLSearchParams();
-        if (searchTerm) params.append("q", searchTerm);
+// fetch produk
+useEffect(() => {
+  const fetchProducts = async () => {
+    try {
+      setLoadingProducts(true);
+      const params = new URLSearchParams();
+      
+      // ✅ FILTER PENCARIAN
+      if (searchTerm) params.append("q", searchTerm);
 
-        const filtered = selectedCategories.filter((c) => c !== "all");
+      // ✅ FILTER KATEGORI
+      const filtered = selectedCategories.filter((c) => c !== "all");
+      if (filtered.length > 0) {
+        params.append("categoryId", filtered.join(","));
+      }
+
+      // ✅ FILTER HARGA (jika ada)
+      if (priceRange.min !== null) {
+        params.append("minPrice", priceRange.min.toString());
+      }
+      if (priceRange.max !== null) {
+        params.append("maxPrice", priceRange.max.toString());
+      }
+
+      // ✅ FILTER RATING (jika ada)
+      if (selectedRatings.length > 0) {
+        // Ambil rating tertinggi yang dipilih (misal: jika pilih 4+ dan 3+, ambil 3+ saja)
+        const minRating = Math.min(...selectedRatings);
+        params.append("minRating", minRating.toString());
+      }
+
+      params.append("page", currentPage.toString());
+      params.append("limit", itemsPerPage.toString());
+
+      console.log("Fetching with params:", params.toString());
+
+      const res = await fetch(`/api/products/search?${params.toString()}`);
+      if (!res.ok) throw new Error("Gagal memuat produk");
+      
+      const data = await res.json();
+
+      setProducts(data.data || []);
+      setTotalPages(data.meta?.totalPages || 1);
+      setTotalProducts(data.meta?.total || 0);
+      
+      // Show info toast when filter applied
+      if ((filtered.length > 0 || priceRange.min !== null || priceRange.max !== null || selectedRatings.length > 0) && currentPage === 1) {
+        let filterMessage = "Menampilkan produk dengan filter: ";
+        const filterParts = [];
+        
         if (filtered.length > 0) {
-          params.append("categoryId", filtered.join(","));
-        }
-
-        params.append("page", currentPage.toString());
-        params.append("limit", itemsPerPage.toString());
-
-        const res = await fetch(`/api/products/search?${params.toString()}`);
-        if (!res.ok) throw new Error("Gagal memuat produk");
-        
-        const data = await res.json();
-
-        setProducts(data.data || []);
-        setTotalPages(data.meta?.totalPages || 1);
-        setTotalProducts(data.meta?.total || 0);
-        
-        // Show info toast when filter applied
-        if (filtered.length > 0 && currentPage === 1) {
           const categoryNames = categories
             .filter(c => filtered.includes(c.id))
             .map(c => c.name)
             .join(", ");
-          setToast({
-            message: `Menampilkan produk dari: ${categoryNames}`,
-            type: 'info'
-          });
+          filterParts.push(`kategori ${categoryNames}`);
         }
-      } catch (err: any) {
-        console.error("Error fetching products:", err);
-        setError(err.message);
+        
+        if (priceRange.min !== null || priceRange.max !== null) {
+          const priceText = `harga ${priceRange.min ? `Rp${priceRange.min.toLocaleString()}` : ''}${priceRange.min && priceRange.max ? ' - ' : ''}${priceRange.max ? `Rp${priceRange.max.toLocaleString()}` : ''}`;
+          filterParts.push(priceText);
+        }
+        
+        if (selectedRatings.length > 0) {
+          const ratingText = `rating ${Math.min(...selectedRatings)}+`;
+          filterParts.push(ratingText);
+        }
+        
         setToast({
-          message: "Gagal memuat produk",
-          type: 'error'
+          message: filterMessage + filterParts.join(", "),
+          type: 'info'
         });
-      } finally {
-        setLoadingProducts(false);
       }
-    };
-    
-    if (!loading) {
-      fetchProducts();
+    } catch (err: any) {
+      console.error("Error fetching products:", err);
+      setError(err.message);
+      setToast({
+        message: "Gagal memuat produk",
+        type: 'error'
+      });
+    } finally {
+      setLoadingProducts(false);
     }
-  }, [searchTerm, selectedCategories, currentPage, loading]);
+  };
+  
+  if (!loading) {
+    fetchProducts();
+  }
+}, [searchTerm, selectedCategories, currentPage, loading, priceRange, selectedRatings]);
+
+//   // fetch produk
+// useEffect(() => {
+//   const fetchProducts = async () => {
+//     try {
+//       setLoadingProducts(true);
+//       const params = new URLSearchParams();
+//       if (searchTerm) params.append("q", searchTerm);
+
+//       const filtered = selectedCategories.filter((c) => c !== "all");
+//       if (filtered.length > 0) {
+//         params.append("categoryId", filtered.join(","));
+//       }
+
+//       params.append("page", currentPage.toString());
+//       params.append("limit", itemsPerPage.toString());
+
+//       const res = await fetch(`/api/products/search?${params.toString()}`);
+//       if (!res.ok) throw new Error("Gagal memuat produk");
+      
+//       const data = await res.json();
+
+//       setProducts(data.data || []);
+//       setTotalPages(data.meta?.totalPages || 1);
+//       setTotalProducts(data.meta?.total || 0);
+      
+//       // Show info toast when filter applied
+//       if (filtered.length > 0 && currentPage === 1) {
+//         const categoryNames = categories
+//           .filter(c => filtered.includes(c.id))
+//           .map(c => c.name)
+//           .join(", ");
+//         setToast({
+//           message: `Menampilkan produk dari: ${categoryNames}`,
+//           type: 'info'
+//         });
+//       }
+//     } catch (err: any) {
+//       console.error("Error fetching products:", err);
+//       setError(err.message);
+//       setToast({
+//         message: "Gagal memuat produk",
+//         type: 'error'
+//       });
+//     } finally {
+//       setLoadingProducts(false);
+//     }
+//   };
+  
+//   if (!loading) {
+//     fetchProducts();
+//   }
+// }, [searchTerm, selectedCategories, currentPage, loading]); 
+
+  // fetch produk
+  // useEffect(() => {
+  //   const fetchProducts = async () => {
+  //     try {
+  //       setLoadingProducts(true);
+  //       const params = new URLSearchParams();
+  //       if (searchTerm) params.append("q", searchTerm);
+
+  //       const filtered = selectedCategories.filter((c) => c !== "all");
+  //       if (filtered.length > 0) {
+  //         params.append("categoryId", filtered.join(","));
+  //       }
+
+  //       params.append("page", currentPage.toString());
+  //       params.append("limit", itemsPerPage.toString());
+
+  //       const res = await fetch(`/api/products/search?${params.toString()}`);
+  //       if (!res.ok) throw new Error("Gagal memuat produk");
+        
+  //       const data = await res.json();
+
+  //       setProducts(data.data || []);
+  //       setTotalPages(data.meta?.totalPages || 1);
+  //       setTotalProducts(data.meta?.total || 0);
+        
+  //       // Show info toast when filter applied
+  //       if (filtered.length > 0 && currentPage === 1) {
+  //         const categoryNames = categories
+  //           .filter(c => filtered.includes(c.id))
+  //           .map(c => c.name)
+  //           .join(", ");
+  //         setToast({
+  //           message: `Menampilkan produk dari: ${categoryNames}`,
+  //           type: 'info'
+  //         });
+  //       }
+  //     } catch (err: any) {
+  //       console.error("Error fetching products:", err);
+  //       setError(err.message);
+  //       setToast({
+  //         message: "Gagal memuat produk",
+  //         type: 'error'
+  //       });
+  //     } finally {
+  //       setLoadingProducts(false);
+  //     }
+  //   };
+    
+  //   if (!loading) {
+  //     fetchProducts();
+  //   }
+  // }, [searchTerm, selectedCategories, currentPage, loading]);
 
   // efek scroll
   useEffect(() => {
@@ -199,6 +346,35 @@ export default function KatalogPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleApplyFilters = (filters: any) => {
+  console.log('Filters applied:', filters);
+
+
+  //harga
+  if (filters.minPrice !== null || filters.maxPrice !== null) {
+    setPriceRange({
+      min: filters.minPrice,
+      max: filters.maxPrice
+    });
+  }
+  
+  //rating
+  if (filters.ratings && filters.ratings.length > 0) {
+    setSelectedRatings(filters.ratings);
+  }
+  
+  //kategori
+  if (filters.categories && filters.categories.length > 0) {
+    setSelectedCategories(filters.categories);
+  }
+  
+  setCurrentPage(1);
+  setToast({
+    message: "Filter diterapkan",
+    type: 'success'
+  });
+};
+
   // Handle page change
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -209,6 +385,8 @@ export default function KatalogPage() {
   const handleResetFilters = () => {
     setSelectedCategories(["all"]);
     setSearchTerm("");
+    setPriceRange({ min: null, max: null }); 
+    setSelectedRatings([]);
     setCurrentPage(1);
     setToast({
       message: "Filter direset",
@@ -247,6 +425,7 @@ export default function KatalogPage() {
               <KategoriSide
                 categories={categories}
                 onSelectCategory={handleCategorySelect}
+                onApplyFilters={handleApplyFilters} 
               />
             )}
           </div>
@@ -282,7 +461,7 @@ export default function KatalogPage() {
             </button>
 
             {/* Reset Filters Button */}
-            {selectedCategories[0] !== "all" && (
+            {(selectedCategories[0] !== "all" || searchTerm || priceRange.min !== null || priceRange.max !== null || selectedRatings.length > 0) && (
               <button
                 onClick={handleResetFilters}
                 className="text-sm text-gray-600 hover:text-green-600 font-medium transition-colors"
