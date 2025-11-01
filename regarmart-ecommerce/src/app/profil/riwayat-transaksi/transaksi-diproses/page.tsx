@@ -83,6 +83,7 @@ export default function TransaksiDiprosesPage() {
             <div key={order.orderNumber || index}>
               <CardOrder
                 index={index}
+                orderId={order.id}
                 orderNumber={order.orderNumber}
                 status={order.status}
                 total={order.total}

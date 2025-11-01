@@ -8,16 +8,16 @@ export const transformOrder = (order: any, alamatAktif?: any, cartItems?: OrderP
 
   let products: OrderProduct[] = [];
 
-if (order.orderItems && order.orderItems.length > 0) {
-  console.log("Using products from order.orderItems");
-  products = order.orderItems.map((item: any) => ({
-    id: item.productId || item.id,
-    name: item.product?.name || "Produk",
-    qty: item.quantity || 0, // ← GUNAKAN 'qty' BUKAN 'quantity'
-    price: `Rp${Number(item.unitPrice || 0).toLocaleString("id-ID")}`,
-    image: item.product?.imageUrl?.[0] || "/placeholder-product.png",
-  }));
-}
+  if (order.orderItems && order.orderItems.length > 0) {
+    console.log("Using products from order.orderItems");
+    products = order.orderItems.map((item: any) => ({
+      id: item.productId || item.id,
+      name: item.product?.name || "Produk",
+      qty: item.quantity || 0,
+      price: `Rp${Number(item.unitPrice || 0).toLocaleString("id-ID")}`,
+      image: item.product?.imageUrl?.[0] || "/placeholder-product.png",
+    }));
+  }
 
   // HANDLE TOTAL
   const totalAmount = Number(order.totalAmount) || 0;
@@ -60,7 +60,9 @@ if (order.orderItems && order.orderItems.length > 0) {
   const contactPhone = resolvedAddress?.phoneNumber || resolvedAddress?.telp || "";
   const contact = `${contactName} | ${contactPhone}`.trim();
 
+  // ✅ PERBAIKAN: Sertakan ID order asli
   return {
+    id: order.id, // ← INI YANG DIBUTUHKAN
     orderNumber: orderNumber,
     status: order.status || "PROCESSING",
     total: order.total || `Rp${calculatedTotal.toLocaleString("id-ID")}`,

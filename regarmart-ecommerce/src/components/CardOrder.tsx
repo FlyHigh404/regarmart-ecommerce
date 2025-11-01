@@ -9,6 +9,7 @@ import { OrderStatus, PaymentMethod, OrderProduct } from "@/types/order";
 
 interface CardOrderProps {
   index: number;
+  orderId: string;
   orderNumber: string;
   status: OrderStatus;
   total: string;
@@ -22,6 +23,7 @@ interface CardOrderProps {
 
 const CardOrder: React.FC<CardOrderProps> = ({
   index,
+  orderId,
   orderNumber,
   status,
   total,
@@ -41,78 +43,75 @@ const CardOrder: React.FC<CardOrderProps> = ({
   const [currentStatus, setCurrentStatus] = useState(status);
 
   // ✅ PERBAIKAN: Fungsi update order status yang benar
- const updateOrderStatus = async (newStatus: "CANCELED" | "COMPLETED") => {
-  try {
-    setLoading(true);
-    
-    // Extract ID dari orderNumber
-    const orderId = orderNumber.replace('#INV-', '');
-    
-    console.log("🔄 Updating order status:", { 
-      orderId, 
-      newStatus,
-      orderNumber,
-      endpoint: `/api/profile/order/${orderId}`
-    });
-    
-    const res = await fetch(`/api/profile/order/${orderId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: newStatus }),
-    });
-
-    console.log("📡 Response status:", res.status);
-    console.log("📡 Response ok:", res.ok);
-
-    // Try to get response text first for debugging
-    const responseText = await res.text();
-    console.log("📡 Raw response:", responseText);
-
-    let result;
+  const updateOrderStatus = async (newStatus: "CANCELED" | "COMPLETED") => {
     try {
-      result = JSON.parse(responseText);
-      console.log("📡 Parsed response:", result);
-    } catch (parseError) {
-      console.error("❌ JSON parse error:", parseError);
-      console.log("📡 Response was:", responseText.substring(0, 200));
-      throw new Error("Response tidak valid dari server");
-    }
+      setLoading(true);
 
-    if (!res.ok) {
-      console.error("❌ API Error:", {
-        status: res.status,
-        statusText: res.statusText,
-        message: result?.message,
-        error: result?.error
+      console.log("🔄 Updating order status:", {
+        orderId,
+        newStatus,
+        orderNumber,
+        endpoint: `/api/profile/order/${orderId}`
       });
-      throw new Error(result?.message || `HTTP ${res.status}: Gagal update status`);
-    }
 
-    console.log("✅ Update success:", result);
+      const res = await fetch(`/api/profile/order/${orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
 
-    const updated = newStatus === "CANCELED" ? OrderStatus.CANCELED : OrderStatus.COMPLETED;
-    setCurrentStatus(updated);
+      console.log("📡 Response status:", res.status);
+      console.log("📡 Response ok:", res.ok);
 
-    // Tutup popup sebelum redirect
-    setOpenCancelPopup(false);
+      // Try to get response text first for debugging
+      const responseText = await res.text();
+      console.log("📡 Raw response:", responseText);
 
-    // Redirect setelah update berhasil
-    setTimeout(() => {
-      if (updated === OrderStatus.CANCELED) {
-        router.push("/profil/riwayat-transaksi/transaksi-dibatalkan");
-      } else if (updated === OrderStatus.COMPLETED) {
-        router.push("/profil/riwayat-transaksi/transaksi-selesai");
+      let result;
+      try {
+        result = JSON.parse(responseText);
+        console.log("📡 Parsed response:", result);
+      } catch (parseError) {
+        console.error("❌ JSON parse error:", parseError);
+        console.log("📡 Response was:", responseText.substring(0, 200));
+        throw new Error("Response tidak valid dari server");
       }
-    }, 100);
-    
-  } catch (err: any) {
-    console.error("❌ Update failed:", err);
-    alert(err.message || "Terjadi kesalahan saat mengubah status pesanan");
-    setOpenCancelPopup(false);
-  } finally {
-    setLoading(false);
-  }
-};
+
+      if (!res.ok) {
+        console.error("❌ API Error:", {
+          status: res.status,
+          statusText: res.statusText,
+          message: result?.message,
+          error: result?.error
+        });
+        throw new Error(result?.message || `HTTP ${res.status}: Gagal update status`);
+      }
+
+      console.log("✅ Update success:", result);
+
+      const updated = newStatus === "CANCELED" ? OrderStatus.CANCELED : OrderStatus.COMPLETED;
+      setCurrentStatus(updated);
+
+      // Tutup popup sebelum redirect
+      setOpenCancelPopup(false);
+
+      // Redirect setelah update berhasil
+      setTimeout(() => {
+        if (updated === OrderStatus.CANCELED) {
+          router.push("/profil/riwayat-transaksi/transaksi-dibatalkan");
+        } else if (updated === OrderStatus.COMPLETED) {
+          router.push("/profil/riwayat-transaksi/transaksi-selesai");
+        }
+      }, 100);
+
+    } catch (err: any) {
+      console.error("❌ Update failed:", err);
+      alert(err.message || "Terjadi kesalahan saat mengubah status pesanan");
+      setOpenCancelPopup(false);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCancelOrder = () => updateOrderStatus("CANCELED");
   const handleCompleteOrder = () => updateOrderStatus("COMPLETED");
@@ -178,7 +177,7 @@ const CardOrder: React.FC<CardOrderProps> = ({
           <div className="mt-3 flex justify-end gap-2 sm:gap-3">
             <button
               onClick={(e) => {
-                e.stopPropagation(); 
+                e.stopPropagation();
                 handleCompleteOrder();
               }}
               disabled={loading}
@@ -202,7 +201,7 @@ const CardOrder: React.FC<CardOrderProps> = ({
           <div className="mt-3 text-right">
             <button
               onClick={(e) => {
-                e.stopPropagation(); 
+                e.stopPropagation();
                 window.open(`/katalog/${products[0]?.id}`);
               }}
               className="rounded-[10px] sm:rounded-[13px] bg-green-600 text-white px-3 sm:px-4 py-1 text-[11px] sm:text-[12px] font-semibold hover:bg-green-700 transition-all"
@@ -285,7 +284,7 @@ const CardOrder: React.FC<CardOrderProps> = ({
                   <div className="flex flex-row gap-2 items-center">
                     <button
                       onClick={(e) => {
-                        e.stopPropagation(); 
+                        e.stopPropagation();
                         setOpenRating(product);
                       }}
                       className="rounded-lg border border-green-600 text-green-600 px-3 py-1 text-[11px] sm:text-[12px] font-semibold hover:bg-green-50 transition-all"
@@ -336,7 +335,7 @@ const CardOrder: React.FC<CardOrderProps> = ({
 
       {/* Popup Pembatalan */}
       {openCancelPopup && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-3">
+        <div className="fixed inset-0 flex items-center justify-center bg-transparent backdrop-blur-2xl z-50 p-3">
           <div className="bg-white w-full max-w-sm rounded-xl p-5 shadow-xl text-center">
             <XCircle className="w-10 h-10 sm:w-12 sm:h-12 text-red-500 mx-auto mb-3" />
             <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-1">
