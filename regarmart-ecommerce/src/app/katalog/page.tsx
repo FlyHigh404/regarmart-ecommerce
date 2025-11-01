@@ -553,6 +553,7 @@ useEffect(() => {
             setSelectedCategories(["all"]);
             setCurrentPage(1);
           }}
+          onApplyFilters={handleApplyFilters} 
         />
       )}
 
