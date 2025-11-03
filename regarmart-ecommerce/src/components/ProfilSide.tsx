@@ -11,10 +11,9 @@ const navItems = [
     name: "Riwayat Transaksi",
     href: "/profil/riwayat-transaksi",
     icon: FileText,
-    children: ["/profil/riwayat-transaksi/transaksi-diproses", "/profil/riwayat-transaksi/transaksi-dikirim","/profil/riwayat-transaksi/transaksi-selesai","/profil/riwayat-transaksi/transaksi-dibatalkan",],
+    children: ["/profil/riwayat-transaksi/transaksi-diproses", "/profil/riwayat-transaksi/transaksi-dikirim", "/profil/riwayat-transaksi/transaksi-selesai", "/profil/riwayat-transaksi/transaksi-dibatalkan",],
   },
   { name: "Ubah Password", href: "/profil/ubah-password", icon: Lock },
-  { name: "Tema", href: "/profil/tema", icon: Palette },
 ]
 
 interface ProfilSideProps {
@@ -41,11 +40,10 @@ export default function ProfilSide({ onItemClick }: ProfilSideProps) {
                 <Link href={item.href}>
                   <div
                     onClick={onItemClick}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all relative ${
-                      isActive
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all relative ${isActive
                         ? "bg-green-100 text-green-700 font-medium"
                         : "text-gray-700 hover:bg-gray-50"
-                    }`}
+                      }`}
                   >
                     <Icon className={`w-5 h-5 ${isActive ? "text-green-700" : "text-gray-600"}`} />
                     <span className="text-sm font-medium">{item.name}</span>
@@ -59,9 +57,9 @@ export default function ProfilSide({ onItemClick }: ProfilSideProps) {
               signOut({ callbackUrl: "/" })
               onItemClick?.()
             }}
-            className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-gray-700 font-medium"
+            className="group flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-gray-700 font-medium hover:bg-gray-100 hover:text-red-600 cursor-pointer"
           >
-            <LogOut className="w-5 h-5 text-gray-700" />
+            <LogOut className="w-5 h-5 text-gray-700 group-hover:text-red-600 transition-colors" />
             <span className="text-sm font-medium">Log Out</span>
           </button>
         </nav>
@@ -69,3 +67,4 @@ export default function ProfilSide({ onItemClick }: ProfilSideProps) {
     </div>
   )
 }
+
