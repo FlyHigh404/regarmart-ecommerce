@@ -8,6 +8,7 @@ interface KategoriMobileProps {
   onClose: () => void;
   onChangeCategories: (selected: string[]) => void;
   onReset: () => void;
+  onApplyFilters?: (filters: any) => void; // ✅ TAMBAHKAN INI
 }
 
 export default function KategoriMobile({
@@ -16,12 +17,32 @@ export default function KategoriMobile({
   onClose,
   onChangeCategories,
   onReset,
+  onApplyFilters, // ✅ TERIMA PROP INI
 }: KategoriMobileProps) {
-  const [selectedRating, setSelectedRating] = useState<string | null>(null);
+  const [selectedRatings, setSelectedRatings] = useState<number[]>([]); // ✅ UBAH KE ARRAY
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
 
-  // Toggle kategori multi-select
+  // ✅ FUNGSI FORMAT HARGA SAMA DENGAN KATEGORI SIDE
+  const formatPrice = (value: string) => {
+    return value.replace(/\D/g, "");
+  };
+
+  const displayPrice = (value: string) => {
+    if (!value) return "";
+    return parseInt(value).toLocaleString("id-ID");
+  };
+
+  // ✅ TOGGLE RATING MULTI-SELECT (SAMA DENGAN KATEGORI SIDE)
+  const handleRatingToggle = (rating: number) => {
+    const newRatings = selectedRatings.includes(rating) 
+      ? selectedRatings.filter((r) => r !== rating)
+      : [...selectedRatings, rating];
+    
+    setSelectedRatings(newRatings);
+  };
+
+  // ✅ TOGGLE KATEGORI MULTI-SELECT
   const toggleCategory = (id: string) => {
     if (selectedCategories.includes(id)) {
       onChangeCategories(selectedCategories.filter((c) => c !== id));
@@ -29,6 +50,31 @@ export default function KategoriMobile({
       onChangeCategories([...selectedCategories, id]);
     }
   };
+
+  // ✅ FUNGSI TERAPKAN FILTER (SAMA DENGAN KATEGORI SIDE)
+  const handleApplyFilters = () => {
+    if (onApplyFilters) {
+      const filters = {
+        categories: selectedCategories,
+        minPrice: minPrice ? parseInt(minPrice) : null,
+        maxPrice: maxPrice ? parseInt(maxPrice) : null,
+        ratings: selectedRatings,
+      };
+      onApplyFilters(filters);
+    }
+    onClose(); // Tutup modal setelah apply
+  };
+
+  // ✅ FUNGSI RESET LENGKAP (SAMA DENGAN KATEGORI SIDE)
+  const handleResetAll = () => {
+    onReset();
+    setSelectedRatings([]);
+    setMinPrice("");
+    setMaxPrice("");
+  };
+
+  // ✅ VALIDASI HARGA SAMA DENGAN KATEGORI SIDE
+  const isInvalidPriceRange = minPrice && maxPrice && parseInt(minPrice) > parseInt(maxPrice);
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-end sm:hidden z-50">
@@ -44,60 +90,81 @@ export default function KategoriMobile({
           </button>
         </div>
 
-        {/* Rating */}
+        {/* Rating - DIUBAH MENJADI MULTI-SELECT CHECKBOX */}
         <div className="mb-6">
           <h3 className="text-base font-medium mb-3">Rating</h3>
-          <div className="flex gap-3">
-            {["4 ke atas", "3 ke atas"].map((label, idx) => {
-              const value = idx === 0 ? "4" : "3";
-              const active = selectedRating === value;
-              return (
-                <button
-                  key={value}
-                  onClick={() => setSelectedRating(active ? null : value)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${
-                    active
-                      ? "border-green-500 bg-green-50 text-green-600"
-                      : "border-gray-300 text-gray-700"
-                  }`}
+          <div className="space-y-2">
+            {[4, 3, 2, 1].map((rating) => (
+              <div key={rating} className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id={`mobile-rating-${rating}`}
+                  checked={selectedRatings.includes(rating)}
+                  onChange={() => handleRatingToggle(rating)}
+                  className="
+                    w-5 h-5 
+                    appearance-none
+                    rounded-md
+                    border border-black
+                    cursor-pointer
+                    transition-all
+                    checked:bg-[#6EC568]
+                    checked:border-[#6EC568]
+                    relative
+                    after:content-['✓']
+                    after:absolute
+                    after:text-white
+                    after:text-sm
+                    after:font-bold
+                    after:top-[0px]
+                    after:left-[4px]
+                  "
+                />
+                <label 
+                  htmlFor={`mobile-rating-${rating}`} 
+                  className="flex items-center gap-2 text-sm cursor-pointer"
                 >
                   <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                  {label}
-                </button>
-              );
-            })}
+                  {rating} ke atas
+                </label>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Batas Harga */}
+        {/* Batas Harga - DIUBAH FORMAT INPUT SAMA DENGAN KATEGORI SIDE */}
         <div className="mb-6">
           <h3 className="text-base font-medium mb-3">Batas Harga</h3>
-          <div className="flex items-center gap-3">
-            <div className="flex-1 flex items-center border rounded-lg px-3 py-2">
-              <span className="text-gray-400 mr-2">Rp</span>
+          <div className="space-y-2">
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">Rp</span>
               <input
-                type="number"
+                type="text"
                 placeholder="Minimum"
-                value={minPrice}
-                onChange={(e) => setMinPrice(e.target.value)}
-                className="w-full outline-none"
+                value={displayPrice(minPrice)}
+                onChange={(e) => setMinPrice(formatPrice(e.target.value))}
+                className="w-full border border-gray-300 rounded-lg pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
               />
             </div>
-            <span className="text-gray-400">-</span>
-            <div className="flex-1 flex items-center border rounded-lg px-3 py-2">
-              <span className="text-gray-400 mr-2">Rp</span>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">Rp</span>
               <input
-                type="number"
+                type="text"
                 placeholder="Maksimal"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(e.target.value)}
-                className="w-full outline-none"
+                value={displayPrice(maxPrice)}
+                onChange={(e) => setMaxPrice(formatPrice(e.target.value))}
+                className="w-full border border-gray-300 rounded-lg pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
               />
             </div>
+            
+            {/* Error message sama dengan KategoriSide */}
+            {minPrice && maxPrice && parseInt(minPrice) > parseInt(maxPrice) && (
+              <p className="text-red-500 text-xs mt-1">Harga minimum tidak boleh lebih besar dari maksimal</p>
+            )}
           </div>
         </div>
 
-        {/* Kategori */}
+        {/* Kategori - TETAP SAMA DESAINNYA */}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-base font-medium">Kategori</h3>
@@ -125,23 +192,22 @@ export default function KategoriMobile({
           </div>
         </div>
 
-        {/* Tombol Aksi */}
+        {/* Tombol Aksi - DIUBAH LOGIKANYA */}
         <div className="mt-6 flex gap-3">
           <button
-            onClick={() => {
-              onReset();
-              setSelectedRating(null);
-              setMinPrice("");
-              setMaxPrice("");
-              onClose();
-            }}
+            onClick={handleResetAll}
             className="flex-1 py-3 rounded-xl border border-green-200 bg-green-50 text-green-600 font-medium"
           >
             Reset
           </button>
           <button
-            onClick={onClose}
-            className="flex-1 py-3 rounded-xl bg-green-500 text-white font-medium"
+            onClick={handleApplyFilters}
+            disabled={!!isInvalidPriceRange}
+            className={`flex-1 py-3 rounded-xl font-medium transition-colors ${
+              isInvalidPriceRange
+                ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                : "bg-green-500 hover:bg-green-600 text-white"
+            }`}
           >
             Terapkan
           </button>

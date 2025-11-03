@@ -7,42 +7,58 @@ interface SalesData {
   sales: number;
 }
 
-const salesDataBulan: SalesData[] = [
-  { month: 'Jan', sales: 45, year: 2025 },
-  { month: 'Feb', sales: 65, year: 2025 },
-  { month: 'Mar', sales: 80, year: 2025 },
-  { month: 'Apr', sales: 75, year: 2025 },
-  { month: 'May', sales: 110, year: 2025 },
-  { month: 'Jun', sales: 155, year: 2025 },
-  { month: 'Jul', sales: 140, year: 2025 },
-  { month: 'Aug', sales: 122, year: 2025 },
-  { month: 'Sep', sales: 90, year: 2025 },
-  { month: 'Oct', sales: 145, year: 2025 },
-  { month: 'Nov', sales: 185, year: 2025 },
-  { month: 'Dec', sales: 148, year: 2025 },
-];
+interface GrafikProps {
+  salesData: SalesData[];
+  filterAktif: 'bulan' | 'minggu';
+  onFilterChange: (filter: 'bulan' | 'minggu') => void;
+}
 
-const salesDataMinggu: SalesData[] = [
-  { day: 'Sen', sales: 20, year: 2025 },
-  { day: 'Sel', sales: 35, year: 2025 },
-  { day: 'Rab', sales: 50, year: 2025 },
-  { day: 'Kam', sales: 30, year: 2025 },
-  { day: 'Jum', sales: 45, year: 2025 },
-  { day: 'Sab', sales: 60, year: 2025 },
-  { day: 'Min', sales: 40, year: 2025 },
-];
-
-const Grafik: React.FC = () => {
+const Grafik: React.FC<GrafikProps> = ({ 
+  salesData = [], 
+  filterAktif, 
+  onFilterChange 
+}) => {
   const [activeBarIndex, setActiveBarIndex] = useState<number | null>(null);
-  const [filterAktif, setFilterAktif] = useState<'bulan' | 'minggu'>('bulan');
 
-  const maxSales = 240;
-  const yAxisLabels = [240, 200, 160, 120, 80, 40, 0];
+  // Cari nilai maksimum untuk skala Y-axis dan kali 2 agar tooltip terlihat
+  const actualMaxSales = Math.max(...salesData.map(data => data.sales), 100000);
+  const maxSales = actualMaxSales * 2;
+  
+  // Format angka ke Rupiah
+  const formatRupiah = (value: number) => {
+    if (value >= 1000000) {
+      return `${(value / 1000000).toFixed(1)}Jt`;
+    } else if (value >= 1000) {
+      return `${(value / 1000).toFixed(0)}Rb`;
+    }
+    return value.toString();
+  };
 
-  const dataTampil = filterAktif === 'bulan' ? salesDataBulan : salesDataMinggu;
+  // Format angka lengkap untuk tooltip
+  const formatRupiahFull = (value: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value);
+  };
+
+  // Generate Y-axis labels berdasarkan max sales
+  const generateYAxisLabels = () => {
+    const labels = [];
+    const steps = 6;
+    for (let i = 0; i <= steps; i++) {
+      labels.push(Math.round((maxSales / steps) * (steps - i)));
+    }
+    return labels;
+  };
+
+  const yAxisLabels = generateYAxisLabels();
+  const dataTampil = salesData;
   
   // Hitung min-width berdasarkan jumlah data
-  const minChartWidth = dataTampil.length * 60; // 60px per bar (48px bar + 12px gap)
+  const minChartWidth = dataTampil.length * 60;
 
   return (
     <div className="bg-white p-4 md:p-6 rounded-lg shadow-sm max-w-6xl mx-auto font-sans">
@@ -56,7 +72,7 @@ const Grafik: React.FC = () => {
                 ? 'bg-white text-gray-800 shadow-sm' 
                 : 'text-gray-500 hover:text-gray-700'
             }`}
-            onClick={() => setFilterAktif('bulan')}
+            onClick={() => onFilterChange('bulan')}
           >
             Bulan
           </button>
@@ -66,22 +82,22 @@ const Grafik: React.FC = () => {
                 ? 'bg-white text-gray-800 shadow-sm' 
                 : 'text-gray-500 hover:text-gray-700'
             }`}
-            onClick={() => setFilterAktif('minggu')}
+            onClick={() => onFilterChange('minggu')}
           >
             Minggu
           </button>
         </div>
       </div>
       
-      {/* Chart Container - dengan scroll horizontal di mobile */}
+      {/* Chart Container */}
       <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
         <div className="flex" style={{ minWidth: `${minChartWidth + 64}px` }}>
-          {/* Y-Axis Labels - Tanpa sticky */}
+          {/* Y-Axis Labels */}
           <div className="w-16 flex-shrink-0 pr-2 bg-white">
             <div className="h-64 md:h-72 flex flex-col justify-between text-right">
-              {yAxisLabels.map((label) => (
-                <div key={label} className="text-xs text-gray-500 -mt-2 first:mt-0">
-                  Rp{label}Jt
+              {yAxisLabels.map((label, index) => (
+                <div key={`${label}-${index}`} className="text-xs text-gray-500 -mt-2 first:mt-0">
+                  {formatRupiah(label)}
                 </div>
               ))}
             </div>
@@ -91,38 +107,39 @@ const Grafik: React.FC = () => {
           <div className="flex-1">
             {/* Chart Area */}
             <div className="relative" style={{ minWidth: `${minChartWidth}px` }}>
-              {/* Horizontal Grid Lines */}
-              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
-                {yAxisLabels.map((label, index) => (
-                  <div 
-                    key={label} 
-                    className={`border-t ${index === yAxisLabels.length - 1 ? 'border-gray-400' : 'border-gray-200'}`}
-                  />
-                ))}
-              </div>
+              {/* Bottom border line only */}
+              <div className="absolute bottom-0 left-0 right-0 border-b border-gray-300"></div>
 
               {/* Bars Container */}
               <div className="h-64 md:h-72 flex items-end justify-around gap-2 px-2 relative z-10">
                 {dataTampil.map((data, index) => {
-                  const barHeight = (data.sales / maxSales) * 100;
+                  const barHeight = maxSales > 0 ? (data.sales / maxSales) * 100 : 0;
+                  const hasData = data.sales > 0;
+                  
                   return (
                     <div
-                      key={data.month || data.day}
+                      key={data.month || data.day || index}
                       className="relative w-12 flex flex-col items-center h-full justify-end group"
                     >
                       {/* Tooltip */}
                       {activeBarIndex === index && (
                         <div 
                           className="absolute left-1/2 -translate-x-1/2 bg-gray-800 text-white rounded-lg px-3 py-2 shadow-lg whitespace-nowrap z-20 pointer-events-none"
-                          style={{ bottom: `calc(${barHeight}% + 12px)` }}
+                          style={{ 
+                            bottom: hasData ? `calc(${barHeight}% + 12px)` : '12px',
+                            minWidth: '180px'
+                          }}
                         >
                           <div className="text-xs">
                             <div className="flex items-center gap-1 mb-1">
                               <span className="w-2 h-2 rounded-full bg-green-400"></span>
-                              <span>{data.month || data.day}, {data.year}</span>
+                              <span className="font-semibold">{data.month || data.day} {data.year}</span>
                             </div>
-                            <div>
-                              Penjualan: <span className="font-bold">Rp{data.sales}Jt</span>
+                            <div className="text-left">
+                              Total Penjualan:
+                            </div>
+                            <div className="font-bold text-sm text-green-400">
+                              {formatRupiahFull(data.sales)}
                             </div>
                           </div>
                           <div className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 bg-gray-800 rotate-45"></div>
@@ -131,8 +148,15 @@ const Grafik: React.FC = () => {
                       
                       {/* Bar */}
                       <div 
-                        className="w-full bg-green-400 rounded-t hover:bg-green-500 transition-all cursor-pointer"
-                        style={{ height: `${barHeight}%` }}
+                        className={`w-full rounded-t transition-all cursor-pointer ${
+                          hasData 
+                            ? 'bg-green-400 hover:bg-green-500' 
+                            : 'bg-gray-200 hover:bg-gray-300'
+                        }`}
+                        style={{ 
+                          height: hasData ? `${barHeight}%` : '4px',
+                          minHeight: '4px'
+                        }}
                         onMouseEnter={() => setActiveBarIndex(index)}
                         onMouseLeave={() => setActiveBarIndex(null)}
                         onTouchStart={() => setActiveBarIndex(index)}
@@ -145,8 +169,8 @@ const Grafik: React.FC = () => {
 
             {/* X-Axis Labels */}
             <div className="flex justify-around text-xs text-gray-500 px-2 mt-2" style={{ minWidth: `${minChartWidth}px` }}>
-              {dataTampil.map((data) => (
-                <div key={data.month || data.day} className="w-12 text-center">
+              {dataTampil.map((data, index) => (
+                <div key={data.month || data.day || index} className="w-12 text-center">
                   {data.month || data.day}
                 </div>
               ))}

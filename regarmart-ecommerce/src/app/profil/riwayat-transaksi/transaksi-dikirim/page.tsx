@@ -1,57 +1,116 @@
-"use client";
-import { useEffect, useState } from "react";
-import TabRiwayat from "@/components/TabRiwayat";
+"use client"
 import CardOrder from "@/components/CardOrder";
-import { OrderStatus } from "@/types/order";
+import OrderConfirm from "@/components/OrderConfirm";
+import TabRiwayat from "@/components/TabRiwayat";
 import { transformOrder } from "@/lib/transformOrder";
+import { OrderStatus } from "@prisma/client";
+import { useEffect, useState } from "react";
 
 export default function TransaksiDikirimPage() {
   const [orders, setOrders] = useState<any[]>([]);
+  const [alamatAktif, setAlamatAktif] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [openOrderConfirm, setOpenOrderConfirm] = useState(false);
 
   useEffect(() => {
-    const fetchOrders = async () => {
+    const fetchData = async () => {
       try {
-        setIsLoading(true);
-        const res = await fetch("/api/profile/riwayat-transaksi", { cache: "no-store" });
-        if (!res.ok) throw new Error("Gagal fetch data");
-        const data = await res.json();
+        const [ordersRes, addressRes] = await Promise.all([
+          fetch("/api/profile/riwayat-transaksi", { cache: "no-store" }),
+          fetch("/api/profile/address-primary", { cache: "no-store" }) 
+        ]);
 
-        const filtered = data
-          .filter((o: any) => o.status === OrderStatus.SHIPPED)
-          .map(transformOrder);
+        if (!ordersRes.ok || !addressRes.ok) {
+          throw new Error("Failed to fetch data");
+        }
 
-        setOrders(filtered);
-      } catch (err) {
-        console.error(err);
+        const ordersData = await ordersRes.json();
+        const addressData = await addressRes.json();
+
+        const filtered = ordersData.filter((o: any) => o.status === OrderStatus.SHIPPED);
+        const transformedOrders = filtered.map((order: any) => 
+          transformOrder(order, addressData)
+        );
+
+        setOrders(transformedOrders);
+        setAlamatAktif(addressData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        const ordersRes = await fetch("/api/profile/riwayat-transaksi", { cache: "no-store" });
+        const ordersData = await ordersRes.json();
+        const filtered = ordersData.filter((o: any) => o.status === OrderStatus.SHIPPED);
+        const transformedOrders = filtered.map((order: any) => transformOrder(order));
+        setOrders(transformedOrders);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchOrders();
+    
+    fetchData();
   }, []);
 
-  return (
-    <div className="w-full md:w-[756.65px] rounded-[15px] bg-white p-4 md:p-8 font-jakarta"
-         style={{ boxShadow: "6px 6px 54px 0 rgba(0, 0, 0, 0.05)" }}>
-      <TabRiwayat />
-      {isLoading ? (
-        <div className="p-4 text-center text-gray-500">
-          <svg className="animate-spin h-5 w-5 mr-3 inline text-green-500" viewBox="0 0 24 24"></svg>
-          Memuat data pesanan...
+  const handleShowOrderConfirm = (order: any) => {
+    setSelectedOrder(order);
+    setOpenOrderConfirm(true);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-4xl bg-white p-4 font-jakarta rounded-[15px] shadow-md">
+        <TabRiwayat />
+        <div className="flex justify-center items-center py-8">
+          <p>Loading...</p>
         </div>
-      ) : orders.length === 0 ? (
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full max-w-4xl bg-white p-4 font-jakarta rounded-[15px] shadow-md">
+      <TabRiwayat />
+      
+      {orders.length === 0 ? (
         <div className="p-4 text-center">
           <img src="/bgcart.png" alt="Kosong" className="mx-auto w-32 h-32 mb-2" />
           <h2 className="text-md font-semibold text-gray-800 mb-1">Tidak ada transaksi</h2>
           <p className="text-sm text-gray-500">Belum ada pesanan dikirim</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="p-4 space-y-4">
           {orders.map((order, index) => (
-            <CardOrder key={order.orderNumber} index={index} {...order} />
+            // ✅ HAPUS ONCLICK DARI SINI
+            <div key={order.orderNumber || index}>
+              <CardOrder
+                index={index}
+                orderId={order.id}
+                orderNumber={order.orderNumber}
+                status={order.status}
+                total={order.total}
+                products={order.products}
+                paymentMethod={order.paymentMethod}
+                address={order.address}
+                contact={order.contact}
+                dateCompleted={order.dateCompleted}
+                onShowDetail={() => handleShowOrderConfirm(order)} // ✅ TAMBAH PROP INI
+              />
+            </div>
           ))}
         </div>
+      )}
+
+      {selectedOrder && (
+        <OrderConfirm
+          open={openOrderConfirm}
+          onClose={() => setOpenOrderConfirm(false)}
+          orderNumber={selectedOrder.orderNumber} 
+          status={selectedOrder.status}
+          paymentMethod={selectedOrder.paymentMethod}
+          products={selectedOrder.products} 
+          total={selectedOrder.total}
+          address={selectedOrder.address} 
+          contact={selectedOrder.contact} 
+        />
       )}
     </div>
   );

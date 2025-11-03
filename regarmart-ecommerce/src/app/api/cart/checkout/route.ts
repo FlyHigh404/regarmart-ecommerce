@@ -140,6 +140,8 @@ export async function POST(req: Request) {
         paymentMethod: "COD",
         totalAmount: finalTotal,
         shippingCost: ONGKIR,
+        orderItems: order.orderItems,
+        status: "PROCESSING",
         message: "Order placed successfully with Cash on Delivery",
       });
     }

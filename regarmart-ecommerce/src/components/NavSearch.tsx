@@ -83,7 +83,7 @@ const NavSearch = () => {
         </form>
 
         {/* Right side */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2 md:gap-6 ">
           {/* Notifikasi */}
           {showIcons && <NotifikasiCust notificationCount={notificationCount} />}
 
@@ -148,7 +148,6 @@ const NavSearch = () => {
             </div>
           ) : (
             <div className="flex items-center gap-3">
-              {/* Login & Sign Up style sama persis kayak Navbar utama */}
               <Link
                 href="/auth/signin"
                 className="cursor-pointer font-medium text-sm transition-all duration-300 px-4 py-2 rounded-lg bg-gradient-to-r from-[#6EC568] to-[#26A81D] bg-clip-text text-transparent hover:opacity-80"
@@ -167,7 +166,7 @@ const NavSearch = () => {
       </nav>
 
       {/* Search (Mobile only) */}
-      <div className="mt-20 px-4 md:hidden">
+      <div className="sticky mt-24 px-4 md:hidden">
         <form onSubmit={handleSearchSubmit}>
           <div className="relative">
             <Search

@@ -61,7 +61,7 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
     }
   };
 
-  const totalQty = products.reduce((acc, p) => acc + p.qty, 0);
+  const totalQty = products?.reduce((acc, p) => acc + p.qty, 0) || 0;
 
   const handleBeliLagi = () => {
     if (products.length > 0) {
@@ -157,9 +157,26 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
             </div>
           )}
 
+           {/* address={{
+            id: alamatAktif.id.toString(),
+            nama:
+              alamatAktif.recipientName ||
+              alamatAktif.nama ||
+              "Nama tidak tersedia",
+            telp:
+              alamatAktif.phoneNumber ||
+              alamatAktif.telp ||
+              "Telepon tidak tersedia",
+            alamat:
+              alamatAktif.fullAddress ||
+              alamatAktif.alamat ||
+              "Alamat tidak tersedia",
+            utama: alamatAktif.isPrimary || alamatAktif.utama || false,
+          }} */}
+
           {/* Produk */}
           <div className="py-4 border-t border-gray-200">
-            {(showAll ? products : products.slice(0, 1)).map((p) => (
+            {((products ?? [])).length > 0 && (showAll ? (products ?? []) : (products ?? []).slice(0, 1)).map((p) => (
               <div
                 key={p.id}
                 className="flex items-center justify-between border-b border-gray-100 py-2 last:border-none"
@@ -183,7 +200,7 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
               </div>
             ))}
 
-            {products.length > 1 && (
+            {(products ?? []).length > 1 && (
               <button
                 onClick={() => setShowAll(!showAll)}
                 className="text-green-600 text-sm font-medium mt-2"

@@ -104,7 +104,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               {/* User Info */}
               <div className="flex items-center space-x-6">
                 <span className="text-base text-gray-600">
-                  Hello, <span className="font-semibold text-gray-800">{admin ? admin.name : "Loading..."}</span>
+                  Hello, <span className="font-semibold text-gray-800"> {admin ? admin.name : "Admin"}</span>
                 </span>
                 <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-green-200">
                   <img
@@ -122,7 +122,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             {/* Mobile User Info */}
             <div className="flex items-center space-x-3">
               <span className="text-sm font-medium text-gray-600">
-                Hello, <span className="font-bold text-gray-800">{admin ? admin.name : "Loading..."}</span>
+                Hello, <span className="font-bold text-gray-800"> {admin ? admin.name : "Admin"}</span>
               </span>
               <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-green-200 flex-shrink-0">
                 <img
