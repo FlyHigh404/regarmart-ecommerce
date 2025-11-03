@@ -162,6 +162,7 @@ const CartPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [deletingItems, setDeletingItems] = useState<string[]>([]);
   const [updatingItems, setUpdatingItems] = useState<string[]>([]);
+  const [orderData, setOrderData] = useState<any>(null);
 
 
   // Confirmation modal state
@@ -240,6 +241,7 @@ const CartPage = () => {
 
         if (response.ok) {
           // Mengupdate cartItems dengan data yang diterima dari API
+          setOrderData(data);
           const orderItems = data.orderItems || [];
           const formattedItems = orderItems.map((item: any) => ({
             id: item.id,
@@ -746,7 +748,7 @@ const CartPage = () => {
                       deletingItems.length > 0 ||
                       updatingItems.length > 0
                     }
-                    onClick={() => router.push("/checkout")}
+                    onClick={() => router.push(`/checkout?orderId=${orderData.id}`)}
                     className="w-full bg-[#26A81D] hover:bg-[#1A7F16] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-2 md:py-2.5 rounded-lg text-xs md:text-sm transition-colors flex items-center justify-center gap-2"
                   >
                     {deletingItems.length > 0 || updatingItems.length > 0 ? (

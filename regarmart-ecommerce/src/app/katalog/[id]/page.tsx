@@ -283,11 +283,14 @@ const ProductDetailPage = () => {
         setProduct(productData);
 
         // Fetch reviews dan ratings secara parallel
-        const [reviewsResponse, ratingsResponse, productRelatedResponse] = await Promise.all([
-          fetch(`/api/products/${productId}/reviews`),
-          fetch(`/api/products/${productId}/ratings`),
-          fetch(`/api/products/${productId}/produk-terkait?categoryId=${productData.categoryId}`)
-        ]);
+        const [reviewsResponse, ratingsResponse, productRelatedResponse] =
+          await Promise.all([
+            fetch(`/api/products/${productId}/reviews`),
+            fetch(`/api/products/${productId}/ratings`),
+            fetch(
+              `/api/products/${productId}/produk-terkait?categoryId=${productData.categoryId}`
+            ),
+          ]);
 
         const relatedProductsData = await productRelatedResponse.json();
         setRelatedProducts(relatedProductsData);
@@ -415,25 +418,76 @@ const ProductDetailPage = () => {
     });
   };
 
-  const handleBuyNow = () => {
-  if (!session) {
-    showLoginAlert();
-    return;
-  }
+  const handleBuyNow = async () => {
+    if (!session) {
+      showLoginAlert();
+      return;
+    }
 
-  if (session.user?.role === "ADMIN") {
-    setToast({
-      message: "Akun admin tidak dapat membeli produk.",
-      type: "error",
-    });
-    return;
-  }
+    if (session.user?.role === "ADMIN") {
+      setToast({
+        message: "Akun admin tidak dapat membeli produk.",
+        type: "error",
+      });
+      return;
+    }
 
-  // Arahkan langsung ke halaman checkout
-  router.push(
-    `/checkout?productId=${product?.id}&quantity=${quantity}`
-  );
-};
+    if (!product) {
+      setToast({
+        message: "Produk tidak ditemukan.",
+        type: "error",
+      });
+      return;
+    }
+
+    if (product.stock < quantity) {
+      setToast({
+        message: "Stok produk tidak mencukupi.",
+        type: "error",
+      });
+      return;
+    }
+
+    try {
+      setAddingToCart(true);
+
+      // 🔥 Panggil API order (langsung bikin order + order item)
+      const response = await fetch("/api/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: product.id,
+          quantity,
+          unitPrice: product.price,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Gagal membuat pesanan.");
+      }
+
+      // ✅ Order berhasil dibuat → redirect ke halaman checkout
+      setToast({
+        message: "Pesanan berhasil dibuat! Mengarahkan ke checkout...",
+        type: "success",
+      });
+
+      // Tunggu sedikit sebelum redirect biar UX lebih halus
+      setTimeout(() => {
+        router.push(`/checkout?orderId=${result.id}`);
+      }, 1000);
+    } catch (error: any) {
+      console.error("Error creating order:", error);
+      setToast({
+        message: error.message || "Terjadi kesalahan saat membuat pesanan.",
+        type: "error",
+      });
+    } finally {
+      setAddingToCart(false);
+    }
+  };
 
   const handleAddToCart = async () => {
     if (!session) {
@@ -728,48 +782,48 @@ const ProductDetailPage = () => {
           </div>
 
           {/* Related Products */}
-            <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-8">
+          <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-8">
             <div className="px-6 py-6 border-b border-gray-100">
               <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">
-                Produk Terkait
-              </h2>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Produk Terkait
+                </h2>
               </div>
             </div>
             <div className="p-6">
               {RelatedProducts.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {RelatedProducts.map((relatedProduct) => (
-                <a 
-                  key={relatedProduct.id}
-                  href={`/katalog/${relatedProduct.id}`}
-                  className="group block bg-white rounded-lg overflow-hidden border border-gray-200 hover:shadow-md transition-shadow"
-                >
-                  <div className="aspect-square bg-gray-50 relative">
-                  <img
-                    src={relatedProduct.imageUrl[0] || '/placeholder.svg'}
-                    alt={relatedProduct.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  </div>
-                  <div className="p-4">
-                  <h3 className="text-sm font-medium text-gray-900 line-clamp-2 mb-2">
-                    {relatedProduct.name}
-                  </h3>
-                  <p className="text-green-600 font-bold">
-                    {formatPrice(relatedProduct.price)}
-                  </p>
-                  </div>
-                </a>
-                ))}
-              </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {RelatedProducts.map((relatedProduct) => (
+                    <a
+                      key={relatedProduct.id}
+                      href={`/katalog/${relatedProduct.id}`}
+                      className="group block bg-white rounded-lg overflow-hidden border border-gray-200 hover:shadow-md transition-shadow"
+                    >
+                      <div className="aspect-square bg-gray-50 relative">
+                        <img
+                          src={relatedProduct.imageUrl[0] || "/placeholder.svg"}
+                          alt={relatedProduct.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                      <div className="p-4">
+                        <h3 className="text-sm font-medium text-gray-900 line-clamp-2 mb-2">
+                          {relatedProduct.name}
+                        </h3>
+                        <p className="text-green-600 font-bold">
+                          {formatPrice(relatedProduct.price)}
+                        </p>
+                      </div>
+                    </a>
+                  ))}
+                </div>
               ) : (
-              <p className="text-gray-500 text-center py-4">
-                Tidak ada produk terkait
-              </p>
+                <p className="text-gray-500 text-center py-4">
+                  Tidak ada produk terkait
+                </p>
               )}
             </div>
-            </div>
+          </div>
 
           {/* Rating Section */}
           <RatingSection

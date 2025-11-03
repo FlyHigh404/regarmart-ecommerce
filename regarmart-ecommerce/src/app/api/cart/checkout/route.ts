@@ -11,7 +11,16 @@ export async function POST(req: Request) {
   }
 
   try {
+    const url = new URL(req.url);
+    const orderId = url.searchParams.get("orderId"); // 🔥 ambil orderId dari query ?orderId=...
     const { paymentMethod } = await req.json();
+
+    if (!orderId) {
+      return NextResponse.json(
+        { error: "Order ID is required" },
+        { status: 400 }
+      );
+    }
 
     if (!paymentMethod) {
       return NextResponse.json(
@@ -20,55 +29,56 @@ export async function POST(req: Request) {
       );
     }
 
-    // Tambahkan timeout untuk query
-    const order = (await Promise.race([
-      prisma.order.findFirst({
-        where: {
-          userId: session.user.id,
-          status: "PENDING",
+    // 🔥 Ambil order spesifik
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        orderItems: {
+          include: { product: true },
         },
-        include: {
-          orderItems: {
-            include: { product: true },
-          },
-          user: true,
-        },
-      }),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Database timeout")), 8000)
-      ),
-    ])) as any;
+        user: true,
+      },
+    });
 
-    if (!order || order.orderItems.length === 0) {
+    if (!order || order.userId !== session.user.id) {
       return NextResponse.json(
-        { error: "No pending order found" },
+        { error: "Order not found or unauthorized" },
         { status: 404 }
       );
     }
 
-    // 🔥 PERBAIKAN: Hitung total dengan ongkir
+    if (order.status !== "PENDING") {
+      return NextResponse.json(
+        { error: "Order cannot be processed" },
+        { status: 400 }
+      );
+    }
+
+    // 🔥 Hitung ulang total dengan ongkir
     const ONGKIR = 20000;
     const productTotal = order.orderItems.reduce(
-      (sum: number, item: any) => sum + (Number(item.unitPrice) * item.quantity),
+      (sum: number, item: any) =>
+        sum + Number(item.unitPrice) * item.quantity,
       0
     );
     const finalTotal = productTotal + ONGKIR;
 
-    // Update order dengan payment method DAN total amount yang benar
-    const updatedOrder = await prisma.order.update({
+    // Update order total dan metode pembayaran
+    await prisma.order.update({
       where: { id: order.id },
       data: {
-        paymentMethod: paymentMethod,
-        totalAmount: finalTotal, // 🔥 Update total amount dengan ongkir
+        paymentMethod,
+        totalAmount: finalTotal,
       },
     });
 
+    // 🔥 Payment logic
     if (paymentMethod === "QRIS") {
       const parameter = {
         payment_type: "qris",
         transaction_details: {
-          order_id: order.id, // UUID dari Prisma, udah unik
-          gross_amount: finalTotal, // 🔥 Gunakan finalTotal yang sudah + ongkir
+          order_id: order.id,
+          gross_amount: finalTotal,
         },
         qris: { acquirer: "gopay" },
         customer_details: {
@@ -78,12 +88,13 @@ export async function POST(req: Request) {
         },
       };
 
-      // ⚡ Core API -> charge()
-      const midtransResponse = await new midtransClient.CoreApi({
+      const midtrans = new midtransClient.CoreApi({
         isProduction: false,
         serverKey: process.env.MIDTRANS_SERVER_KEY!,
         clientKey: process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY!,
-      }).charge(parameter);
+      });
+
+      const midtransResponse = await midtrans.charge(parameter);
 
       return NextResponse.json({
         success: true,
@@ -105,11 +116,22 @@ export async function POST(req: Request) {
         message:
           "QRIS payment initiated. Please scan the QR to complete the payment.",
       });
-    } else if (paymentMethod === "COD") {
-      // Untuk COD, update status
-      await prisma.order.update({
-        where: { id: order.id },
-        data: { status: "PROCESSING" },
+    }
+
+    // 🔥 COD logic (langsung kurangi stok)
+    if (paymentMethod === "COD") {
+      await prisma.$transaction(async (tx) => {
+        for (const item of order.orderItems) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: { stock: { decrement: item.quantity } },
+          });
+        }
+
+        await tx.order.update({
+          where: { id: order.id },
+          data: { status: "PROCESSING" },
+        });
       });
 
       return NextResponse.json({
@@ -128,14 +150,6 @@ export async function POST(req: Request) {
     );
   } catch (error: any) {
     console.error("Error processing checkout:", error);
-
-    if (error.message === "Database timeout") {
-      return NextResponse.json(
-        { error: "Database operation timed out. Please try again." },
-        { status: 408 }
-      );
-    }
-
     return NextResponse.json(
       { error: "Failed to process checkout" },
       { status: 500 }
