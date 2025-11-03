@@ -79,7 +79,7 @@ export default function RatingSection({
             isUserLoggedIn
               ? "bg-[#26A81D] hover:bg-green-600"
               : "bg-gray-400 cursor-not-allowed"
-          } text-white font-semibold text-[14px] tracking-[0.56px] rounded-md w-[140px] h-[38px] flex items-center justify-center transition-colors`}
+          } text-white font-semibold text-[14px] cursor-pointer tracking-[0.56px] rounded-md w-[140px] h-[38px] flex items-center justify-center transition-colors`}
         >
           Tulis ulasan
         </button>

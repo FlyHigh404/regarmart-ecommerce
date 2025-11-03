@@ -263,14 +263,14 @@ const NotifikasiCust: React.FC<NotifikasiCustProps> = ({ notificationCount: exte
                                 ))}
                             </div>
                             
-                            <div className="p-3 flex justify-center border-t border-gray-200 sticky bottom-0 bg-white z-10">
+                            <div className="p-3 flex justify-center border-t border-gray-200 sticky bottom-0 bg-white z-10 cursor-pointer">
                                 <button 
                                     onClick={handleMarkAllRead}
                                     disabled={notifications.length === 0}
                                     className={`text-sm font-semibold transition ${
                                         notifications.length === 0
                                         ? 'text-gray-400 cursor-not-allowed'
-                                        : 'text-green-600 hover:text-green-700'
+                                        : 'text-green-600 hover:text-green-700 cursor-pointer'
                                     }`}
                                 >
                                     Tandai semua sudah dibaca

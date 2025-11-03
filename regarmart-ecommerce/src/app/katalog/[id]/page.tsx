@@ -282,6 +282,8 @@ const ProductDetailPage = () => {
         const productData = await productResponse.json();
         setProduct(productData);
 
+        setQuantity(1);
+
         // Fetch reviews dan ratings secara parallel
         const [reviewsResponse, ratingsResponse, productRelatedResponse] = await Promise.all([
           fetch(`/api/products/${productId}/reviews`),
@@ -416,23 +418,17 @@ const ProductDetailPage = () => {
   };
 
   const handleBuyNow = () => {
-  if (!session) {
-    showLoginAlert();
-    return;
-  }
+    if (!product) return;
+    
+    // 2. Cek Otentikasi (Jika Belum Login)
+    if (!session?.user) {
+        router.push(`/auth/signin?callbackUrl=/products/${product.id}`);
+        return; // Hentikan fungsi
+    }
 
-  if (session.user?.role === "ADMIN") {
-    setToast({
-      message: "Akun admin tidak dapat membeli produk.",
-      type: "error",
-    });
-    return;
-  }
-
-  // Arahkan langsung ke halaman checkout
-  router.push(
-    `/checkout?productId=${product?.id}&quantity=${quantity}`
-  );
+    router.push(
+        `/checkout?directBuy=true&productId=${product.id}&qty=${quantity}`
+    );
 };
 
   const handleAddToCart = async () => {

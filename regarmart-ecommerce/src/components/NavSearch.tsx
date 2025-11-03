@@ -83,7 +83,7 @@ const NavSearch = () => {
         </form>
 
         {/* Right side */}
-        <div className="flex items-center gap-2 md:gap-6 ">
+        <div className="flex items-center gap-2 md:gap-6">
           {/* Notifikasi */}
           {showIcons && <NotifikasiCust notificationCount={notificationCount} />}
 
