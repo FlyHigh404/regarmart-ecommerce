@@ -16,6 +16,7 @@ const NavSearch = () => {
   const [notificationCount, setNotificationCount] = useState(0);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { cartCount, fetchCartCount } = useCart();
 
@@ -26,6 +27,25 @@ const NavSearch = () => {
       setNotificationCount(0);
     }
   }, [session, fetchCartCount]);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!session) return;
+      try {
+        const res = await fetch("/api/profile", { credentials: "include" });
+        if (!res.ok) {
+          console.warn("Profile fetch failed:", res.status);
+          return;
+        }
+        const data = await res.json();
+        if (data?.image) setProfileImage(data.image);
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      }
+    };
+
+    fetchProfile();
+  }, [session]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -58,7 +78,7 @@ const NavSearch = () => {
     <>
       <nav className="fixed top-0 left-0 w-full h-20 bg-white shadow z-50 px-6 flex items-center justify-between">
         {/* Logo */}
-        <a href="/" className="flex items-center gap-2">
+        <a href="/" className="flex items-center gap-2 ml-22">
           <img src="/Logo.png" alt="Logo" className="h-12 w-auto" />
         </a>
 
@@ -95,55 +115,72 @@ const NavSearch = () => {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-all duration-200"
               >
-                <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-r from-green-500 to-green-700 p-[1px]">
-                  {session.user?.image ? (
-                    <img
-                      src={session.user.image}
-                      alt="Profile"
-                      className="w-full h-full rounded-full object-cover bg-white"
-                    />
-                  ) : (
-                    <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
-                      <User className="w-4 h-4 text-gray-600" />
-                    </div>
-                  )}
+                <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-gray-100">
+                  <img
+                    src={profileImage || session.user?.image || "/default-avatar.png"}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <span className="text-sm font-medium text-gray-700 max-w-[120px] truncate hidden sm:block">
                   {session.user?.name || "User"}
                 </span>
                 <ChevronDown
-                  className={`w-4 h-4 text-gray-600 transition-transform ${
+                  className={`w-4 h-4 text-gray-500 transition-transform duration-200 hidden sm:block ${
                     isProfileDropdownOpen ? "rotate-180" : ""
-                  } hidden sm:block`}
+                  }`}
                 />
               </button>
 
-              {/* Dropdown */}
+              {/* Modern Minimalist Dropdown */}
               <div
-                className={`absolute right-0 mt-2 w-56 bg-white shadow-lg rounded-xl border border-gray-100 transition-all duration-200 ${
+                className={`absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden transition-all duration-200 ${
                   isProfileDropdownOpen
-                    ? "opacity-100 visible"
-                    : "opacity-0 invisible"
+                    ? "opacity-100 visible translate-y-0"
+                    : "opacity-0 invisible -translate-y-2 pointer-events-none"
                 }`}
-                style={{ zIndex: 60 }}
               >
-                <button
-                  onClick={() => {
-                    router.push("/profil");
-                    setIsProfileDropdownOpen(false);
-                  }}
-                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                >
-                  <User className="w-4 h-4" /> Profil
-                </button>
-                <button
-                  onClick={handleSignOut}
-                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                >
-                  <LogOut className="w-4 h-4" /> Log out
-                </button>
+                {/* Profile Info */}
+                <div className="px-4 py-3 bg-gradient-to-br from-green-50 to-gray-50">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={profileImage || session.user?.image || "/default-avatar.png"}
+                      alt="Profile"
+                      className="w-10 h-10 rounded-full object-cover ring-2 ring-white"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 truncate">
+                        {session.user?.name}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {session.user?.email}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Menu Items */}
+                <div className="py-1">
+                  <button
+                    onClick={() => {
+                      setIsProfileDropdownOpen(false);
+                      router.push("/profil");
+                    }}
+                    className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors"
+                  >
+                    <User className="w-4 h-4 text-gray-400" />
+                    <span>Profil Saya</span>
+                  </button>
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Keluar</span>
+                  </button>
+                </div>
               </div>
             </div>
           ) : (
@@ -152,13 +189,13 @@ const NavSearch = () => {
                 href="/auth/signin"
                 className="cursor-pointer font-medium text-sm transition-all duration-300 px-4 py-2 rounded-lg bg-gradient-to-r from-[#6EC568] to-[#26A81D] bg-clip-text text-transparent hover:opacity-80"
               >
-                Log in
+                Masuk
               </Link>
               <Link
                 href="/auth/signup"
                 className="cursor-pointer bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 hover:shadow-xl hover:scale-105"
               >
-                Sign up
+                Daftar
               </Link>
             </div>
           )}
