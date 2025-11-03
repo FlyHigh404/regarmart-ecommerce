@@ -55,6 +55,8 @@ const totalPembayaran = subtotal + ongkir - diskon;
     }
   });
 
+  const orderId = searchParams.get('orderId');
+
   useEffect(() => {
     const fetchCheckoutData = async () => {
       try {
@@ -79,7 +81,7 @@ const totalPembayaran = subtotal + ongkir - diskon;
 
           // Buat temporary order object (belum disimpan ke DB)
           setOrder({
-            id: null, // Belum ada order ID
+            id: null, 
             totalAmount: Number(product.price) * quantity,
             orderItems: [{
               id: null,
@@ -122,33 +124,13 @@ const totalPembayaran = subtotal + ongkir - diskon;
   try {
     setProcessingCheckout(true);
 
-    // 🔥 BERBEDA untuk Direct Buy vs Cart
-    let response;
-    
-    if (isDirectBuy && productId) {
-      // Direct Buy: kirim productId & qty
-      response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          paymentMethod,
-          addressId: alamatAktif.id,
-          directBuy: true,
-          productId: productId,
-          quantity: quantity
-        }),
-      });
-    } else {
-      // Cart: pakai endpoint lama
-      response = await fetch("/api/cart/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          paymentMethod,
-          addressId: alamatAktif.id,
-        }),
-      });
-    }
+    const response = await fetch(`/api/cart/checkout?orderId=${order.id}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        paymentMethod,
+      }),
+    });
 
     const result = await response.json();
 
@@ -535,7 +517,7 @@ const totalPembayaran = subtotal + ongkir - diskon;
         router.push("/profil/riwayat-transaksi");
       }
     }}
-    orderNumber={`#INV-${order?.id?.toString().padStart(4, "0")}`}
+    orderNumber={`${order?.id?.toString().padStart(4, "0")}`}
     status={order.status || OrderStatus.PROCESSING}
     paymentMethod={order.paymentMethod || paymentMethod}
     products={

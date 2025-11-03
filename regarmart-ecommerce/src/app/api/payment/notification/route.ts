@@ -10,24 +10,49 @@ export async function POST(req: Request) {
 
     let newStatus = "PENDING";
 
-    if (transaction_status === "capture" || transaction_status === "settlement") {
+    if (
+      transaction_status === "capture" ||
+      transaction_status === "settlement"
+    ) {
+      const order = await prisma.order.findUnique({
+        where: { id: order_id },
+      });
+
+      if (!order) {
+        return NextResponse.json({ error: "Order not found" }, { status: 404 });
+      }
+
       newStatus = "PROCESSING";
-      await prisma.order.update({
-      where: { id: order_id },
-      data: { status: "PROCESSING" },
-    });
+      await prisma.$transaction(async (tx) => {
+        await tx.order.update({
+          where: { id: order_id },
+          data: { status: "PROCESSING" },
+        });
+
+        // Update stok produk
+        const orderItems = await tx.orderItem.findMany({
+          where: { orderId: order_id },
+        });
+
+        for (const item of orderItems) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: { stock: { decrement: item.quantity } },
+          });
+        }
+      });
     } else if (["cancel", "deny", "expire"].includes(transaction_status)) {
       newStatus = "CANCELED";
       await prisma.order.update({
-      where: { id: order_id },
-      data: { status: "CANCELED" },
-    });
+        where: { id: order_id },
+        data: { status: "CANCELED" },
+      });
     } else if (transaction_status === "pending") {
       newStatus = "PENDING";
       await prisma.order.update({
-      where: { id: order_id },
-      data: { status: "PENDING" },
-    });
+        where: { id: order_id },
+        data: { status: "PENDING" },
+      });
     }
 
     // ✅ Kirim event ke server websocket
@@ -45,6 +70,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("❌ Error handling notification:", error);
-    return NextResponse.json({ error: "Failed to handle notification" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to handle notification" },
+      { status: 500 }
+    );
   }
 }

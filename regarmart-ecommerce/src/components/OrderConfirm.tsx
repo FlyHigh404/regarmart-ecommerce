@@ -131,7 +131,7 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
             </div>
           </div>
 
-          {/* Alamat - GUNAKAN address BUKAN alamatAktif */}
+          {/* Alamat */}
           {address && (
             <div className="py-4 border-t border-gray-200">
               <h2 className="font-bold text-sm text-black mb-3">

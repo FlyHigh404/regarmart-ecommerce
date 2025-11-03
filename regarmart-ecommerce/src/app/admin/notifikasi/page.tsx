@@ -1,105 +1,53 @@
-// components/Notifikasi.tsx
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "../AdminLayout";
-import { Filter, ChevronDown, X } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Notification {
   id: string;
-  waktu: string;
-  isi: string;
-  status: "Sedang proses" | "Dikirim" | "Pesanan selesai";
-  penerima: {
+  createdAt: string;
+  message: string;
+  user: {
     name: string;
-    avatar: string;
+    image: string;
   };
 }
 
 const Notifikasi = () => {
   const [showFilter, setShowFilter] = useState(false);
-  const [filterStatus, setFilterStatus] = useState("Semua");
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
-  // Dummy data sesuai dengan gambar
-  const [notifications] = useState<Notification[]>([
-    {
-      id: "1",
-      waktu: "Juli 14, 2025",
-      isi: "Mohon tunggu pesanan anda #INV-0015 sedang kami proses.",
-      status: "Sedang proses",
-      penerima: {
-        name: "Leasie Watson",
-        avatar: "https://i.pravatar.cc/150?img=1",
-      },
-    },
-    {
-      id: "2",
-      waktu: "Juli 13, 2025",
-      isi: "Mohon tunggu pesanan anda #INV-0015 sedang kami proses.",
-      status: "Sedang proses",
-      penerima: {
-        name: "Theresa Webb",
-        avatar: "https://i.pravatar.cc/150?img=2",
-      },
-    },
-    {
-      id: "3",
-      waktu: "Juli 12, 2025",
-      isi: "Mohon tunggu pesanan anda #INV-0015 telah diserahkan kepada kurir dan sedang menuju ke alamat tujuan.",
-      status: "Dikirim",
-      penerima: {
-        name: "Darrell Steward",
-        avatar: "https://i.pravatar.cc/150?img=3",
-      },
-    },
-    {
-      id: "4",
-      waktu: "Juli 12, 2025",
-      isi: "Periksa kelengkapan untuk pesanan #INV-0015. Puas dengan pesananmu? Jangan lupa untuk memberikan penilaian produk kami.",
-      status: "Pesanan selesai",
-      penerima: {
-        name: "Ronald Richards",
-        avatar: "https://i.pravatar.cc/150?img=4",
-      },
-    },
-    {
-      id: "5",
-      waktu: "Juli 12, 2025",
-      isi: "Periksa kelengkapan untuk pesanan #INV-0015. Puas dengan pesananmu? Jangan lupa untuk memberikan penilaian produk kami.",
-      status: "Pesanan selesai",
-      penerima: {
-        name: "Darrius Poliusus",
-        avatar: "https://i.pravatar.cc/150?img=5",
-      },
-    },
-  ]);
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const response = await fetch("/api/admin/notifications");
+        const data = await response.json();
+        setNotifications(data);
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      }
+    };
 
-  const getStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case "Sedang proses":
-        return "bg-yellow-100 text-yellow-700";
-      case "Dikirim":
-        return "bg-orange-100 text-orange-700";
-      case "Pesanan selesai":
-        return "bg-green-100 text-green-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
+    fetchNotifications();
+  }, []);
+
+  const totalPages = Math.ceil(notifications.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = notifications.slice(indexOfFirstItem, indexOfLastItem);
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
   };
-
-  const filteredNotifications = notifications.filter((notif) => {
-    if (filterStatus === "Semua") return true;
-    return notif.status === filterStatus;
-  });
 
   return (
     <AdminLayout>
       <main className="flex-1 bg-gray-50 pt-3">
-        {/* Main Container with shadow and rounded corners */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          {/* Header Section */}
           <div className="p-4 sm:pt-6 sm:pb-0 bg-white">
             <div className="flex flex-col space-y-4 lg:flex-row lg:justify-between lg:items-center lg:space-y-0">
-              {/* Header Text */}
               <div className="flex flex-col">
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Tabel notifikasi</h1>
                 <p className="text-gray-500 text-sm sm:text-base mt-1">
@@ -109,47 +57,38 @@ const Notifikasi = () => {
             </div>
           </div>
 
-          {/* Notifications Table */}
           <div className="p-4 sm:p-6">
             {/* Mobile Card View */}
             <div className="block lg:hidden space-y-4">
-              {filteredNotifications.map((notif) => (
+              {notifications.map((notif) => (
                 <div
                   key={notif.id}
                   className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                 >
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-xs text-gray-500 whitespace-nowrap">{notif.waktu}</span>
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${getStatusBadgeClass(
-                          notif.status
-                        )}`}
-                      >
-                        {notif.status}
+                      <span className="text-xs text-gray-500 whitespace-nowrap">
+                        {new Date(notif.createdAt).toLocaleDateString('id-ID', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-700 line-clamp-2">{notif.isi}</p>
+                    <p className="text-xs text-gray-700 line-clamp-2">{notif.message}</p>
                     <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
                       <img
-                        src={notif.penerima.avatar}
-                        alt={notif.penerima.name}
+                        src={notif.user.image}
+                        alt={notif.user.name}
                         className="w-6 h-6 rounded-full"
                       />
                       <span className="text-xs font-medium text-gray-900 whitespace-nowrap">
-                        {notif.penerima.name}
+                        {notif.user.name}
                       </span>
                     </div>
                   </div>
                 </div>
               ))}
-
-              {filteredNotifications.length === 0 && (
-                <div className="text-center py-12 text-gray-500">
-                  <p className="text-lg font-medium">Tidak ada notifikasi ditemukan</p>
-                  <p className="text-sm mt-1">Coba ubah filter Anda</p>
-                </div>
-              )}
             </div>
 
             {/* Desktop Table View */}
@@ -157,62 +96,54 @@ const Notifikasi = () => {
               <table className="w-full">
                 <thead className="bg-gray-100">
                   <tr>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700 uppercase text-xs tracking-wider whitespace-nowrap">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700 uppercase text-sm tracking-wider whitespace-nowrap">
                       WAKTU
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700 uppercase text-xs tracking-wider">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700 uppercase text-sm tracking-wider">
                       ISI
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700 uppercase text-xs tracking-wider whitespace-nowrap">
-                      STATUS
-                    </th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700 uppercase text-xs tracking-wider whitespace-nowrap">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700 uppercase text-sm tracking-wider whitespace-nowrap">
                       PENERIMA
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredNotifications.map((notif, index) => (
+                  {currentItems.map((notif, index) => (
                     <tr
                       key={notif.id}
-                      className={`hover:bg-gray-100 transition-colors ${
-                        index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                      }`}
+                      className={`hover:bg-gray-100 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                        }`}
                     >
                       <td className="py-3 px-4">
-                        <div className="text-xs text-gray-900 whitespace-nowrap">{notif.waktu}</div>
+                        <div className="text-sm text-gray-900 whitespace-nowrap">
+                          {new Date(notif.createdAt).toLocaleDateString('id-ID', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </div>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="text-gray-700 text-xs line-clamp-1">{notif.isi}</span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap inline-block ${getStatusBadgeClass(
-                            notif.status
-                          )}`}
-                        >
-                          {notif.status}
-                        </span>
+                        <span className="text-gray-700 text-sm line-clamp-1">{notif.message}</span>
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
                           <img
-                            src={notif.penerima.avatar}
-                            alt={notif.penerima.name}
+                            src={notif.user.image}
+                            alt={notif.user.name}
                             className="w-6 h-6 rounded-full"
                           />
-                          <span className="text-xs text-gray-900 whitespace-nowrap">{notif.penerima.name}</span>
+                          <span className="text-sm text-gray-900 whitespace-nowrap">{notif.user.name}</span>
                         </div>
                       </td>
                     </tr>
                   ))}
 
-                  {filteredNotifications.length === 0 && (
+                  {notifications.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="py-12 px-6 text-center bg-white">
+                      <td colSpan={3} className="py-12 px-6 text-center bg-white">
                         <div className="text-gray-500">
                           <p className="text-lg font-medium">Tidak ada notifikasi ditemukan</p>
-                          <p className="text-sm mt-1">Coba ubah filter Anda</p>
                         </div>
                       </td>
                     </tr>
@@ -220,65 +151,46 @@ const Notifikasi = () => {
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination Controls */}
+            {notifications.length > 0 && (
+              <div className="mt-4 flex items-center justify-between">
+                <div className="text-sm text-gray-500">
+                  Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, notifications.length)} of{" "}
+                  {notifications.length} entries
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => handlePageChange(page)}
+                      className={`px-3 py-1 rounded-lg ${currentPage === page
+                          ? "bg-green-500 text-white"
+                          : "hover:bg-gray-100 text-gray-700"
+                        }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-
-        {/* Filter Dropdown */}
-        {showFilter && (
-          <div
-            className="fixed inset-0 z-40 flex items-center justify-center"
-            onClick={() => setShowFilter(false)}
-          >
-            <div
-              className="bg-white rounded-xl shadow-2xl border border-gray-200 p-6 w-full max-w-md mx-4"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Filter Notifikasi</h3>
-                <button
-                  onClick={() => setShowFilter(false)}
-                  className="text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                  <select
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none focus:border-transparent"
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value)}
-                  >
-                    <option>Semua</option>
-                    <option>Sedang proses</option>
-                    <option>Dikirim</option>
-                    <option>Pesanan selesai</option>
-                  </select>
-                </div>
-
-                <div className="flex gap-3 pt-2">
-                  <button
-                    className="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
-                    onClick={() => setShowFilter(false)}
-                  >
-                    Terapkan
-                  </button>
-                  <button
-                    className="flex-1 bg-gray-100 text-gray-700 py-3 px-4 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
-                    onClick={() => {
-                      setFilterStatus("Semua");
-                      setShowFilter(false);
-                    }}
-                  >
-                    Reset
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </main>
     </AdminLayout>
   );
