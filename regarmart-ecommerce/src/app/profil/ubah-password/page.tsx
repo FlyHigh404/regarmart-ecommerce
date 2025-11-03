@@ -98,14 +98,6 @@ export default function UbahPasswordPage() {
           >
             {showPassword.current ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
-          {/* Password dots display when there's content */}
-          {formData.currentPassword && !showPassword.current && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 flex space-x-1">
-              {Array.from({ length: Math.min(formData.currentPassword.length, 8) }).map((_, i) => (
-                <div key={i} className="w-1.5 h-1.5 bg-gray-800 rounded-full"></div>
-              ))}
-            </div>
-          )}
         </div>
 
         {/* Password Baru */}
