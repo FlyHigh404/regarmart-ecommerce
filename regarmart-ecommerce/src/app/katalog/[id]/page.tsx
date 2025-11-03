@@ -138,7 +138,6 @@ interface Rating {
 
 // Helper function untuk memproses data ratings dari API
 const processRatingsData = (ratingsData: any): Rating[] => {
-  // Jika data tidak valid, return default struktur
   if (!ratingsData || typeof ratingsData !== "object") {
     return [
       { value: 5, count: 0 },
@@ -149,7 +148,6 @@ const processRatingsData = (ratingsData: any): Rating[] => {
     ];
   }
 
-  // Jika data berupa array
   if (Array.isArray(ratingsData)) {
     if (ratingsData.length === 0) {
       return [
@@ -161,7 +159,6 @@ const processRatingsData = (ratingsData: any): Rating[] => {
       ];
     }
 
-    // Map data array ke format yang diinginkan
     const ratingsMap: Record<number, number> = {
       5: 0,
       4: 0,
@@ -188,7 +185,6 @@ const processRatingsData = (ratingsData: any): Rating[] => {
     ];
   }
 
-  // Jika data berupa object dengan key star/rating
   const ratingsMap: Record<number, number> = {
     5: 0,
     4: 0,
@@ -259,117 +255,112 @@ const ProductDetailPage = () => {
   const [isRatingOpen, setIsRatingOpen] = useState(false);
   const [RelatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
-  useEffect(() => {
-    if (!params?.id) return;
+  // 🔥 PERBAIKAN: Pindahkan fetchData keluar agar bisa dipanggil ulang
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+      const productId = params.id as string;
+      if (!productId) {
+        setError("Product ID tidak ditemukan");
+        return;
+      }
 
-        const productId = params.id as string;
+      // Fetch product data
+      const productResponse = await fetch(`/api/products/${productId}`);
+      if (!productResponse.ok) throw new Error("Gagal mengambil data produk");
+      const productData = await productResponse.json();
+      setProduct(productData);
 
-        if (!productId) {
-          setError("Product ID tidak ditemukan");
-          return;
+      // Fetch reviews, ratings, dan related products
+      const [reviewsResponse, ratingsResponse, productRelatedResponse] =
+        await Promise.all([
+          fetch(`/api/products/${productId}/reviews`),
+          fetch(`/api/products/${productId}/ratings`),
+          fetch(
+            `/api/products/${productId}/produk-terkait?categoryId=${productData.categoryId}`
+          ),
+        ]);
+
+      const relatedProductsData = await productRelatedResponse.json();
+      setRelatedProducts(relatedProductsData);
+
+      // Process reviews data
+      let reviewsData: Review[] = [];
+      if (reviewsResponse.ok) {
+        const reviewsJson = await reviewsResponse.json();
+        reviewsData = Array.isArray(reviewsJson)
+          ? reviewsJson.map((r: any) => ({
+              id: r.id,
+              content: r.content,
+              createdAt: r.createdAt,
+              user: {
+                name: r.user?.name || "Anonim",
+                image: r.user?.image || null,
+              },
+              reply: r.reply,
+              replyBy: r.replyBy,
+              admin: r.admin ? { name: r.admin.name, role: "Admin" } : null,
+            }))
+          : [];
+        setReviews(reviewsData);
+      } else {
+        setReviews([]);
+      }
+
+      // 🔥 PERBAIKAN: Process ratings data dengan cara yang benar
+      let processedRatings: Rating[];
+      if (ratingsResponse.ok) {
+        const ratingsJson = await ratingsResponse.json();
+        const ratingsList = ratingsJson.ratings || [];
+        const averageFromApi = ratingsJson.average || 0;
+
+        // Hitung count untuk setiap rating value
+        const ratingCounts = [1, 2, 3, 4, 5].map((value) => {
+          const count = ratingsList.filter((r: any) => r.value === value).length;
+          return { value, count };
+        });
+
+        // Reverse untuk urutan 5 ke 1
+        processedRatings = ratingCounts.reverse();
+
+        // Set state dengan data dari API
+        setTotalReviews(ratingsList.length);
+        setAverageRating(Number(averageFromApi.toFixed(1)));
+        
+        // Update product rating
+        if (productData.rating !== averageFromApi) {
+          setProduct((prev) => (prev ? { ...prev, rating: averageFromApi } : null));
         }
-
-        // Fetch product data
-        const productResponse = await fetch(`/api/products/${productId}`);
-        if (!productResponse.ok) {
-          throw new Error("Gagal mengambil data produk");
-        }
-        const productData = await productResponse.json();
-        setProduct(productData);
-
-        // Fetch reviews dan ratings secara parallel
-        const [reviewsResponse, ratingsResponse, productRelatedResponse] =
-          await Promise.all([
-            fetch(`/api/products/${productId}/reviews`),
-            fetch(`/api/products/${productId}/ratings`),
-            fetch(
-              `/api/products/${productId}/produk-terkait?categoryId=${productData.categoryId}`
-            ),
-          ]);
-
-        const relatedProductsData = await productRelatedResponse.json();
-        setRelatedProducts(relatedProductsData);
-
-        // Process reviews data
-        let reviewsData: Review[] = [];
-        if (reviewsResponse.ok) {
-          const reviewsJson = await reviewsResponse.json();
-          reviewsData = Array.isArray(reviewsJson)
-            ? reviewsJson.map((r: any) => ({
-                id: r.id,
-                content: r.content,
-                createdAt: r.createdAt,
-                user: {
-                  name: r.user?.name || "Anonim",
-                  image: r.user?.image || null,
-                },
-                reply: r.reply,
-                replyBy: r.replyBy,
-                admin: r.admin ? { name: r.admin.name, role: "Admin" } : null,
-              }))
-            : [];
-
-          setReviews(reviewsData);
-        } else {
-          console.warn("Failed to fetch reviews, using empty array");
-          setReviews([]);
-        }
-
-        // Process ratings data
-        let processedRatings: Rating[];
-        if (ratingsResponse.ok) {
-          const ratingsJson = await ratingsResponse.json();
-          console.log("Raw ratings data:", ratingsJson); // Debug log
-
-          processedRatings = processRatingsData(ratingsJson);
-          console.log("Processed ratings:", processedRatings); // Debug log
-        } else {
-          console.warn("Failed to fetch ratings, using default");
-          processedRatings = processRatingsData(null);
-        }
-
-        setRatings(processedRatings);
-
-        // Calculate statistics dari ratings yang sudah diproses
-        const { totalReviews: calculatedTotal, averageRating: calculatedAvg } =
-          calculateRatingStats(processedRatings);
-
-        console.log("Calculated stats:", { calculatedTotal, calculatedAvg }); // Debug log
-
-        setTotalReviews(calculatedTotal);
-        setAverageRating(calculatedAvg);
-
-        // Update product rating jika berbeda
-        if (productData.rating !== calculatedAvg) {
-          setProduct((prev) =>
-            prev ? { ...prev, rating: calculatedAvg } : null
-          );
-        }
-      } catch (err) {
-        console.error("Error fetching data:", err);
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Terjadi kesalahan saat memuat data"
-        );
-
-        // Set default values on error
-        const defaultRatings = processRatingsData(null);
-        setRatings(defaultRatings);
+      } else {
+        processedRatings = processRatingsData(null);
         setTotalReviews(0);
         setAverageRating(0);
-        setReviews([]);
-      } finally {
-        setLoading(false);
       }
-    };
 
-    fetchData();
+      setRatings(processedRatings);
+
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Terjadi kesalahan saat memuat data"
+      );
+      setRatings(processRatingsData(null));
+      setTotalReviews(0);
+      setAverageRating(0);
+      setReviews([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (params?.id) {
+      fetchData();
+    }
   }, [params?.id]);
 
   useEffect(() => {
@@ -382,7 +373,6 @@ const ProductDetailPage = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Auto-hide toast after 5 seconds
   useEffect(() => {
     if (toast) {
       const timer = setTimeout(() => setToast(null), 5000);
@@ -451,7 +441,6 @@ const ProductDetailPage = () => {
     try {
       setAddingToCart(true);
 
-      // 🔥 Panggil API order (langsung bikin order + order item)
       const response = await fetch("/api/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -468,13 +457,11 @@ const ProductDetailPage = () => {
         throw new Error(result.message || "Gagal membuat pesanan.");
       }
 
-      // ✅ Order berhasil dibuat → redirect ke halaman checkout
       setToast({
         message: "Pesanan berhasil dibuat! Mengarahkan ke checkout...",
         type: "success",
       });
 
-      // Tunggu sedikit sebelum redirect biar UX lebih halus
       setTimeout(() => {
         router.push(`/checkout?orderId=${result.id}`);
       }, 1000);
@@ -574,7 +561,7 @@ const ProductDetailPage = () => {
     return (
       <>
         <NavSearch />
-        <div className="min-h-screen flex items-center justify-center  bg-gray-50">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="text-center">
             <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
             <p className="text-lg font-medium text-gray-900 mb-2">
@@ -858,10 +845,29 @@ const ProductDetailPage = () => {
           </div>
         </div>
 
-        {/* FormRating Modal */}
+        {/* 🔥 PERBAIKAN: FormRating Modal dengan onSubmitSuccess */}
         <FormRating
           open={isRatingOpen}
           onClose={() => setIsRatingOpen(false)}
+          onSubmitSuccess={async () => {
+            // Close modal terlebih dahulu
+            setIsRatingOpen(false);
+            
+            // Tampilkan toast loading
+            setToast({
+              message: "Memuat ulang data...",
+              type: "success",
+            });
+            
+            // Re-fetch data setelah submit rating
+            await fetchData();
+            
+            // Tampilkan toast sukses
+            setToast({
+              message: "Rating dan ulasan berhasil ditambahkan!",
+              type: "success",
+            });
+          }}
           product={{
             id: product.id,
             name: product.name,
