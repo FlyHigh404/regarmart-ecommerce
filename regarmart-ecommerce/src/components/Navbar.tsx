@@ -373,7 +373,7 @@ const Navbar = () => {
                   <button
                     onClick={() => {
                       setIsMobileMenuOpen(false);
-                      router.push("/keranjang");
+                      router.push("/cart");
                     }}
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                   >
@@ -388,7 +388,6 @@ const Navbar = () => {
                   <button
                     onClick={() => {
                       setIsMobileMenuOpen(false);
-                      router.push("/notifikasi");
                     }}
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                   >
