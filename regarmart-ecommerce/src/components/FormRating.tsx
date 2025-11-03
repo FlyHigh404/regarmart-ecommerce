@@ -56,15 +56,14 @@ const FormRating: React.FC<FormRatingProps> = ({
         throw new Error(errorData.error || "Gagal mengirim rating");
       }
 
-      // 2. Kirim review ke endpoint review
       const reviewResponse = await fetch(`/api/products/${product.id}/reviews`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
         },
-        credentials: "include", // penting untuk session
+        credentials: "include",
         body: JSON.stringify({
-          content: review, // API mengharapkan 'content' bukan 'review'
+          content: review, 
         }),
       });
 
@@ -73,12 +72,9 @@ const FormRating: React.FC<FormRatingProps> = ({
         throw new Error(errorData.error || "Gagal mengirim ulasan");
       }
 
-      // Reset form dan tutup modal
       setRating(0);
       setReview("");
       onClose();
-      
-      // Tampilkan alert sukses
       alert("Rating dan ulasan berhasil dikirim!");
       
     } catch (err: any) {
@@ -157,7 +153,7 @@ const FormRating: React.FC<FormRatingProps> = ({
                   key={star}
                   onClick={() => {
                     setRating(star);
-                    setError(""); // Clear error ketika user memilih rating
+                    setError(""); 
                   }}
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"

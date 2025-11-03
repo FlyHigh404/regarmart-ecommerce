@@ -22,7 +22,7 @@ interface ProductWithCategory {
   description?: string;
   price: number;
   category: Category | null;
-  rating?: number;
+  averageRating?: number;
 }
 
 interface KatalogGroupProps {

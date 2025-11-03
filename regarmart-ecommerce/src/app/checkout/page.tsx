@@ -493,7 +493,7 @@ const totalPembayaran = subtotal + ongkir - diskon;
         router.push("/profil/riwayat-transaksi");
       }
     }}
-    orderNumber={order.orderNumber || `#INV-${order?.id?.toString().padStart(4, "0")}`}
+    orderNumber={`#INV-${order?.id?.toString().padStart(4, "0")}`}
     status={order.status || OrderStatus.PROCESSING}
     paymentMethod={order.paymentMethod || paymentMethod}
     products={
