@@ -88,12 +88,11 @@ const totalPembayaran = subtotal + ongkir - diskon;
   try {
     setProcessingCheckout(true);
 
-    const response = await fetch("/api/cart/checkout", {
+    const response = await fetch(`/api/cart/checkout?orderId=${order.id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         paymentMethod,
-        addressId: alamatAktif.id,
       }),
     });
 
