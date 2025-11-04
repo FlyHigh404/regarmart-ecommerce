@@ -255,7 +255,6 @@ const ProductDetailPage = () => {
   const [isRatingOpen, setIsRatingOpen] = useState(false);
   const [RelatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
-  // 🔥 PERBAIKAN: Pindahkan fetchData keluar agar bisa dipanggil ulang
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -310,8 +309,7 @@ const ProductDetailPage = () => {
       } else {
         setReviews([]);
       }
-
-      // 🔥 PERBAIKAN: Process ratings data dengan cara yang benar
+      // Process ratings data
       let processedRatings: Rating[];
       if (ratingsResponse.ok) {
         const ratingsJson = await ratingsResponse.json();
@@ -587,7 +585,7 @@ const ProductDetailPage = () => {
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 py-6">
           {/* Product Detail Container */}
-          <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-8 md:mt-22">
+          <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-8 mt-20 md:mt-22">
             {/* Back Button */}
             <div className="px-6 py-4 border-b border-gray-100">
               <button

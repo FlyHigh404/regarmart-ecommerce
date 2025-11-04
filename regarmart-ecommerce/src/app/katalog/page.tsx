@@ -333,7 +333,7 @@ useEffect(() => {
         {/* Main Content */}
         <main className="flex-1 mt-10 md:mt-0 ">
           {/* Header with filters info */}
-          <div className="mb-6 flex items-center justify-between flex-wrap gap-4 sm:mt-15">
+          <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 mb-1">
                 Katalog Produk

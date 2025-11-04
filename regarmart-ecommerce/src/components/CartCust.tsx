@@ -83,19 +83,19 @@ const CartCust: React.FC = () => {
 
   const isDropdownVisible = isClickedOpen || isHovered;
 
-  // 🔄 Fetch cart count saat komponen mount dan setiap kali dropdown ditutup
+  // Initial fetch cart count
   useEffect(() => {
     fetchCartCount();
   }, [fetchCartCount]);
 
-  // 🔄 Refresh cart count ketika dropdown ditutup
+  // Refresh cart count ketika dropdown ditutup
   useEffect(() => {
     if (!isDropdownVisible) {
       fetchCartCount();
     }
   }, [isDropdownVisible, fetchCartCount]);
 
-  // 🔄 Fetch detail item ketika dropdown dibuka
+  //  Fetch detail item ketika dropdown dibuka
   useEffect(() => {
     if (isDropdownVisible) {
       const fetchCart = async () => {
@@ -215,7 +215,7 @@ const CartCust: React.FC = () => {
       {isDropdownVisible && (
         <div
           id="cart-dropdown"
-          className={`absolute right-0 mt-3 w-[360px] ${DROPDOWN_MAX_HEIGHT_CLASS} overflow-y-auto bg-white rounded-lg shadow-2xl z-50 border border-gray-200`}
+          className={`absolute right-0 mt-3 w-[280px] sm:w-[360px] md:w-[420px] ${DROPDOWN_MAX_HEIGHT_CLASS} overflow-y-auto bg-white rounded-lg shadow-2xl z-50 border border-gray-200`}
           style={{ zIndex: 60 }}
         >
           <div className="p-4 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10 shadow-md">

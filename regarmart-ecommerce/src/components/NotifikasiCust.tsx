@@ -205,11 +205,11 @@ const NotifikasiCust: React.FC<NotifikasiCustProps> = ({ notificationCount: exte
             {isDropdownVisible && (
                 <div 
                     id="notification-dropdown"
-                    className={`absolute right-0 mt-3 w-[420px] ${DROPDOWN_MAX_HEIGHT_CLASS} overflow-y-auto bg-white rounded-lg shadow-2xl z-50 border border-gray-200`}
+                    className={`absolute right-0 mt-3 w-[280px] sm:w-[360px] md:w-[420px] ${DROPDOWN_MAX_HEIGHT_CLASS} overflow-y-auto bg-white rounded-lg shadow-2xl z-50 border border-gray-200`}
                     style={{ zIndex: 60 }} 
                 >
-                    <div className="p-4 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10 shadow-md">
-                        <h3 className="text-lg font-bold text-gray-800">Notifikasi</h3>
+                    <div className="p-3 sm:p-4 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10 shadow-md">
+                        <h3 className="text-base sm:text-lg font-bold text-gray-800">Notifikasi</h3>
                     </div>
 
                     {/* Loading State */}
@@ -270,7 +270,7 @@ const NotifikasiCust: React.FC<NotifikasiCustProps> = ({ notificationCount: exte
                                     className={`text-sm font-semibold transition ${
                                         notifications.length === 0
                                         ? 'text-gray-400 cursor-not-allowed'
-                                        : 'text-green-600 hover:text-green-700 cursor-pointer'
+                                        : 'text-green-600 hover:text-green-700'
                                     }`}
                                 >
                                     Tandai semua sudah dibaca
