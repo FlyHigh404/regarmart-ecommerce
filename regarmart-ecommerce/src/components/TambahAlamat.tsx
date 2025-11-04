@@ -2,6 +2,7 @@
 import React, { useState } from "react"
 import InputBox from "@/components/InputBox"
 import { User, Smartphone, Home, MapPin, ClipboardList } from "lucide-react"
+import { useToast, Toast } from "@/components/Toast"
 
 type Address = {
   id: string
@@ -54,12 +55,13 @@ const AddAddress: React.FC<AddAddressProps> = ({ isOpen, onClose, onSave }) => {
   const [note, setNote] = useState("")
   const [isPrimary, setIsPrimary] = useState(false)
   const [agree, setAgree] = useState(false)
+  const { toast, showToast, hideToast } = useToast()
 
   if (!isOpen) return null
 
   const handleSave = async () => {
     if (!recipientName || !phoneNumber || !fullAddress || !agree) {
-      alert("Please fill in all required fields and agree to the Terms & Conditions.")
+      showToast("Mohon isi semua field yang wajib diisi dan setujui syarat & ketentuan.", "warning")
       return
     }
 
@@ -74,7 +76,6 @@ const AddAddress: React.FC<AddAddressProps> = ({ isOpen, onClose, onSave }) => {
     }
 
     try {
-      // API call
       const response = await fetch("/api/profile/address", {
         method: "POST",
         headers: {
@@ -95,12 +96,13 @@ const AddAddress: React.FC<AddAddressProps> = ({ isOpen, onClose, onSave }) => {
         setIsPrimary(false)
         setAgree(false)
         onClose()
+        showToast("Alamat berhasil disimpan!", "success")
       } else {
-        alert(data.message || "Failed to save address.")
+        showToast(data.message || "Gagal menyimpan alamat.", "error")
       }
     } catch (error) {
-      alert("An error occurred while saving the address.")
       console.error(error)
+      showToast("Terjadi kesalahan saat menyimpan alamat.", "error")
     }
   }
 
@@ -196,6 +198,13 @@ const AddAddress: React.FC<AddAddressProps> = ({ isOpen, onClose, onSave }) => {
           </button>
         </div>
       </div>
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={hideToast}
+      />
+
     </div>
   )
 }

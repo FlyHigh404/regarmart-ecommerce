@@ -25,6 +25,11 @@ body {
   font-family: "Plus Jakarta Sans";
 }
 
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 @keyframes blob {
   0%,
   100% {
