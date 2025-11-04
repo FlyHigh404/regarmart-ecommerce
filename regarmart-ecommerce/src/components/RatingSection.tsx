@@ -7,7 +7,7 @@ import FormRating from "./FormRating"
 interface RatingSectionProps {
   averageRating: number
   totalReviews: number
-  ratings: { value: number; count: number }[] // ✅ pakai "value" sesuai Prisma
+  ratings: { value: number; count: number }[] 
   product: {
     id: string
     name: string
@@ -92,7 +92,7 @@ export default function RatingSection({
           <Star className="w-[36px] h-[36px] fill-[#26A81D] text-[#26A81D] flex-shrink-0 mt-1" />
           <div className="flex flex-col">
             <div className="flex items-center gap-1">
-              <span className="font-jakarta text-[40px] font-bold text-black leading-none">
+              <span className="font-jakarta text-[39px] md:text-[40px] font-bold text-black leading-none">
                 {averageRating.toFixed(1).replace(".", ",")}
               </span>
               <span className="text-gray-500 text-lg">/5</span>

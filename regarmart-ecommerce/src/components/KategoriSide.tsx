@@ -45,7 +45,6 @@ export default function KategoriSide({
   }
 
   const handleApplyFilters = () => {
-    // ✅ JIKA ADA onApplyFilters, GUNAKAN
     if (onApplyFilters) {
       const filters = {
         categories: selectedCategories,
@@ -66,7 +65,6 @@ export default function KategoriSide({
     return parseInt(value).toLocaleString("id-ID")
   }
 
-  // ✅ PERBAIKAN: FIX TYPESCRIPT ERROR DI DISABLED
   const isInvalidPriceRange = minPrice && maxPrice && parseInt(minPrice) > parseInt(maxPrice)
 
   return (
@@ -208,7 +206,7 @@ export default function KategoriSide({
       <button 
         onClick={handleApplyFilters}
         disabled={!!isInvalidPriceRange} 
-        className="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-full transition-colors duration-300"
+        className="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-400 cursor-pointer text-white font-medium py-2 px-4 rounded-full transition-colors duration-300"
       >
         Terapkan Filter
       </button>

@@ -888,7 +888,7 @@ const ProductDetailPage = () => {
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-gray-900 text-sm truncate">
+                <h3 className="font-medium text-gray-900 text-xs truncate">
                   {product.name}
                 </h3>
                 <div className="text-gray-500 text-xs">Total Harga</div>
@@ -919,9 +919,9 @@ const ProductDetailPage = () => {
                 <button
                   onClick={handleBuyNow}
                   disabled={product.stock === 0}
-                  className="bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm whitespace-nowrap"
+                  className="lex items-center justify-center bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors text-xs  cursor-pointer whitespace-nowrap"
                 >
-                  Beli Sekarang
+                  Beli<br /> Sekarang
                 </button>
                 <button
                   onClick={handleAddToCart}

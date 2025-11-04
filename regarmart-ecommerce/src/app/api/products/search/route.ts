@@ -11,6 +11,7 @@ export async function GET(req: Request) {
     const limit = parseInt(searchParams.get("limit") || "10")
     const minPrice = searchParams.get("minPrice")
     const maxPrice = searchParams.get("maxPrice")
+    const minRating = searchParams.get("minRating")
 
     const skip = (page - 1) * limit
 
@@ -33,10 +34,18 @@ export async function GET(req: Request) {
       ],
     }
 
+    // ✅ GUNAKAN ratings BUKAN reviews
     const [products, total] = await Promise.all([
       prisma.product.findMany({
         where: whereClause,
-        include: { category: true },
+        include: { 
+          category: true,
+          ratings: { // ✅ MODEL RATING dengan field VALUE
+            select: {
+              value: true // ✅ field yang benar adalah 'value'
+            }
+          }
+        },
         skip,
         take: limit,
         orderBy: { createdAt: "desc" },
@@ -44,10 +53,33 @@ export async function GET(req: Request) {
       prisma.product.count({ where: whereClause }),
     ])
 
+    // ✅ HITUNG AVERAGE RATING DARI ratings.value
+    const productsWithRating = products.map(product => {
+      const ratingValues = product.ratings.map(rating => rating.value)
+      const averageRating = ratingValues.length > 0 
+        ? ratingValues.reduce((a, b) => a + b, 0) / ratingValues.length 
+        : 0
+
+      return {
+        ...product,
+        averageRating: Number(averageRating.toFixed(1)),
+        reviewCount: ratingValues.length
+      }
+    })
+
+    // ✅ FILTER BY RATING JIKA ADA minRating
+    let finalProducts = productsWithRating
+    if (minRating) {
+      const minRatingNum = Number(minRating)
+      finalProducts = productsWithRating.filter(product => 
+        product.averageRating >= minRatingNum
+      )
+    }
+
     return NextResponse.json({
-      data: products,
+      data: finalProducts,
       meta: {
-        total,
+        total: finalProducts.length,
         page,
         limit,
         totalPages: Math.ceil(total / limit),
