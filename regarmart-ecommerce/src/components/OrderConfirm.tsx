@@ -157,23 +157,6 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
             </div>
           )}
 
-           {/* address={{
-            id: alamatAktif.id.toString(),
-            nama:
-              alamatAktif.recipientName ||
-              alamatAktif.nama ||
-              "Nama tidak tersedia",
-            telp:
-              alamatAktif.phoneNumber ||
-              alamatAktif.telp ||
-              "Telepon tidak tersedia",
-            alamat:
-              alamatAktif.fullAddress ||
-              alamatAktif.alamat ||
-              "Alamat tidak tersedia",
-            utama: alamatAktif.isPrimary || alamatAktif.utama || false,
-          }} */}
-
           {/* Produk */}
           <div className="py-4 border-t border-gray-200">
             {((products ?? [])).length > 0 && (showAll ? (products ?? []) : (products ?? []).slice(0, 1)).map((p) => (
@@ -225,7 +208,7 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
                 <>
                   {/* Tombol saat di halaman checkout */}
                   <button
-                    onClick={() => router.push("/beranda")}
+                    onClick={() => router.push("/")}
                     className="flex-1 bg-green-100 text-green-500 font-semibold rounded-lg h-10 w-[280px]"
                   >
                     Kembali ke Beranda

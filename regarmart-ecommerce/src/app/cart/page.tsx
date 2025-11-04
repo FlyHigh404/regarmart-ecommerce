@@ -10,6 +10,7 @@ import {
   X,
   AlertTriangle,
 } from "lucide-react";
+import Image from "next/image";
 import Footer from "@/components/Footer";
 import NavKeranjang from "@/components/NavKeranjang";
 import { useRouter } from "next/navigation";
@@ -523,8 +524,14 @@ const CartPage = () => {
 
           {cartItems.length === 0 ? (
             <div className="bg-white rounded-xl md:rounded-2xl p-8 text-center">
-              <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                <Trash2 className="w-12 h-12 text-gray-400" />
+              <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+                <Image
+                  src="/bgcart.png"
+                  alt="Kerjang kosong"
+                  width={300}
+                  height={300}
+                  className="object-contain"
+                />
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">
                 Keranjang Kosong
@@ -532,6 +539,7 @@ const CartPage = () => {
               <p className="text-gray-500 mb-4">
                 Belum ada produk dalam keranjang Anda
               </p>
+
               <button
                 onClick={() => (window.location.href = "/katalog")}
                 className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-colors"
