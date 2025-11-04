@@ -141,16 +141,16 @@ useEffect(() => {
       setLoadingProducts(true);
       const params = new URLSearchParams();
       
-      // ✅ FILTER PENCARIAN
+      //  FILTER PENCARIAN
       if (searchTerm) params.append("q", searchTerm);
 
-      // ✅ FILTER KATEGORI
+      //  FILTER KATEGORI
       const filtered = selectedCategories.filter((c) => c !== "all");
       if (filtered.length > 0) {
         params.append("categoryId", filtered.join(","));
       }
 
-      // ✅ FILTER HARGA 
+      // FILTER HARGA 
       if (priceRange.min !== null) {
         params.append("minPrice", priceRange.min.toString());
       }
@@ -331,9 +331,9 @@ useEffect(() => {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1">
+        <main className="flex-1 mt-10 md:mt-0 ">
           {/* Header with filters info */}
-          <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
+          <div className="mb-6 flex items-center justify-between flex-wrap gap-4 sm:mt-15">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 mb-1">
                 Katalog Produk
@@ -363,7 +363,7 @@ useEffect(() => {
           {(selectedCategories[0] !== "all" || searchTerm || priceRange.min !== null || priceRange.max !== null || selectedRatings.length > 0) && (
             <button
               onClick={handleResetFilters}
-              className="flex items-center gap-2 text-sm text-gray-600 hover:text-green-600 font-medium transition-colors px-3 py-2 border border-gray-300 rounded-lg hover:border-green-500"
+              className="hidden md:flex items-center gap-2 text-sm text-gray-600 hover:text-green-600 font-medium transition-colors px-3 py-2 border border-gray-300 rounded-lg hover:border-green-500 cursor-pointer"
             >
               <X className="w-4 h-4" />
               Reset Filter
@@ -453,7 +453,8 @@ useEffect(() => {
             setSelectedCategories(["all"]);
             setCurrentPage(1);
           }}
-          onApplyFilters={handleApplyFilters} 
+          onApplyFilters={handleApplyFilters}
+          onResetAll={handleResetFilters}
         />
       )}
 

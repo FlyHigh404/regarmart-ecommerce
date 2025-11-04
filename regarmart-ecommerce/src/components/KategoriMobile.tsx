@@ -8,7 +8,8 @@ interface KategoriMobileProps {
   onClose: () => void;
   onChangeCategories: (selected: string[]) => void;
   onReset: () => void;
-  onApplyFilters?: (filters: any) => void; // ✅ TAMBAHKAN INI
+  onApplyFilters?: (filters: any) => void;
+  onResetAll?: () => void;
 }
 
 export default function KategoriMobile({
@@ -17,13 +18,13 @@ export default function KategoriMobile({
   onClose,
   onChangeCategories,
   onReset,
-  onApplyFilters, // ✅ TERIMA PROP INI
+  onApplyFilters,
+  onResetAll,
 }: KategoriMobileProps) {
-  const [selectedRatings, setSelectedRatings] = useState<number[]>([]); // ✅ UBAH KE ARRAY
+  const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
 
-  // ✅ FUNGSI FORMAT HARGA SAMA DENGAN KATEGORI SIDE
   const formatPrice = (value: string) => {
     return value.replace(/\D/g, "");
   };
@@ -33,16 +34,6 @@ export default function KategoriMobile({
     return parseInt(value).toLocaleString("id-ID");
   };
 
-  // ✅ TOGGLE RATING MULTI-SELECT (SAMA DENGAN KATEGORI SIDE)
-  const handleRatingToggle = (rating: number) => {
-    const newRatings = selectedRatings.includes(rating) 
-      ? selectedRatings.filter((r) => r !== rating)
-      : [...selectedRatings, rating];
-    
-    setSelectedRatings(newRatings);
-  };
-
-  // ✅ TOGGLE KATEGORI MULTI-SELECT
   const toggleCategory = (id: string) => {
     if (selectedCategories.includes(id)) {
       onChangeCategories(selectedCategories.filter((c) => c !== id));
@@ -51,7 +42,14 @@ export default function KategoriMobile({
     }
   };
 
-  // ✅ FUNGSI TERAPKAN FILTER (SAMA DENGAN KATEGORI SIDE)
+  const handleRatingToggle = (rating: number) => {
+    const newRatings = selectedRatings.includes(rating) 
+      ? selectedRatings.filter((r) => r !== rating)
+      : [...selectedRatings, rating];
+    
+    setSelectedRatings(newRatings);
+  };
+
   const handleApplyFilters = () => {
     if (onApplyFilters) {
       const filters = {
@@ -62,24 +60,27 @@ export default function KategoriMobile({
       };
       onApplyFilters(filters);
     }
-    onClose(); // Tutup modal setelah apply
+    onClose();
   };
 
-  // ✅ FUNGSI RESET LENGKAP (SAMA DENGAN KATEGORI SIDE)
   const handleResetAll = () => {
-    onReset();
-    setSelectedRatings([]);
-    setMinPrice("");
-    setMaxPrice("");
+    if (onResetAll) {
+      onResetAll();
+    } else {
+      onReset();
+      setSelectedRatings([]);
+      setMinPrice("");
+      setMaxPrice("");
+    }
+    onClose();
   };
 
-  // ✅ VALIDASI HARGA SAMA DENGAN KATEGORI SIDE
   const isInvalidPriceRange = minPrice && maxPrice && parseInt(minPrice) > parseInt(maxPrice);
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-end sm:hidden z-50">
       <div className="bg-white w-full rounded-t-2xl p-6 max-h-[90%] overflow-y-auto shadow-lg">
-        {/* Header */}
+        {/* Header*/}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-lg font-semibold">Filter</h2>
           <button
@@ -90,7 +91,7 @@ export default function KategoriMobile({
           </button>
         </div>
 
-        {/* Rating - DIUBAH MENJADI MULTI-SELECT CHECKBOX */}
+        {/* Rating*/}
         <div className="mb-6">
           <h3 className="text-base font-medium mb-3">Rating</h3>
           <div className="space-y-2">
@@ -132,7 +133,7 @@ export default function KategoriMobile({
           </div>
         </div>
 
-        {/* Batas Harga - DIUBAH FORMAT INPUT SAMA DENGAN KATEGORI SIDE */}
+        {/* Batas Harga */}
         <div className="mb-6">
           <h3 className="text-base font-medium mb-3">Batas Harga</h3>
           <div className="space-y-2">
@@ -157,14 +158,14 @@ export default function KategoriMobile({
               />
             </div>
             
-            {/* Error message sama dengan KategoriSide */}
+            {/* Error message */}
             {minPrice && maxPrice && parseInt(minPrice) > parseInt(maxPrice) && (
               <p className="text-red-500 text-xs mt-1">Harga minimum tidak boleh lebih besar dari maksimal</p>
             )}
           </div>
         </div>
 
-        {/* Kategori - TETAP SAMA DESAINNYA */}
+        {/* Kategori*/}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-base font-medium">Kategori</h3>
@@ -192,7 +193,7 @@ export default function KategoriMobile({
           </div>
         </div>
 
-        {/* Tombol Aksi - DIUBAH LOGIKANYA */}
+        {/* Tombol Aksi */}
         <div className="mt-6 flex gap-3">
           <button
             onClick={handleResetAll}

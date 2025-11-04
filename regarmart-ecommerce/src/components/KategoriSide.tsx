@@ -11,13 +11,13 @@ interface Category {
 interface KategoriSideProps {
   categories: Category[]
   onSelectCategory: (categoryId: string) => void
-  onApplyFilters?: (filters: any) => void // ✅ TAMBAHKAN INI OPTIONAL
+  onApplyFilters?: (filters: any) => void 
 }
 
 export default function KategoriSide({
   categories,
   onSelectCategory,
-  onApplyFilters // ✅ TERIMA PROP INI
+  onApplyFilters,
 }: KategoriSideProps) {
   const [openKategori, setOpenKategori] = useState(true)
   const [openHarga, setOpenHarga] = useState(true)

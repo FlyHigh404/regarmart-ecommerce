@@ -24,7 +24,6 @@ const CheckoutPage: React.FC = () => {
   const [openAlamat, setOpenAlamat] = useState(false);
   const [qrisUrl, setQrisUrl] = useState<string | null>(null);
 
-  // 🔥 Deteksi Direct Buy dari URL
   const isDirectBuy = searchParams.get('directBuy') === 'true';
   const productId = searchParams.get('productId');
   const quantity = parseInt(searchParams.get('qty') || '1');
@@ -72,14 +71,13 @@ const totalPembayaran = subtotal + ongkir - diskon;
 
         // 🔥 FETCH ORDER DATA
         if (isDirectBuy && productId) {
-          // Direct Buy: fetch product dulu, buat temporary order
           const productResponse = await fetch(`/api/products/${productId}`);
           if (!productResponse.ok) {
             throw new Error("Product not found");
           }
           const product = await productResponse.json();
 
-          // Buat temporary order object (belum disimpan ke DB)
+          
           setOrder({
             id: null, 
             totalAmount: Number(product.price) * quantity,
@@ -94,7 +92,6 @@ const totalPembayaran = subtotal + ongkir - diskon;
             paymentMethod: PaymentMethod.COD
           });
         } else {
-          // Cart: fetch dari cart API
           const cartResponse = await fetch("/api/cart");
           if (!cartResponse.ok) {
             throw new Error("Failed to fetch cart");

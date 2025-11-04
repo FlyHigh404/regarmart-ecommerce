@@ -34,15 +34,15 @@ export async function GET(req: Request) {
       ],
     }
 
-    // ✅ GUNAKAN ratings BUKAN reviews
+
     const [products, total] = await Promise.all([
       prisma.product.findMany({
         where: whereClause,
         include: { 
           category: true,
-          ratings: { // ✅ MODEL RATING dengan field VALUE
+          ratings: { 
             select: {
-              value: true // ✅ field yang benar adalah 'value'
+              value: true 
             }
           }
         },
@@ -53,7 +53,7 @@ export async function GET(req: Request) {
       prisma.product.count({ where: whereClause }),
     ])
 
-    // ✅ HITUNG AVERAGE RATING DARI ratings.value
+    // HITUNG AVERAGE RATING 
     const productsWithRating = products.map(product => {
       const ratingValues = product.ratings.map(rating => rating.value)
       const averageRating = ratingValues.length > 0 
@@ -67,7 +67,6 @@ export async function GET(req: Request) {
       }
     })
 
-    // ✅ FILTER BY RATING JIKA ADA minRating
     let finalProducts = productsWithRating
     if (minRating) {
       const minRatingNum = Number(minRating)
