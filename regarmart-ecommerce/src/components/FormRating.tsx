@@ -108,7 +108,6 @@ const FormRating: React.FC<FormRatingProps> = ({
         throw new Error(errorData.error || "Gagal mengirim rating");
       }
 
-      // 2. Kirim review ke endpoint review
       const reviewResponse = await fetch(`/api/products/${product.id}/reviews`, {
         method: "POST",
         headers: {

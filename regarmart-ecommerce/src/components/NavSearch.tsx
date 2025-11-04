@@ -78,8 +78,8 @@ const NavSearch = () => {
     <>
       <nav className="fixed top-0 left-0 w-full h-20 bg-white shadow z-50 px-6 flex items-center justify-between">
         {/* Logo */}
-        <a href="/" className="flex items-center gap-2 ml-22">
-          <img src="/Logo.png" alt="Logo" className="h-12 w-auto" />
+        <a href="/" className="flex items-center gap-2 ml-4 md:ml-22">
+          <img src="/Logo.png" alt="Logo" className="w-36 h-12 md:w-48 md:h-14 object-contain" />
         </a>
 
         {/* Search (Desktop only) */}
@@ -103,7 +103,7 @@ const NavSearch = () => {
         </form>
 
         {/* Right side */}
-        <div className="flex items-center gap-2 md:gap-6 ">
+        <div className="flex items-center gap-2 md:gap-6">
           {/* Notifikasi */}
           {showIcons && <NotifikasiCust notificationCount={notificationCount} />}
 

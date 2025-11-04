@@ -200,7 +200,7 @@ const CartCust: React.FC = () => {
         aria-controls="cart-dropdown"
       >
         <ShoppingCart
-          className={`w-6 h-6 text-[#4BBF42] transition-transform duration-200 ease-out 
+          className={`w-6 h-6 text-[#4BBF42] transition-transform  cursor-pointer duration-200 ease-out 
             ${isHovered ? "scale-110" : "scale-100"}`}
         />
         {/* Badge jumlah item */}

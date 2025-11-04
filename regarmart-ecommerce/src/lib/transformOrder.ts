@@ -4,7 +4,8 @@ import { Alamat } from "@/types/alamat";
 export const transformOrder = (order: any, alamatAktif?: any, cartItems?: OrderProduct[]) => {
   console.log("Raw order data for transform:", order);
 
-  const orderNumber = order.orderNumber || `${(order.id || order.orderId || '').slice(0, 8)}`;
+  const actualOrderId = order.id || order.orderId;
+  const orderNumber = order.orderNumber || `${(actualOrderId || '').slice(-8).toUpperCase()}`;
 
   let products: OrderProduct[] = [];
 
@@ -60,12 +61,12 @@ export const transformOrder = (order: any, alamatAktif?: any, cartItems?: OrderP
   const contactPhone = resolvedAddress?.phoneNumber || resolvedAddress?.telp || "";
   const contact = `${contactName} | ${contactPhone}`.trim();
 
-  // ✅ PERBAIKAN: Sertakan ID order asli
+
   return {
-    id: order.id, // ← INI YANG DIBUTUHKAN
+    id: actualOrderId, 
     orderNumber: orderNumber,
     status: order.status || "PROCESSING",
-    total: order.total || `Rp${calculatedTotal.toLocaleString("id-ID")}`,
+    total: `Rp${calculatedTotal.toLocaleString("id-ID")}`,
     paymentMethod: order.paymentMethod || "COD",
     address: formattedAddress,
     contact: contact,

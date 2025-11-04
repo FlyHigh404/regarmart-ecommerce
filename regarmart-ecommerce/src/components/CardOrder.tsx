@@ -1,5 +1,5 @@
 "use client";
-import { Truck, XCircle } from "lucide-react";
+import { Truck, XCircle, CheckCircle } from "lucide-react";
 import Image from "next/image";
 import React, { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
@@ -38,11 +38,12 @@ const CardOrder: React.FC<CardOrderProps> = ({
   const pathname = usePathname();
 
   const [openCancelPopup, setOpenCancelPopup] = useState(false);
+  const [openFinishPopup, setOpenFinishPopup] = useState(false);
   const [openRating, setOpenRating] = useState<null | OrderProduct>(null);
   const [loading, setLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
 
-  // ✅ PERBAIKAN: Fungsi update order status yang benar
+  // ✅ Fungsi update order status yang benar
   const updateOrderStatus = async (newStatus: "CANCELED" | "COMPLETED") => {
     try {
       setLoading(true);
@@ -94,6 +95,7 @@ const CardOrder: React.FC<CardOrderProps> = ({
 
       // Tutup popup sebelum redirect
       setOpenCancelPopup(false);
+      setOpenFinishPopup(false);
 
       // Redirect setelah update berhasil
       setTimeout(() => {
@@ -108,6 +110,7 @@ const CardOrder: React.FC<CardOrderProps> = ({
       console.error("❌ Update failed:", err);
       alert(err.message || "Terjadi kesalahan saat mengubah status pesanan");
       setOpenCancelPopup(false);
+      setOpenFinishPopup(false);
     } finally {
       setLoading(false);
     }
@@ -178,7 +181,7 @@ const CardOrder: React.FC<CardOrderProps> = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                handleCompleteOrder();
+                setOpenFinishPopup(true);
               }}
               disabled={loading}
               className="rounded-[10px] sm:rounded-[13px] bg-green-100 text-green-600 px-3 sm:px-4 py-1 text-[11px] sm:text-[12px] font-semibold hover:bg-green-200 transition-all disabled:opacity-70"
@@ -196,7 +199,7 @@ const CardOrder: React.FC<CardOrderProps> = ({
             </button>
           </div>
         );
-      case OrderStatus.CANCELED:
+      case OrderStatus.COMPLETED:
         return (
           <div className="mt-3 text-right">
             <button
@@ -210,6 +213,7 @@ const CardOrder: React.FC<CardOrderProps> = ({
             </button>
           </div>
         );
+      case OrderStatus.CANCELED:
         return (
           <div className="mt-3 text-right">
             <button
@@ -335,7 +339,7 @@ const CardOrder: React.FC<CardOrderProps> = ({
 
       {/* Popup Pembatalan */}
       {openCancelPopup && (
-        <div className="fixed inset-0 flex items-center justify-center bg-transparent backdrop-blur-2xl z-50 p-3">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50 p-3">
           <div className="bg-white w-full max-w-sm rounded-xl p-5 shadow-xl text-center">
             <XCircle className="w-10 h-10 sm:w-12 sm:h-12 text-red-500 mx-auto mb-3" />
             <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-1">
@@ -374,7 +378,8 @@ const CardOrder: React.FC<CardOrderProps> = ({
             <div className="flex gap-3">
               <button
                 onClick={() => setOpenCancelPopup(false)}
-                className="flex-1 border border-gray-300 text-gray-700 font-semibold rounded-lg h-10 hover:bg-gray-100 transition"
+                disabled={loading}
+                className="flex-1 border border-gray-300 text-gray-700 font-semibold rounded-lg h-10 hover:bg-gray-100 transition disabled:opacity-50"
               >
                 Tidak
               </button>
@@ -384,6 +389,64 @@ const CardOrder: React.FC<CardOrderProps> = ({
                 className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg h-10 transition disabled:opacity-70"
               >
                 {loading ? "Memproses..." : "Iya, Batalkan"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Popup Selesaikan Pesanan */}
+      {openFinishPopup && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50 p-3">
+          <div className="bg-white w-full max-w-sm rounded-xl p-5 shadow-xl text-center">
+            <CheckCircle className="w-10 h-10 sm:w-12 sm:h-12 text-green-500 mx-auto mb-3" />
+            <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-1">
+              Selesaikan pesanan?
+            </h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Apakah Anda yakin pesanan sudah diterima dan ingin menyelesaikan pesanan ini?
+            </p>
+
+            <div className="border border-gray-200 rounded-lg p-3 text-left mb-4">
+              <p className="text-sm font-semibold">
+                No Pesanan:{" "}
+                <span className="text-green-700">#{orderNumber}</span>
+              </p>
+              {products.length > 0 && (
+                <div className="flex items-center gap-2 mt-2">
+                  <Image
+                    src={products[0]?.image || "/placeholder.svg"}
+                    alt={products[0]?.name || "Produk"}
+                    width={40}
+                    height={40}
+                    className="rounded-md object-cover"
+                  />
+                  <div>
+                    <p className="text-xs text-gray-800">
+                      {products[0]?.name || "Nama produk"}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Qty: x{products[0]?.qty}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setOpenFinishPopup(false)}
+                disabled={loading}
+                className="flex-1 border border-gray-300 text-gray-700 font-semibold rounded-lg h-10 hover:bg-gray-100 transition disabled:opacity-50"
+              >
+                Tidak
+              </button>
+              <button
+                onClick={handleCompleteOrder}
+                disabled={loading}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg h-10 transition disabled:opacity-70"
+              >
+                {loading ? "Memproses..." : "Iya, Selesaikan"}
               </button>
             </div>
           </div>

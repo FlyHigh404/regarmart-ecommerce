@@ -79,10 +79,10 @@ export default function TransaksiSelesaiPage() {
       ) : (
         <div className="p-4 space-y-4">
           {orders.map((order, index) => (
-            <div key={order.orderNumber || index}>
+            <div key={order.orderId || index}>
               <CardOrder
                 index={index}
-                orderNumber={order.orderNumber}
+                orderNumber={order.orderId}
                 status={order.status}
                 total={order.total}
                 products={order.products}
@@ -90,8 +90,7 @@ export default function TransaksiSelesaiPage() {
                 address={order.address}
                 contact={order.contact}
                 dateCompleted={order.dateCompleted}
-                onShowDetail={() => handleShowOrderConfirm(order)} 
-              />
+                onShowDetail={() => handleShowOrderConfirm(order)} orderId={""}              />
             </div>
           ))}
         </div>

@@ -79,7 +79,6 @@ export default function TransaksiDikirimPage() {
       ) : (
         <div className="p-4 space-y-4">
           {orders.map((order, index) => (
-            // ✅ HAPUS ONCLICK DARI SINI
             <div key={order.orderNumber || index}>
               <CardOrder
                 index={index}
@@ -92,7 +91,7 @@ export default function TransaksiDikirimPage() {
                 address={order.address}
                 contact={order.contact}
                 dateCompleted={order.dateCompleted}
-                onShowDetail={() => handleShowOrderConfirm(order)} // ✅ TAMBAH PROP INI
+                onShowDetail={() => handleShowOrderConfirm(order)}
               />
             </div>
           ))}

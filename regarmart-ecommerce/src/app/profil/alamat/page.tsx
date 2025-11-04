@@ -370,45 +370,45 @@ export default function ProfileAddressPage() {
                 <X size={20} />
               </button>
               <h2 className="text-base md:text-lg font-bold text-black mb-4 text-center pr-8">
-                Edit Address
+                Ubah Alamat
               </h2>
               <hr className="border-gray-200 my-3" />
 
               <div className="space-y-4">
                 <InputBox
-                  label="Address Label"
+                  label="Label Alamat"
                   value={addressEdit.label || ""}
                   onChange={(e) => setAddressEdit({ ...addressEdit, label: e.target.value })}
-                  placeholder="e.g. Home, Office"
+                  placeholder="misalnya Rumah, Kantor"
                   disabled={isSaving}
                 />
 
                 <InputBox
-                  label="Full Address"
+                  label="Alamat Lengkap"
                   value={addressEdit.fullAddress}
                   onChange={(e) => setAddressEdit({ ...addressEdit, fullAddress: e.target.value })}
-                  placeholder="Enter full address"
+                  placeholder="Masukkan alamat lengkap"
                   disabled={isSaving}
                 />
 
                 <InputBox
-                  label="Note for Courier (Optional)"
+                  label="Catatan untuk Kurir (Opsional)"
                   value={addressEdit.note || ""}
                   onChange={(e) => setAddressEdit({ ...addressEdit, note: e.target.value })}
-                  placeholder="e.g. House color, landmarks"
+                  placeholder="misalnya Warna rumah, landmark, instruksi khusus"
                   disabled={isSaving}
                 />
 
                 <InputBox
-                  label="Recipient Name"
+                  label="Nama Penerima"
                   value={addressEdit.recipientName}
                   onChange={(e) => setAddressEdit({ ...addressEdit, recipientName: e.target.value })}
-                  placeholder="Full name"
+                  placeholder="Masukkan nama penerima"
                   disabled={isSaving}
                 />
 
                 <InputBox
-                  label="Phone Number"
+                  label="Nomor Telepon"
                   value={addressEdit.phoneNumber}
                   onChange={(e) => setAddressEdit({ ...addressEdit, phoneNumber: e.target.value })}
                   placeholder="08xxxxxxxxxx"
@@ -428,7 +428,7 @@ export default function ProfileAddressPage() {
                       Menyimpan...
                     </>
                   ) : (
-                    "Save"
+                    "Simpan"
                   )}
                 </button>
               </div>

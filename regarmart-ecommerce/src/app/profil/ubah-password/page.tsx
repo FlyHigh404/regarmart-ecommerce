@@ -124,14 +124,6 @@ export default function UbahPasswordPage() {
           >
             {showPassword.new ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
-          {/* Password dots display when there's content */}
-          {formData.newPassword && !showPassword.new && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 flex space-x-1">
-              {Array.from({ length: Math.min(formData.newPassword.length, 8) }).map((_, i) => (
-                <div key={i} className="w-1.5 h-1.5 bg-gray-800 rounded-full"></div>
-              ))}
-            </div>
-          )}
         </div>
 
         {/* Konfirmasi Password */}
@@ -158,14 +150,6 @@ export default function UbahPasswordPage() {
           >
             {showPassword.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
-          {/* Password dots display when there's content */}
-          {formData.confirmPassword && !showPassword.confirm && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 flex space-x-1">
-              {Array.from({ length: Math.min(formData.confirmPassword.length, 8) }).map((_, i) => (
-                <div key={i} className="w-1.5 h-1.5 bg-gray-800 rounded-full"></div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
 

@@ -141,16 +141,16 @@ useEffect(() => {
       setLoadingProducts(true);
       const params = new URLSearchParams();
       
-      // ✅ FILTER PENCARIAN
+      //  FILTER PENCARIAN
       if (searchTerm) params.append("q", searchTerm);
 
-      // ✅ FILTER KATEGORI
+      //  FILTER KATEGORI
       const filtered = selectedCategories.filter((c) => c !== "all");
       if (filtered.length > 0) {
         params.append("categoryId", filtered.join(","));
       }
 
-      // ✅ FILTER HARGA (jika ada)
+      // FILTER HARGA 
       if (priceRange.min !== null) {
         params.append("minPrice", priceRange.min.toString());
       }
@@ -158,12 +158,13 @@ useEffect(() => {
         params.append("maxPrice", priceRange.max.toString());
       }
 
-      // ✅ FILTER RATING (jika ada)
-      if (selectedRatings.length > 0) {
-        // Ambil rating tertinggi yang dipilih (misal: jika pilih 4+ dan 3+, ambil 3+ saja)
+
+      // ✅ FILTER RATING
+         if (selectedRatings.length > 0) {
         const minRating = Math.min(...selectedRatings);
         params.append("minRating", minRating.toString());
       }
+      
 
       params.append("page", currentPage.toString());
       params.append("limit", itemsPerPage.toString());
@@ -224,112 +225,6 @@ useEffect(() => {
   }
 }, [searchTerm, selectedCategories, currentPage, loading, priceRange, selectedRatings]);
 
-//   // fetch produk
-// useEffect(() => {
-//   const fetchProducts = async () => {
-//     try {
-//       setLoadingProducts(true);
-//       const params = new URLSearchParams();
-//       if (searchTerm) params.append("q", searchTerm);
-
-//       const filtered = selectedCategories.filter((c) => c !== "all");
-//       if (filtered.length > 0) {
-//         params.append("categoryId", filtered.join(","));
-//       }
-
-//       params.append("page", currentPage.toString());
-//       params.append("limit", itemsPerPage.toString());
-
-//       const res = await fetch(`/api/products/search?${params.toString()}`);
-//       if (!res.ok) throw new Error("Gagal memuat produk");
-      
-//       const data = await res.json();
-
-//       setProducts(data.data || []);
-//       setTotalPages(data.meta?.totalPages || 1);
-//       setTotalProducts(data.meta?.total || 0);
-      
-//       // Show info toast when filter applied
-//       if (filtered.length > 0 && currentPage === 1) {
-//         const categoryNames = categories
-//           .filter(c => filtered.includes(c.id))
-//           .map(c => c.name)
-//           .join(", ");
-//         setToast({
-//           message: `Menampilkan produk dari: ${categoryNames}`,
-//           type: 'info'
-//         });
-//       }
-//     } catch (err: any) {
-//       console.error("Error fetching products:", err);
-//       setError(err.message);
-//       setToast({
-//         message: "Gagal memuat produk",
-//         type: 'error'
-//       });
-//     } finally {
-//       setLoadingProducts(false);
-//     }
-//   };
-  
-//   if (!loading) {
-//     fetchProducts();
-//   }
-// }, [searchTerm, selectedCategories, currentPage, loading]); 
-
-  // fetch produk
-  // useEffect(() => {
-  //   const fetchProducts = async () => {
-  //     try {
-  //       setLoadingProducts(true);
-  //       const params = new URLSearchParams();
-  //       if (searchTerm) params.append("q", searchTerm);
-
-  //       const filtered = selectedCategories.filter((c) => c !== "all");
-  //       if (filtered.length > 0) {
-  //         params.append("categoryId", filtered.join(","));
-  //       }
-
-  //       params.append("page", currentPage.toString());
-  //       params.append("limit", itemsPerPage.toString());
-
-  //       const res = await fetch(`/api/products/search?${params.toString()}`);
-  //       if (!res.ok) throw new Error("Gagal memuat produk");
-        
-  //       const data = await res.json();
-
-  //       setProducts(data.data || []);
-  //       setTotalPages(data.meta?.totalPages || 1);
-  //       setTotalProducts(data.meta?.total || 0);
-        
-  //       // Show info toast when filter applied
-  //       if (filtered.length > 0 && currentPage === 1) {
-  //         const categoryNames = categories
-  //           .filter(c => filtered.includes(c.id))
-  //           .map(c => c.name)
-  //           .join(", ");
-  //         setToast({
-  //           message: `Menampilkan produk dari: ${categoryNames}`,
-  //           type: 'info'
-  //         });
-  //       }
-  //     } catch (err: any) {
-  //       console.error("Error fetching products:", err);
-  //       setError(err.message);
-  //       setToast({
-  //         message: "Gagal memuat produk",
-  //         type: 'error'
-  //       });
-  //     } finally {
-  //       setLoadingProducts(false);
-  //     }
-  //   };
-    
-  //   if (!loading) {
-  //     fetchProducts();
-  //   }
-  // }, [searchTerm, selectedCategories, currentPage, loading]);
-
   // efek scroll
   useEffect(() => {
     const handleScroll = () => {
@@ -346,11 +241,14 @@ useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleApplyFilters = (filters: any) => {
+ const handleApplyFilters = (filters: any) => {
   console.log('Filters applied:', filters);
 
-
-  //harga
+  // Reset dulu semua filter
+  setPriceRange({ min: null, max: null });
+  setSelectedRatings([]);
+  
+  // Terapkan filter baru
   if (filters.minPrice !== null || filters.maxPrice !== null) {
     setPriceRange({
       min: filters.minPrice,
@@ -358,14 +256,15 @@ useEffect(() => {
     });
   }
   
-  //rating
   if (filters.ratings && filters.ratings.length > 0) {
     setSelectedRatings(filters.ratings);
   }
   
-  //kategori
+  // Kategori - hanya set jika ada kategori yang dipilih
   if (filters.categories && filters.categories.length > 0) {
     setSelectedCategories(filters.categories);
+  } else {
+    setSelectedCategories(["all"]);
   }
   
   setCurrentPage(1);
@@ -383,16 +282,16 @@ useEffect(() => {
 
   // Handle reset filters
   const handleResetFilters = () => {
-    setSelectedCategories(["all"]);
-    setSearchTerm("");
-    setPriceRange({ min: null, max: null }); 
-    setSelectedRatings([]);
-    setCurrentPage(1);
-    setToast({
-      message: "Filter direset",
-      type: 'info'
-    });
-  };
+  setSelectedCategories(["all"]);
+  setSearchTerm("");
+  setPriceRange({ min: null, max: null }); 
+  setSelectedRatings([]);
+  setCurrentPage(1);
+  setToast({
+    message: "Filter direset",
+    type: 'info'
+  });
+};
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -432,9 +331,9 @@ useEffect(() => {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1">
+        <main className="flex-1 mt-10 md:mt-0 ">
           {/* Header with filters info */}
-          <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
+          <div className="mb-6 flex items-center justify-between flex-wrap gap-4 sm:mt-15">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 mb-1">
                 Katalog Produk
@@ -460,15 +359,16 @@ useEffect(() => {
               <span className="text-sm font-medium">Filter</span>
             </button>
 
-            {/* Reset Filters Button */}
-            {(selectedCategories[0] !== "all" || searchTerm || priceRange.min !== null || priceRange.max !== null || selectedRatings.length > 0) && (
-              <button
-                onClick={handleResetFilters}
-                className="text-sm text-gray-600 hover:text-green-600 font-medium transition-colors"
-              >
-                Reset Filter
-              </button>
-            )}
+          {/* Reset Filters Button */}
+          {(selectedCategories[0] !== "all" || searchTerm || priceRange.min !== null || priceRange.max !== null || selectedRatings.length > 0) && (
+            <button
+              onClick={handleResetFilters}
+              className="hidden md:flex items-center gap-2 text-sm text-gray-600 hover:text-green-600 font-medium transition-colors px-3 py-2 border border-gray-300 rounded-lg hover:border-green-500 cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+              Reset Filter
+            </button>
+          )}
           </div>
 
           {/* Loading State */}
@@ -553,7 +453,8 @@ useEffect(() => {
             setSelectedCategories(["all"]);
             setCurrentPage(1);
           }}
-          onApplyFilters={handleApplyFilters} 
+          onApplyFilters={handleApplyFilters}
+          onResetAll={handleResetFilters}
         />
       )}
 

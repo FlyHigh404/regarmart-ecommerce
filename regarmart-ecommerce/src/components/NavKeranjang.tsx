@@ -3,7 +3,7 @@ import Link from "next/link"
 const NavKeranjang = () => {
   return (
     <nav className="w-full bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-      <div className="flex items-center h-16 md:h-24 px-4 md:px-8 md:pl-52">
+      <div className="flex items-center h-16 md:h-24 px-4 md:px-8 md:pl-16">
         <Link href="/" className="flex items-center gap-2 md:gap-4">
           <img src="/Logo.png" alt="RegarMart Logo" className="w-24 h-8 md:w-48 md:h-14 object-contain" />
         </Link>

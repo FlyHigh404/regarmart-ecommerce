@@ -267,9 +267,11 @@ const ProductDetailPage = () => {
         return;
       }
 
+        setQuantity(1);
       // Fetch product data
       const productResponse = await fetch(`/api/products/${productId}`);
       if (!productResponse.ok) throw new Error("Gagal mengambil data produk");
+
       const productData = await productResponse.json();
       setProduct(productData);
 
@@ -408,73 +410,65 @@ const ProductDetailPage = () => {
     });
   };
 
-  const handleBuyNow = async () => {
-    if (!session) {
-      showLoginAlert();
-      return;
-    }
-
-    if (session.user?.role === "ADMIN") {
-      setToast({
-        message: "Akun admin tidak dapat membeli produk.",
-        type: "error",
-      });
-      return;
-    }
-
+ const handleBuyNow = async () => {
     if (!product) {
-      setToast({
-        message: "Produk tidak ditemukan.",
-        type: "error",
-      });
-      return;
+        setToast({ message: "Produk tidak ditemukan.", type: "error" });
+        return;
+    }
+    
+    if (product.stock === 0) {
+        setToast({ message: "Stok produk habis.", type: "error" });
+        return;
+    }
+    if (product.stock < quantity) {
+        setToast({ message: "Stok produk tidak mencukupi.", type: "error" });
+        return;
     }
 
-    if (product.stock < quantity) {
-      setToast({
-        message: "Stok produk tidak mencukupi.",
-        type: "error",
-      });
-      return;
+    if (!session?.user) {
+        router.push(`/auth/signin?callbackUrl=/products/${product.id}`);
+        return; 
+    }
+
+    // 3. Cek Role Admin
+    if (session.user?.role === "ADMIN") {
+        setToast({
+            message: "Akun admin tidak dapat membeli produk.",
+            type: "error",
+        });
+        return;
     }
 
     try {
-      setAddingToCart(true);
+        setLoading(true);
+        
+        const response = await fetch('/api/order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                productId: product.id,
+                quantity
+            })
+        });
 
-      const response = await fetch("/api/order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productId: product.id,
-          quantity,
-          unitPrice: product.price,
-        }),
-      });
+        const result = await response.json();
 
-      const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message || 'Failed to create order');
+        }
 
-      if (!response.ok) {
-        throw new Error(result.message || "Gagal membuat pesanan.");
-      }
-
-      setToast({
-        message: "Pesanan berhasil dibuat! Mengarahkan ke checkout...",
-        type: "success",
-      });
-
-      setTimeout(() => {
-        router.push(`/checkout?orderId=${result.id}`);
-      }, 1000);
-    } catch (error: any) {
-      console.error("Error creating order:", error);
-      setToast({
-        message: error.message || "Terjadi kesalahan saat membuat pesanan.",
-        type: "error",
-      });
+        router.push(`/checkout?orderId=${result.order.id}`);
+        
+    } catch (error) {
+        console.error('Error creating order:', error);
+        setToast({ 
+            message: "Gagal membuat pesanan. Silakan coba lagi.", 
+            type: "error" 
+        });
     } finally {
-      setAddingToCart(false);
+        setLoading(false);
     }
-  };
+};
 
   const handleAddToCart = async () => {
     if (!session) {
@@ -894,7 +888,7 @@ const ProductDetailPage = () => {
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-gray-900 text-sm truncate">
+                <h3 className="font-medium text-gray-900 text-xs truncate">
                   {product.name}
                 </h3>
                 <div className="text-gray-500 text-xs">Total Harga</div>
@@ -925,9 +919,9 @@ const ProductDetailPage = () => {
                 <button
                   onClick={handleBuyNow}
                   disabled={product.stock === 0}
-                  className="bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm whitespace-nowrap"
+                  className="lex items-center justify-center bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors text-xs  cursor-pointer whitespace-nowrap"
                 >
-                  Beli Sekarang
+                  Beli<br /> Sekarang
                 </button>
                 <button
                   onClick={handleAddToCart}

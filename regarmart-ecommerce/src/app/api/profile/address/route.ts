@@ -3,8 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
 
-
-// GET -> ambil semua alamat user
 export async function GET() {
   const session = await getServerSession(authOptions);
 
@@ -25,7 +23,6 @@ export async function GET() {
   }
 }
 
-// POST -> tambah alamat baru
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
 
@@ -38,12 +35,40 @@ export async function POST(req: NextRequest) {
 
   if (!recipientName || !phoneNumber || !fullAddress) {
     return NextResponse.json(
-      { message: "Recipient name, phone number, and full address are required" },
+      { message: "Nama penerima, No Telepon, dan Alamat Lengkap harus diisi" },
+      { status: 400 }
+    );
+  }
+
+  const phoneRegex = /^[\d+\-\s()]+$/;
+  if (!phoneRegex.test(phoneNumber)) {
+    return NextResponse.json(
+      { 
+        message: "Nomor telepon harus berupa angka.",
+      },
       { status: 400 }
     );
   }
 
   try {
+    if (isPrimary) {
+      const existingPrimaryAddress = await prisma.address.findFirst({
+        where: {
+          userId: session.user.id,
+          isPrimary: true,
+        },
+      });
+
+      if (existingPrimaryAddress) {
+        return NextResponse.json(
+          { 
+            message: "Anda sudah memiliki alamat utama. Tolong hapus alamat utama saat ini terlebih dahulu.",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     const newAddress = await prisma.address.create({
       data: {
         userId: session.user.id,
@@ -64,6 +89,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-
-
-

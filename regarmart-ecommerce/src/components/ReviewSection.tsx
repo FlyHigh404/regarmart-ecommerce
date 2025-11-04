@@ -20,7 +20,7 @@ interface Review {
 
 interface ReviewSectionProps {
   reviews: Review[];
-  userRole?: string; // Tambahkan prop untuk role user saat ini
+  userRole?: string; 
 }
 
 const ReviewSection: React.FC<ReviewSectionProps> = ({ reviews, userRole }) => {
@@ -100,7 +100,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ reviews, userRole }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-[6px_6px_54px_0_rgba(0,0,0,0.05)] p-6 m-6">
+    <div className="bg-white rounded-xl shadow-[6px_6px_54px_0_rgba(0,0,0,0.05)] p-6 mt-8">
       {localReviews.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-[#6D706E] font-['Plus Jakarta Sans'] text-[16px] font-semibold">

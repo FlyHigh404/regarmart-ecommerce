@@ -30,10 +30,7 @@ const NotifikasiItem: React.FC<NotifItemProps> = ({
     const isGreenBackground = index % 2 !== 0; 
     const rowClass = isGreenBackground ? 'bg-white' : 'bg-green-50';
 
-    // Ekstrak informasi dari message jika diperlukan
-    // Asumsi message mengandung informasi yang diperlukan
     const extractOrderInfo = (msg: string) => {
-        // Anda bisa menyesuaikan logika parsing berdasarkan format message Anda
         const orderNumberMatch = msg.match(/#(\w+-\d+)/);
         const productMatch = msg.match(/produk\s+(.+?)(?=\s|$)/i);
         
@@ -73,10 +70,16 @@ const NotifikasiItem: React.FC<NotifItemProps> = ({
 const DROPDOWN_MAX_HEIGHT_CLASS = 'max-h-[320px]'; 
 
 interface NotifikasiCustProps {
-    notificationCount?: number; 
+    notificationCount?: number;
+    isMobile?: boolean;
+    onClose?: () => void;
 }
 
-const NotifikasiCust: React.FC<NotifikasiCustProps> = ({ notificationCount: externalCount }) => {
+const NotifikasiCust: React.FC<NotifikasiCustProps> = ({ 
+    notificationCount: externalCount,
+    isMobile = false,
+    onClose
+}) => {
     const [isClickedOpen, setIsClickedOpen] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const [notifications, setNotifications] = useState<NotificationItemData[]>([]);
@@ -135,7 +138,6 @@ const NotifikasiCust: React.FC<NotifikasiCustProps> = ({ notificationCount: exte
 
     const handleMarkAllRead = useCallback(async () => {
         try {
-            // Jika Anda ingin implementasi mark as read, Anda perlu membuat API endpoint DELETE
             const response = await fetch('/api/notifications', {
                 method: 'DELETE',
             });
@@ -154,7 +156,6 @@ const NotifikasiCust: React.FC<NotifikasiCustProps> = ({ notificationCount: exte
         }
     }, []);
     
-    // Fungsi untuk menentukan konten badge
     const getBadgeContent = () => {
         if (actualNotificationCount === 0) return 0; 
         if (actualNotificationCount > 9) return '9+';
@@ -163,6 +164,134 @@ const NotifikasiCust: React.FC<NotifikasiCustProps> = ({ notificationCount: exte
     
     const badgeContent = getBadgeContent();
 
+    // Mobile Version
+    if (isMobile) {
+        return (
+            <div className="w-full" ref={componentRef}>
+                {/* Mobile Button */}
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setIsClickedOpen(prev => !prev);
+                        fetchNotifications();
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                    <Bell className="w-5 h-5 text-gray-400" />
+                    <span>Notifikasi</span>
+                    {actualNotificationCount > 0 && (
+                        <span className="ml-auto bg-red-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full min-w-[20px] text-center">
+                            {badgeContent}
+                        </span>
+                    )}
+                </button>
+
+                {/* Mobile Dropdown - Full Width */}
+                {isClickedOpen && (
+                    <>
+                        {/* Backdrop */}
+                        <div 
+                            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60]"
+                            onClick={() => {
+                                setIsClickedOpen(false);
+                                onClose?.();
+                            }}
+                        />
+                        
+                        {/* Modal Panel */}
+                        <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl z-[70] max-h-[80vh] flex flex-col overflow-hidden">
+                            {/* Header */}
+                            <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-white">
+                                <h3 className="text-lg font-bold text-gray-800">Notifikasi</h3>
+                                <button 
+                                    onClick={() => {
+                                        setIsClickedOpen(false);
+                                        onClose?.();
+                                    }}
+                                    className="text-gray-400 hover:text-gray-600"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            {/* Content - Scrollable */}
+                            <div className="flex-1 overflow-y-auto">
+                                {/* Loading State */}
+                                {loading && (
+                                    <div className="p-4 text-center">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+                                        <p className="text-sm text-gray-500 mt-2">Memuat notifikasi...</p>
+                                    </div>
+                                )}
+
+                                {/* Error State */}
+                                {error && !loading && (
+                                    <div className="p-4 text-center">
+                                        <p className="text-red-500 text-sm mb-2">{error}</p>
+                                        <button 
+                                            onClick={fetchNotifications}
+                                            className="text-green-600 text-sm font-semibold hover:text-green-700"
+                                        >
+                                            Coba Lagi
+                                        </button>
+                                    </div>
+                                )}
+
+                                {/* Notifikasi Kosong */}
+                                {!loading && !error && notifications.length === 0 && (
+                                    <div className="p-8 text-center">
+                                        <img 
+                                            src="/bgnotif.png" 
+                                            alt="Tidak ada notifikasi" 
+                                            className="mx-auto w-32 h-32 object-contain mb-3"
+                                        />
+                                        <h2 className="text-md font-semibold text-gray-800 mb-1">
+                                            Tidak ada notifikasi
+                                        </h2> 	
+                                        <p className="text-sm text-gray-500">
+                                            Tidak ada notifikasi masuk
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* List Notifikasi */}
+                                {!loading && !error && notifications.length > 0 && (
+                                    <div className="divide-y divide-gray-200">
+                                        {notifications.map((notif, index) => (
+                                            <NotifikasiItem 
+                                                key={notif.id} 
+                                                {...notif} 
+                                                index={index} 
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Footer - Mark All Read */}
+                            {!loading && !error && notifications.length > 0 && (
+                                <div className="p-3 flex justify-center border-t border-gray-200 bg-white">
+                                    <button 
+                                        onClick={() => {
+                                            handleMarkAllRead();
+                                            onClose?.();
+                                        }}
+                                        className="text-sm font-semibold text-green-600 hover:text-green-700"
+                                    >
+                                        Tandai semua sudah dibaca
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </>
+                )}
+            </div>
+        );
+    }
+
+    // Desktop Version (Original)
     return (
         <div 
             className="relative"
@@ -263,14 +392,14 @@ const NotifikasiCust: React.FC<NotifikasiCustProps> = ({ notificationCount: exte
                                 ))}
                             </div>
                             
-                            <div className="p-3 flex justify-center border-t border-gray-200 sticky bottom-0 bg-white z-10">
+                            <div className="p-3 flex justify-center border-t border-gray-200 sticky bottom-0 bg-white z-10 cursor-pointer">
                                 <button 
                                     onClick={handleMarkAllRead}
                                     disabled={notifications.length === 0}
                                     className={`text-sm font-semibold transition ${
                                         notifications.length === 0
                                         ? 'text-gray-400 cursor-not-allowed'
-                                        : 'text-green-600 hover:text-green-700'
+                                        : 'text-green-600 hover:text-green-700 cursor-pointer'
                                     }`}
                                 >
                                     Tandai semua sudah dibaca

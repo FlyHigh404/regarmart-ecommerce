@@ -81,21 +81,20 @@ export default function TransaksiDibatalkanPage() {
         <div className="p-4 space-y-4">
           {orders.map((order, index) => (
             <div
-              key={order.orderNumber || index}
+              key={order.orderId || index}
               onClick={() => handleShowOrderConfirm(order)}
               className="cursor-pointer"
             >
               <CardOrder
                 index={index}
-                orderNumber={order.orderNumber}
+                orderNumber={order.orderId}
                 status={order.status}
                 total={order.total}
                 products={order.products}
                 paymentMethod={order.paymentMethod}
                 address={order.address}
                 contact={order.contact}
-                dateCompleted={order.dateCompleted}
-              />
+                dateCompleted={order.dateCompleted} orderId={""}              />
             </div>
           ))}
         </div>
