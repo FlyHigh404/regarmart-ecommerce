@@ -52,9 +52,11 @@ const totalPembayaran = subtotal + ongkir - diskon;
   useEffect(() => {
     const fetchCheckoutData = async () => {
       try {
+        const searchParams = new URLSearchParams(window.location.search);
+        const orderId = searchParams.get("orderId");
         setLoading(true);
         const [cartResponse, addressResponse] = await Promise.all([
-          fetch("/api/cart"),
+          fetch(`/api/cart${orderId ? `?orderId=${orderId}` : ""}`),
           fetch("/api/profile/address-primary"),
         ]);
 
