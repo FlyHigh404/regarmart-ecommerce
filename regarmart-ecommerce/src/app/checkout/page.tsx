@@ -7,14 +7,13 @@ import CheckoutNavbar from "@/components/NavCheckout";
 import OrderConfirm from "@/components/OrderConfirm";
 import { OrderStatus, PaymentMethod } from "@/types/order";
 import Footer from "@/components/Footer";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import useOrderSocket from "@/hooks/useOrderSocket";
 import AuthCheck from "@/components/AuthCheck";
 import { transformOrder } from "@/lib/transformOrder";
 
 const CheckoutPage: React.FC = () => {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [openOrderConfirm, setOpenOrderConfirm] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.COD);
   const [alamatAktif, setAlamatAktif] = useState<Alamat | null>(null);
@@ -23,10 +22,6 @@ const CheckoutPage: React.FC = () => {
   const [processingCheckout, setProcessingCheckout] = useState(false);
   const [openAlamat, setOpenAlamat] = useState(false);
   const [qrisUrl, setQrisUrl] = useState<string | null>(null);
-
-  const isDirectBuy = searchParams.get('directBuy') === 'true';
-  const productId = searchParams.get('productId');
-  const quantity = parseInt(searchParams.get('qty') || '1');
 
   const ongkir = 20000;
   const diskon = 0;
@@ -54,8 +49,6 @@ const totalPembayaran = subtotal + ongkir - diskon;
     }
   });
 
-  const orderId = searchParams.get('orderId');
-
   useEffect(() => {
     const fetchCheckoutData = async () => {
       try {
@@ -67,37 +60,15 @@ const totalPembayaran = subtotal + ongkir - diskon;
           fetch("/api/profile/address-primary"),
         ]);
 
-        // 🔥 FETCH ORDER DATA
-        if (isDirectBuy && productId) {
-          const productResponse = await fetch(`/api/products/${productId}`);
-          if (!productResponse.ok) {
-            throw new Error("Product not found");
-          }
-          const product = await productResponse.json();
-
-          
-          setOrder({
-            id: null, 
-            totalAmount: Number(product.price) * quantity,
-            orderItems: [{
-              id: null,
-              productId: product.id,
-              quantity: quantity,
-              unitPrice: product.price,
-              product: product
-            }],
-            status: "PENDING",
-            paymentMethod: PaymentMethod.COD
-          });
-        } else {
-          const cartResponse = await fetch("/api/cart");
-          if (!cartResponse.ok) {
-            throw new Error("Failed to fetch cart");
-          }
-          const cartData = await cartResponse.json();
-          setOrder(cartData);
+        if (!cartResponse.ok || !addressResponse.ok) {
+          throw new Error("Failed to fetch checkout data");
         }
 
+        const cartData = await cartResponse.json();
+        const addressData = await addressResponse.json();
+
+        setOrder(cartData);
+        setAlamatAktif(addressData);
       } catch (error) {
         console.error("Error fetching checkout data:", error);
         setOrder(null);
@@ -108,7 +79,7 @@ const totalPembayaran = subtotal + ongkir - diskon;
     };
 
     fetchCheckoutData();
-  }, [isDirectBuy, productId, quantity]);
+  }, []);
 
  const processCheckout = async () => {
   if (!alamatAktif?.id) {
@@ -129,9 +100,15 @@ const totalPembayaran = subtotal + ongkir - diskon;
 
     const result = await response.json();
 
+    // 🔥 DEBUG DETAILED
     console.log("=== CHECKOUT DEBUG ===");
     console.log("Response status:", response.status);
     console.log("Full result:", result);
+    console.log("Result ID:", result.id);
+    console.log("Result orderItems:", result.orderItems);
+    console.log("Result orderItems length:", result.orderItems?.length);
+    console.log("Result selectedAddress:", result.selectedAddress);
+    console.log("Result totalAmount:", result.totalAmount);
     console.log("=== END DEBUG ===");
 
     if (!response.ok) {
@@ -146,6 +123,11 @@ const totalPembayaran = subtotal + ongkir - diskon;
     if (paymentMethod === PaymentMethod.COD) {
       const transformedOrder = transformOrder(result, alamatAktif);
       console.log("Transformed order:", transformedOrder);
+       console.log("=== ORDER CONFIRM DEBUG ===");
+  console.log("Transformed products:", transformedOrder.products);
+  console.log("First product structure:", transformedOrder.products[0]);
+  console.log("Product keys:", transformedOrder.products[0] && Object.keys(transformedOrder.products[0]));
+  console.log("=== END DEBUG ===");
       
       setOrder(transformedOrder);
       setOpenOrderConfirm(true);
@@ -244,7 +226,7 @@ const totalPembayaran = subtotal + ongkir - diskon;
               {/* Daftar Produk */}
               {order?.orderItems?.map((item: any, idx: number) => (
                 <div
-                  key={item.id || idx}
+                  key={item.id}
                   className="bg-white shadow rounded-xl p-3 max-sm:shadow-none max-sm:rounded-none max-sm:border-b border-gray-200"
                 >
                   <h3 className="text-xs font-semibold mb-2">
@@ -502,7 +484,7 @@ const totalPembayaran = subtotal + ongkir - diskon;
           </div>
         )}
 
- {/* Order Confirm Modal */}
+ {/* Order Confirm Modal - FIXED */}
 {openOrderConfirm && order && (
   <OrderConfirm
     open={openOrderConfirm}
@@ -512,10 +494,11 @@ const totalPembayaran = subtotal + ongkir - diskon;
         router.push("/profil/riwayat-transaksi");
       }
     }}
-    orderNumber={`${order?.id?.toString().padStart(4, "0")}`}
+    orderNumber={order.orderNumber || `#INV-${order?.id?.toString().padStart(4, "0")}`}
     status={order.status || OrderStatus.PROCESSING}
     paymentMethod={order.paymentMethod || paymentMethod}
     products={
+      // 🔥 PRIORITASKAN order.products DARI TRANSFORMORDER
       order.products && order.products.length > 0 
         ? order.products 
         : order?.orderItems?.map((item: any) => ({
