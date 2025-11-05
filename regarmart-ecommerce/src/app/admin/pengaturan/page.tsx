@@ -35,7 +35,7 @@ const Pengaturan = () => {
             try {
                 const res = await fetch("/api/admin/profile")
                 if (!res.ok) throw new Error("Failed to fetch profile")
-                
+
                 const data = await res.json()
                 setFormData({
                     name: data.name || "",
@@ -90,7 +90,7 @@ const Pengaturan = () => {
             }
 
             const data = await res.json()
-            
+
             // Update profile image via API
             const updateRes = await fetch("/api/admin/profile", {
                 method: "PUT",
@@ -207,12 +207,12 @@ const Pengaturan = () => {
                 <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                     {/* Tab Navigation */}
                     <div className="border-b border-gray-200">
-                        <div className="flex justify-center gap-52">
+                        <div className="flex justify-center gap-4 sm:gap-52">
                             <button
                                 onClick={() => setActiveTab("kelola-akun")}
                                 className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === "kelola-akun"
-                                        ? "text-green-600 border-green-600"
-                                        : "text-gray-500 border-transparent hover:text-gray-700"
+                                    ? "text-green-600 border-green-600"
+                                    : "text-gray-500 border-transparent hover:text-gray-700"
                                     }`}
                             >
                                 Kelola akun
@@ -220,8 +220,8 @@ const Pengaturan = () => {
                             <button
                                 onClick={() => setActiveTab("pengaturan-dashboard")}
                                 className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === "pengaturan-dashboard"
-                                        ? "text-green-600 border-green-600"
-                                        : "text-gray-500 border-transparent hover:text-gray-700"
+                                    ? "text-green-600 border-green-600"
+                                    : "text-gray-500 border-transparent hover:text-gray-700"
                                     }`}
                             >
                                 Ganti Password
@@ -250,10 +250,10 @@ const Pengaturan = () => {
                                     <div className="bg-green-50 rounded-xl p-6 text-center">
                                         <div className="w-48 h-48 mx-auto mb-4 rounded-xl overflow-hidden bg-transparent flex items-center justify-center">
                                             {formData.profileImage ? (
-                                                <img 
-                                                    src={formData.profileImage} 
-                                                    alt="Profile" 
-                                                    className="w-full h-full object-cover" 
+                                                <img
+                                                    src={formData.profileImage}
+                                                    alt="Profile"
+                                                    className="w-full h-full object-cover"
                                                 />
                                             ) : (
                                                 <div className="text-white text-5xl font-bold">
@@ -315,7 +315,7 @@ const Pengaturan = () => {
                         )}
 
                         {activeTab === "pengaturan-dashboard" && (
-                            <div className="max-w-2xl mx-auto">                                
+                            <div className="max-w-2xl mx-auto">
                                 <form onSubmit={handlePasswordChange} className="space-y-6">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
