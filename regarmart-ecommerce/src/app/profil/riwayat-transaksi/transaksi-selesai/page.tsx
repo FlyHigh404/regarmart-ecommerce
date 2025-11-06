@@ -1,17 +1,15 @@
+// app/profil/riwayat-transaksi/transaksi-diproses/page.tsx
 "use client"
 import CardOrder from "@/components/CardOrder";
-import OrderConfirm from "@/components/OrderConfirm";
 import TabRiwayat from "@/components/TabRiwayat";
 import { transformOrder } from "@/lib/transformOrder";
 import { OrderStatus } from "@prisma/client";
 import { useEffect, useState } from "react";
 
-export default function TransaksiSelesaiPage() {
+export default function TransaksiDiprosesPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [alamatAktif, setAlamatAktif] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
-  const [openOrderConfirm, setOpenOrderConfirm] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,9 +48,10 @@ export default function TransaksiSelesaiPage() {
     fetchData();
   }, []);
 
+  // GUNAKAN EVENT SYSTEM - lebih reliable
   const handleShowOrderConfirm = (order: any) => {
-    setSelectedOrder(order);
-    setOpenOrderConfirm(true);
+    console.log("🟢 Mengirim event dengan order:", order);
+    window.dispatchEvent(new CustomEvent('orderConfirm:open', { detail: order }));
   };
 
   if (isLoading) {
@@ -74,15 +73,16 @@ export default function TransaksiSelesaiPage() {
         <div className="p-4 text-center">
           <img src="/bgcart.png" alt="Kosong" className="mx-auto w-32 h-32 mb-2" />
           <h2 className="text-md font-semibold text-gray-800 mb-1">Tidak ada transaksi</h2>
-          <p className="text-sm text-gray-500">Belum ada pesanan selesai</p>
+          <p className="text-sm text-gray-500">Belum ada pesanan diproses</p>
         </div>
       ) : (
         <div className="p-4 space-y-4">
           {orders.map((order, index) => (
-            <div key={order.orderId || index}>
+            <div key={order.orderNumber || index}>
               <CardOrder
                 index={index}
-                orderNumber={order.orderId}
+                orderId={order.id}
+                orderNumber={order.orderNumber}
                 status={order.status}
                 total={order.total}
                 products={order.products}
@@ -90,24 +90,11 @@ export default function TransaksiSelesaiPage() {
                 address={order.address}
                 contact={order.contact}
                 dateCompleted={order.dateCompleted}
-                onShowDetail={() => handleShowOrderConfirm(order)} orderId={""}              />
+                onShowDetail={() => handleShowOrderConfirm(order)} 
+              />
             </div>
           ))}
         </div>
-      )}
-
-      {selectedOrder && (
-        <OrderConfirm
-          open={openOrderConfirm}
-          onClose={() => setOpenOrderConfirm(false)}
-          orderNumber={selectedOrder.orderNumber} 
-          status={selectedOrder.status}
-          paymentMethod={selectedOrder.paymentMethod}
-          products={selectedOrder.products} 
-          total={selectedOrder.total}
-          address={selectedOrder.address} 
-          contact={selectedOrder.contact} 
-        />
       )}
     </div>
   );

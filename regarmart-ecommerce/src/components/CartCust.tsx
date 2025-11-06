@@ -83,20 +83,8 @@ const CartCust: React.FC = () => {
 
   const isDropdownVisible = isClickedOpen || isHovered;
 
-  // Initial fetch cart count
-  useEffect(() => {
-    fetchCartCount();
-  }, [fetchCartCount]);
-
-  // Refresh cart count ketika dropdown ditutup
-  useEffect(() => {
-    if (!isDropdownVisible) {
-      fetchCartCount();
-    }
-  }, [isDropdownVisible, fetchCartCount]);
-
-  //  Fetch detail item ketika dropdown dibuka
-  useEffect(() => {
+  // Di dalam useEffect fetchCart (baris ~85)
+useEffect(() => {
     if (isDropdownVisible) {
       const fetchCart = async () => {
         try {
@@ -119,9 +107,11 @@ const CartCust: React.FC = () => {
               imageUrl: item.product.imageUrl[0] || "/placeholder.svg",
             }));
             setCartItems(formattedItems);
+
+            const totalQty = formattedItems.reduce((sum: any, item: { quantity: any; }) => sum + item.quantity, 0);
             
             // Update cart count dari hasil fetch actual
-            if (formattedItems.length !== cartCount) {
+            if (totalQty !== cartCount) {
               fetchCartCount();
             }
           } else {

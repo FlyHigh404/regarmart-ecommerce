@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import InputBox from "@/components/InputBox"
 import { User, Smartphone, Home, MapPin, ClipboardList } from "lucide-react"
 import { useToast, Toast } from "@/components/Toast"
@@ -57,6 +57,18 @@ const AddAddress: React.FC<AddAddressProps> = ({ isOpen, onClose, onSave }) => {
   const [agree, setAgree] = useState(false)
   const { toast, showToast, hideToast } = useToast()
 
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen])
+
   if (!isOpen) return null
 
   const handleSave = async () => {
@@ -106,16 +118,24 @@ const AddAddress: React.FC<AddAddressProps> = ({ isOpen, onClose, onSave }) => {
     }
   }
 
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose()
+    }
+  }
+
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 font-jakarta px-3 sm:px-0">
-      <div className="bg-white w-full sm:w-[650px] max-h-[90vh] sm:max-h-[150vh] rounded-xl sm:rounded-2xl p-4 sm:p-6 relative overflow-hidden">
-        {/* Header */}
+    <div 
+     className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-[10000] font-jakarta px-3 sm:px-0"
+     onClick={handleBackdropClick}
+    >
+      <div className="bg-white w-full sm:w-[650px] max-h-[90vh] sm:max-h-[85vh] rounded-xl sm:rounded-2xl p-4 sm:p-6 relative shadow-2xl z-[10001]">
         <div className="relative flex items-center border-b border-gray-200 pb-2 sm:pb-3 mb-4">
           <h2 className="text-lg sm:text-2xl font-bold text-gray-800 text-center w-full">
             Tambah Alamat
           </h2>
           <button
-            className="absolute right-0 text-gray-500 hover:text-gray-700 text-lg sm:text-xl"
+            className="absolute right-0 text-gray-500 hover:text-gray-700 text-lg sm:text-xl transition-colors"
             onClick={onClose}
           >
             ✕
@@ -123,7 +143,7 @@ const AddAddress: React.FC<AddAddressProps> = ({ isOpen, onClose, onSave }) => {
         </div>
 
         {/* Form */}
-        <div className="space-y-3 sm:space-y-4 max-h-[60vh] sm:max-h-[70vh] overflow-y-auto pr-1 sm:pr-2">
+        <div className="space-y-3 sm:space-y-4 max-h-[calc(90vh-180px)] sm:max-h-[calc(85vh-180px)] overflow-y-auto pr-1 sm:pr-2 custom-scrollbar">
           <p className="font-semibold text-gray-800 text-sm sm:text-base">Isi detail alamat</p>
           <InputBox
             label="Nama Penerima"
@@ -188,9 +208,9 @@ const AddAddress: React.FC<AddAddressProps> = ({ isOpen, onClose, onSave }) => {
         </div>
 
         {/* Button */}
-        <div className="mt-4 sm:mt-6">
+        <div className="mt-4 sm:mt-6 border-t border-gray-100 pt-4">
           <button
-            className="w-full bg-green-600 hover:bg-green-700 text-white py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium text-sm sm:text-base disabled:bg-gray-400"
+            className="w-full bg-green-600 hover:bg-green-700 text-white py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium text-sm sm:text-base disabled:bg-gray-400 transition-colors"
             onClick={handleSave}
             disabled={!agree}
           >
@@ -198,13 +218,13 @@ const AddAddress: React.FC<AddAddressProps> = ({ isOpen, onClose, onSave }) => {
           </button>
         </div>
       </div>
+      
       <Toast
         message={toast.message}
         type={toast.type}
         isVisible={toast.isVisible}
         onClose={hideToast}
       />
-
     </div>
   )
 }

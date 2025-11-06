@@ -15,6 +15,7 @@ import Footer from "@/components/Footer";
 import NavKeranjang from "@/components/NavKeranjang";
 import { useRouter } from "next/navigation";
 import AuthCheck from "@/components/AuthCheck";
+import { useCart } from "@/context/CartContext";
 
 interface ToastProps {
   type: "success" | "error";
@@ -28,7 +29,7 @@ const Toast = ({ type, message, isVisible, onClose }: ToastProps) => {
     if (isVisible) {
       const timer = setTimeout(() => {
         onClose();
-      }, 4000); 
+      }, 4000);
 
       return () => clearTimeout(timer);
     }
@@ -77,7 +78,6 @@ const Toast = ({ type, message, isVisible, onClose }: ToastProps) => {
   );
 };
 
-// Confirmation Modal Component
 interface ConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -99,26 +99,21 @@ const ConfirmationModal = ({
 
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center">
-      {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      {/* Modal */}
       <div className="relative bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-6 animate-in fade-in-0 zoom-in-95">
-        {/* Icon */}
         <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
           <AlertTriangle className="w-6 h-6 text-red-600" />
         </div>
 
-        {/* Content */}
         <div className="text-center mb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
           <p className="text-gray-600">{message}</p>
         </div>
 
-        {/* Buttons */}
         <div className="flex gap-3">
           <button
             onClick={onClose}
@@ -165,8 +160,6 @@ const CartPage = () => {
   const [updatingItems, setUpdatingItems] = useState<string[]>([]);
   const [orderData, setOrderData] = useState<any>(null);
 
-
-  // Confirmation modal state
   const [confirmationModal, setConfirmationModal] = useState({
     isOpen: false,
     type: "single" as "single" | "multiple",
@@ -176,14 +169,15 @@ const CartPage = () => {
     isLoading: false,
   });
 
-  // Toast state
   const [toast, setToast] = useState({
     isVisible: false,
     type: "success" as "success" | "error",
     message: "",
   });
 
-  // Show toast function
+  const router = useRouter();
+  const { decrementCart, incrementCart } = useCart();
+
   const showToast = (type: "success" | "error", message: string) => {
     setToast({
       isVisible: true,
@@ -192,12 +186,10 @@ const CartPage = () => {
     });
   };
 
-  // Hide toast function
   const hideToast = () => {
     setToast((prev) => ({ ...prev, isVisible: false }));
   };
 
-  // Show confirmation modal for single item
   const showSingleDeleteConfirmation = (itemId: string, itemName: string) => {
     setConfirmationModal({
       isOpen: true,
@@ -209,7 +201,6 @@ const CartPage = () => {
     });
   };
 
-  // Show confirmation modal for multiple items
   const showMultipleDeleteConfirmation = (selectedCount: number) => {
     setConfirmationModal({
       isOpen: true,
@@ -221,7 +212,6 @@ const CartPage = () => {
     });
   };
 
-  // Hide confirmation modal
   const hideConfirmationModal = () => {
     setConfirmationModal((prev) => ({
       ...prev,
@@ -230,10 +220,7 @@ const CartPage = () => {
     }));
   };
 
-  const router = useRouter();
-
   useEffect(() => {
-    // Fungsi untuk mengambil data keranjang
     const fetchCart = async () => {
       try {
         setLoading(true);
@@ -241,7 +228,6 @@ const CartPage = () => {
         const data = await response.json();
 
         if (response.ok) {
-          // Mengupdate cartItems dengan data yang diterima dari API
           setOrderData(data);
           const orderItems = data.orderItems || [];
           const formattedItems = orderItems.map((item: any) => ({
@@ -250,8 +236,8 @@ const CartPage = () => {
             price: parseFloat(item.unitPrice),
             stock: item.product.stock,
             quantity: item.quantity,
-            image: item.product.imageUrl[0] || "/placeholder.svg", // Gambar produk
-            selected: true, // Misalkan semua produk dipilih secara default
+            image: item.product.imageUrl[0] || "/placeholder.svg",
+            selected: true,
           }));
           setCartItems(formattedItems);
         } else {
@@ -307,7 +293,10 @@ const CartPage = () => {
   }
 
   const selectedItems = cartItems.filter((item) => item.selected);
-  const totalQuantity = selectedItems.reduce((sum, item) => sum + item.quantity, 0);
+  const totalQuantity = selectedItems.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
   const totalPrice = selectedItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
@@ -359,7 +348,6 @@ const CartPage = () => {
         throw new Error(data.error || "Gagal memperbarui jumlah produk");
       }
 
-      // Update state jika berhasil
       setCartItems((items) =>
         items.map((item) => {
           if (item.id === id) {
@@ -368,6 +356,12 @@ const CartPage = () => {
           return item;
         })
       );
+
+      if (change > 0) {
+        incrementCart();
+      } else {
+        decrementCart();
+      }
 
       showToast("success", `Jumlah ${item.name} berhasil diperbarui`);
     } catch (error: any) {
@@ -395,8 +389,8 @@ const CartPage = () => {
         throw new Error(data.error || "Gagal menghapus item");
       }
 
-      // Hapus dari state jika berhasil
       setCartItems((items) => items.filter((item) => item.id !== id));
+      decrementCart(item.quantity);
       showToast("success", `${item.name} berhasil dihapus dari keranjang`);
       hideConfirmationModal();
     } catch (error: any) {
@@ -421,11 +415,14 @@ const CartPage = () => {
       return;
     }
 
+    const totalQtyToDelete = cartItems
+      .filter((item) => item.selected)
+      .reduce((sum, item) => sum + item.quantity, 0);
+
     setConfirmationModal((prev) => ({ ...prev, isLoading: true }));
     setDeletingItems((prev) => [...prev, ...selectedIds]);
 
     try {
-      // Delete each selected item
       const deletePromises = selectedIds.map((id) =>
         fetch(`/api/cart/${id}`, { method: "DELETE" })
       );
@@ -437,10 +434,11 @@ const CartPage = () => {
         throw new Error(`Gagal menghapus ${failedDeletes.length} item`);
       }
 
-      // Remove successful deletes from state
       setCartItems((items) =>
         items.filter((item) => !selectedIds.includes(item.id))
       );
+
+      decrementCart(totalQtyToDelete);
 
       showToast(
         "success",
@@ -490,7 +488,6 @@ const CartPage = () => {
     <AuthCheck role="CUSTOMER">
       <NavKeranjang />
 
-      {/* Toast Notification */}
       <Toast
         type={toast.type}
         message={toast.message}
@@ -498,7 +495,6 @@ const CartPage = () => {
         onClose={hideToast}
       />
 
-      {/* Confirmation Modal */}
       <ConfirmationModal
         isOpen={confirmationModal.isOpen}
         onClose={hideConfirmationModal}
@@ -527,7 +523,7 @@ const CartPage = () => {
               <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
                 <Image
                   src="/bgcart.png"
-                  alt="Kerjang kosong"
+                  alt="Keranjang kosong"
                   width={300}
                   height={300}
                   className="object-contain"
@@ -549,10 +545,8 @@ const CartPage = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-              {/* Product List Section */}
               <div className="xl:col-span-2">
                 <div className="bg-white rounded-xl md:rounded-2xl">
-                  {/* Header */}
                   <div className="p-3 md:p-4 border-b-8 md:border-b-14 border-gray-50">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -583,7 +577,6 @@ const CartPage = () => {
                     </div>
                   </div>
 
-                  {/* Product Items */}
                   <div className="divide-y-8 md:divide-y-14 divide-gray-50">
                     {cartItems.map((item) => {
                       const isDeleting = deletingItems.includes(item.id);
@@ -597,7 +590,6 @@ const CartPage = () => {
                           }`}
                         >
                           <div className="flex items-start gap-3 md:gap-4">
-                            {/* Checkbox */}
                             <input
                               type="checkbox"
                               checked={item.selected}
@@ -608,7 +600,6 @@ const CartPage = () => {
                               className="w-4 h-4 text-[#26A81D] bg-white border-2 border-[#26A81D] rounded focus:ring-[#26A81D] mt-1"
                             />
 
-                            {/* Product Image */}
                             <div className="w-12 h-12 md:w-14 md:h-14 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
                               <img
                                 src={item.image || "/placeholder.svg"}
@@ -617,10 +608,8 @@ const CartPage = () => {
                               />
                             </div>
 
-                            {/* Product Info & Controls */}
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-col md:flex-row md:items-start justify-between gap-2 md:gap-3">
-                                {/* Product Details */}
                                 <div className="flex-1 min-w-0">
                                   <h5 className="font-medium text-gray-900 mb-1 text-xs md:text-sm line-clamp-2 leading-4 md:leading-5">
                                     {item.name}
@@ -630,14 +619,12 @@ const CartPage = () => {
                                   </p>
                                 </div>
 
-                                {/* Price & Controls */}
                                 <div className="flex flex-col items-start md:items-end gap-2">
                                   <span className="text-sm md:text-base font-semibold text-gray-900">
                                     Rp{item.price.toLocaleString("id-ID")}
                                   </span>
 
                                   <div className="flex items-center gap-2">
-                                    {/* Delete */}
                                     <button
                                       onClick={() =>
                                         handleDeleteItem(item.id, item.name)
@@ -652,7 +639,6 @@ const CartPage = () => {
                                       )}
                                     </button>
 
-                                    {/* Quantity */}
                                     <div
                                       className={`flex items-center border border-gray-300 rounded-full bg-white ${
                                         isUpdating ? "opacity-75" : ""
@@ -711,7 +697,6 @@ const CartPage = () => {
                 </div>
               </div>
 
-              {/* Order Summary Section */}
               <div className="xl:col-span-1">
                 <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-5 xl:sticky xl:top-4">
                   <h3 className="text-sm md:text-base font-semibold mb-3 md:mb-4 text-gray-900">
@@ -756,7 +741,9 @@ const CartPage = () => {
                       deletingItems.length > 0 ||
                       updatingItems.length > 0
                     }
-                    onClick={() => router.push(`/checkout?orderId=${orderData.id}`)}
+                    onClick={() =>
+                      router.push(`/checkout?orderId=${orderData.id}`)
+                    }
                     className="w-full bg-[#26A81D] hover:bg-[#1A7F16] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-2 md:py-2.5 rounded-lg text-xs md:text-sm transition-colors flex items-center justify-center gap-2"
                   >
                     {deletingItems.length > 0 || updatingItems.length > 0 ? (

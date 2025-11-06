@@ -8,6 +8,8 @@ import KategoriMobile from "@/components/KategoriMobile";
 import Pagination from "@/components/Pagination";
 import Footer from "@/components/Footer";
 import NavSearch from "@/components/NavSearch";
+import { useCart } from "@/context/CartContext";
+import { useSession } from "next-auth/react";
 
 // Toast Notification Component
 const Toast = ({ 
@@ -95,6 +97,48 @@ export default function KatalogPage() {
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [addingToCart, setAddingToCart] = useState<string | null>(null);
+
+  const { data: session } = useSession();
+  const { incrementCart } = useCart();
+
+  const addToCart = async (product: any) => {
+    setAddingToCart(product.id);
+    try {
+      const response = await fetch("/api/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: product.id,
+          quantity: 1,
+          unitPrice: product.price,
+        }),
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        setTimeout(() => incrementCart(), 100);
+        setToast({
+          message: `${product.name} berhasil ditambahkan ke keranjang!`,
+          type: 'success'
+        });
+      } else {
+        const result = await response.json();
+        setToast({
+          message: result.error || "Gagal menambahkan ke keranjang.",
+          type: 'error'
+        });
+      }
+    } catch (error) {
+      console.error("Error terjadi:", error);
+      setToast({
+        message: "Terjadi kesalahan saat menambahkan ke keranjang.",
+        type: 'error'
+      });
+    } finally {
+      setAddingToCart(null);
+    }
+  };
 
   // pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -159,7 +203,7 @@ useEffect(() => {
       }
 
 
-      // ✅ FILTER RATING
+      // FILTER RATING
          if (selectedRatings.length > 0) {
         const minRating = Math.min(...selectedRatings);
         params.append("minRating", minRating.toString());
@@ -260,7 +304,7 @@ useEffect(() => {
     setSelectedRatings(filters.ratings);
   }
   
-  // Kategori - hanya set jika ada kategori yang dipilih
+  // Kategori 
   if (filters.categories && filters.categories.length > 0) {
     setSelectedCategories(filters.categories);
   } else {
@@ -409,7 +453,7 @@ useEffect(() => {
           ) : (
             <>
               {/* Products Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-8">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-4 md:gap-6">
                 {products.map((product, i) => (
                   <CartProduct
                     key={product.id}

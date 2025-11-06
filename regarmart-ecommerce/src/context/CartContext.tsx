@@ -5,6 +5,7 @@ type CartContextType = {
     cartCount: number;
     setCartCount: (count: number) => void;
     incrementCart: () => void;
+    decrementCart: (quantity?: number) => void;
     fetchCartCount: () => Promise<void>;
 };
 
@@ -24,9 +25,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             const data = await response.json();
 
             if (Array.isArray(data)) {
-                setCartCount(data.length);
+                const totalQty = data.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
+                setCartCount(totalQty);
             } else if (Array.isArray(data.orderItems)) {
-                setCartCount(data.orderItems.length);
+                const totalQty = data.orderItems.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
+                setCartCount(totalQty);
             } else {
                 setCartCount(0);
             }
@@ -40,13 +43,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         setCartCount((prev) => prev + 1);
     };
 
-    // fetch hanya sekali di awal
+    const decrementCart = (quantity: number = 1) => {
+        setCartCount((prev) => Math.max(0, prev - quantity));
+    };
+
     useEffect(() => {
         fetchCartCount();
     }, []);
 
     return (
-        <CartContext.Provider value={{ cartCount, setCartCount, incrementCart, fetchCartCount }}>
+        <CartContext.Provider value={{ cartCount, setCartCount, incrementCart, decrementCart, fetchCartCount  }}>
             {children}
         </CartContext.Provider>
     );

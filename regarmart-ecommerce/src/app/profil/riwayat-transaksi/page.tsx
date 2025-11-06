@@ -7,7 +7,7 @@ export default function RiwayatTransaksiPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("riwayat-transaksi/transaksi-diproses");
+    router.replace("/profil/riwayat-transaksi/transaksi-diproses");
   }, [router]);
 
   return null;

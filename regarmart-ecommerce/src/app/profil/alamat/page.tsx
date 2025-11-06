@@ -123,7 +123,7 @@ export default function ProfileAddressPage() {
   return (
     <>
       {/* Toast Notifications */}
-      <div className="fixed top-4 right-4 z-[100] space-y-2">
+      <div className="fixed top-4 right-4 z-[10000] space-y-2">
         {toasts.map((toast) => (
           <div
             key={toast.id}
@@ -190,14 +190,10 @@ export default function ProfileAddressPage() {
               height={160}
               className="mb-4"
             />
-            <h3
-              className="font-bold text-[14px] text-black font-['Plus Jakarta Sans'] mb-1"
-            >
+            <h3 className="font-bold text-[14px] text-black font-['Plus Jakarta Sans'] mb-1">
               Belum ada lokasi alamat
             </h3>
-            <p
-              className="text-[12px] text-[#6D706E] font-normal font-['Plus Jakarta Sans'] mb-5"
-            >
+            <p className="text-[12px] text-[#6D706E] font-normal font-['Plus Jakarta Sans'] mb-5">
               Tambahkan alamat untuk pengiriman
             </p>
           </div>
@@ -295,148 +291,160 @@ export default function ProfileAddressPage() {
             ))}
           </div>
         )}
+      </div>
 
-        {/* Delete Confirmation Modal */}
-        {deleteConfirmOpen && addressToDelete && (
-          <div className="fixed inset-0 bg-transparent backdrop-blur-md flex justify-center items-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[440px] p-6 md:p-8 relative animate-scale-in">
-              <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-red-100 flex items-center justify-center mb-4">
-                  <AlertCircle className="w-8 h-8 md:w-10 md:h-10 text-red-600" />
-                </div>
-                <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-2">
-                  Hapus Alamat?
-                </h2>
-                <p className="text-sm md:text-base text-gray-600 mb-2">
-                  Apakah Anda yakin ingin menghapus alamat ini?
-                </p>
-                <div className="w-full bg-gray-50 rounded-lg p-3 mb-6 text-left">
-                  <p className="text-sm font-semibold text-gray-900 mb-1">
-                    {addressToDelete.label}
-                    {addressToDelete.isPrimary && (
-                      <span className="ml-2 bg-green-100 text-green-600 text-xs font-medium px-2 py-0.5 rounded-full">
-                        Utama
-                      </span>
-                    )}
-                  </p>
-                  <p className="text-xs text-gray-600">
-                    {addressToDelete.recipientName} • {addressToDelete.phoneNumber}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                    {addressToDelete.fullAddress}
-                  </p>
-                </div>
-                <div className="flex gap-3 w-full">
-                  <button
-                    className="flex-1 px-4 py-2.5 rounded-xl border-2 border-gray-300 text-gray-700 font-semibold hover:bg-gray-50"
-                    onClick={() => {
-                      setDeleteConfirmOpen(false);
-                      setAddressToDelete(null);
-                    }}
-                  >
-                    Batal
-                  </button>
-                  <button
-                    className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700"
-                    onClick={handleDelete}
-                  >
-                    Hapus
-                  </button>
-                </div>
+      {/* Delete Confirmation Modal - FIXED */}
+      {deleteConfirmOpen && addressToDelete && (
+        <div className="fixed inset-0 flex items-center justify-center z-[10001] p-4">
+          <div 
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => {
+              setDeleteConfirmOpen(false);
+              setAddressToDelete(null);
+            }}
+          />
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[440px] p-6 md:p-8 relative animate-scale-in z-[10002]">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                <AlertCircle className="w-8 h-8 md:w-10 md:h-10 text-red-600" />
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* Add Address Modal */}
-        <AddAddress
-          isOpen={addOpen}
-          onClose={() => setAddOpen(false)}
-          onSave={(newAddress: Address) => {
-            setAddressList([...addressList, newAddress]);
-            showToast("success", "Alamat baru berhasil ditambahkan");
-          }}
-        />
-
-        {/* Edit Address Modal */}
-        {editOpen && addressEdit && (
-          <div className="fixed inset-0 bg-transparent backdrop-blur-md flex justify-center items-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-lg w-full max-w-[600px] max-h-[90vh] overflow-y-auto p-4 md:p-6 relative">
-              <button
-                className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-xl"
-                onClick={() => setEditOpen(false)}
-                disabled={isSaving}
-              >
-                <X size={20} />
-              </button>
-              <h2 className="text-base md:text-lg font-bold text-black mb-4 text-center pr-8">
-                Ubah Alamat
+              <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-2">
+                Hapus Alamat?
               </h2>
-              <hr className="border-gray-200 my-3" />
-
-              <div className="space-y-4">
-                <InputBox
-                  label="Label Alamat"
-                  value={addressEdit.label || ""}
-                  onChange={(e) => setAddressEdit({ ...addressEdit, label: e.target.value })}
-                  placeholder="misalnya Rumah, Kantor"
-                  disabled={isSaving}
-                />
-
-                <InputBox
-                  label="Alamat Lengkap"
-                  value={addressEdit.fullAddress}
-                  onChange={(e) => setAddressEdit({ ...addressEdit, fullAddress: e.target.value })}
-                  placeholder="Masukkan alamat lengkap"
-                  disabled={isSaving}
-                />
-
-                <InputBox
-                  label="Catatan untuk Kurir (Opsional)"
-                  value={addressEdit.note || ""}
-                  onChange={(e) => setAddressEdit({ ...addressEdit, note: e.target.value })}
-                  placeholder="misalnya Warna rumah, landmark, instruksi khusus"
-                  disabled={isSaving}
-                />
-
-                <InputBox
-                  label="Nama Penerima"
-                  value={addressEdit.recipientName}
-                  onChange={(e) => setAddressEdit({ ...addressEdit, recipientName: e.target.value })}
-                  placeholder="Masukkan nama penerima"
-                  disabled={isSaving}
-                />
-
-                <InputBox
-                  label="Nomor Telepon"
-                  value={addressEdit.phoneNumber}
-                  onChange={(e) => setAddressEdit({ ...addressEdit, phoneNumber: e.target.value })}
-                  placeholder="08xxxxxxxxxx"
-                  disabled={isSaving}
-                />
-              </div>
-
-              <div className="mt-6 flex justify-center">
-                <button
-                  className="w-full bg-green-600 text-white px-10 py-3 rounded-xl font-semibold hover:bg-green-700 flex items-center justify-center gap-2 disabled:opacity-50"
-                  onClick={handleSaveEdit}
-                  disabled={isSaving}
-                >
-                  {isSaving ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Menyimpan...
-                    </>
-                  ) : (
-                    "Simpan"
+              <p className="text-sm md:text-base text-gray-600 mb-2">
+                Apakah Anda yakin ingin menghapus alamat ini?
+              </p>
+              <div className="w-full bg-gray-50 rounded-lg p-3 mb-6 text-left">
+                <p className="text-sm font-semibold text-gray-900 mb-1">
+                  {addressToDelete.label}
+                  {addressToDelete.isPrimary && (
+                    <span className="ml-2 bg-green-100 text-green-600 text-xs font-medium px-2 py-0.5 rounded-full">
+                      Utama
+                    </span>
                   )}
+                </p>
+                <p className="text-xs text-gray-600">
+                  {addressToDelete.recipientName} • {addressToDelete.phoneNumber}
+                </p>
+                <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                  {addressToDelete.fullAddress}
+                </p>
+              </div>
+              <div className="flex gap-3 w-full">
+                <button
+                  className="flex-1 px-4 py-2.5 rounded-xl border-2 border-gray-300 text-gray-700 font-semibold hover:bg-gray-50"
+                  onClick={() => {
+                    setDeleteConfirmOpen(false);
+                    setAddressToDelete(null);
+                  }}
+                >
+                  Batal
+                </button>
+                <button
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700"
+                  onClick={handleDelete}
+                >
+                  Hapus
                 </button>
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
+      {/* Edit Address Modal - FIXED */}
+      {editOpen && addressEdit && (
+        <div className="fixed inset-0 flex items-center justify-center z-[10001] p-4">
+          <div 
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setEditOpen(false)}
+          />
+          <div className="bg-white rounded-2xl shadow-lg w-full max-w-[600px] max-h-[90vh] overflow-y-auto p-4 md:p-6 relative z-[10002]">
+            <button
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-xl z-10"
+              onClick={() => setEditOpen(false)}
+              disabled={isSaving}
+            >
+              <X size={20} />
+            </button>
+            <h2 className="text-base md:text-lg font-bold text-black mb-4 text-center pr-8">
+              Ubah Alamat
+            </h2>
+            <hr className="border-gray-200 my-3" />
+
+            <div className="space-y-4">
+              <InputBox
+                label="Label Alamat"
+                value={addressEdit.label || ""}
+                onChange={(e) => setAddressEdit({ ...addressEdit, label: e.target.value })}
+                placeholder="misalnya Rumah, Kantor"
+                disabled={isSaving}
+              />
+
+              <InputBox
+                label="Alamat Lengkap"
+                value={addressEdit.fullAddress}
+                onChange={(e) => setAddressEdit({ ...addressEdit, fullAddress: e.target.value })}
+                placeholder="Masukkan alamat lengkap"
+                disabled={isSaving}
+              />
+
+              <InputBox
+                label="Catatan untuk Kurir (Opsional)"
+                value={addressEdit.note || ""}
+                onChange={(e) => setAddressEdit({ ...addressEdit, note: e.target.value })}
+                placeholder="misalnya Warna rumah, landmark, instruksi khusus"
+                disabled={isSaving}
+              />
+
+              <InputBox
+                label="Nama Penerima"
+                value={addressEdit.recipientName}
+                onChange={(e) => setAddressEdit({ ...addressEdit, recipientName: e.target.value })}
+                placeholder="Masukkan nama penerima"
+                disabled={isSaving}
+              />
+
+              <InputBox
+                label="Nomor Telepon"
+                value={addressEdit.phoneNumber}
+                onChange={(e) => setAddressEdit({ ...addressEdit, phoneNumber: e.target.value })}
+                placeholder="08xxxxxxxxxx"
+                disabled={isSaving}
+              />
+            </div>
+
+            <div className="mt-6 flex justify-center">
+              <button
+                className="w-full bg-green-600 text-white px-10 py-3 rounded-xl font-semibold hover:bg-green-700 flex items-center justify-center gap-2 disabled:opacity-50"
+                onClick={handleSaveEdit}
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Menyimpan...
+                  </>
+                ) : (
+                  "Simpan"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+   {/* Add Address Modal */}
+        <AddAddress
+          isOpen={addOpen}
+          onClose={() => setAddOpen(false)}
+          onSave={(newAddress: Address) => {
+          setAddressList([...addressList, newAddress]);
+          showToast("success", "Alamat baru berhasil ditambahkan");
+          }}
+        />
+        
       <style jsx>{`
         @keyframes slide-in {
           from { transform: translateX(100%); opacity: 0; }

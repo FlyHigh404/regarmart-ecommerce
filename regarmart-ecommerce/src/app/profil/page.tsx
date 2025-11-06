@@ -41,7 +41,7 @@ export default function ProfilPage() {
   }
 
   return (
-    <div className="w-full md:w-[756.65px] rounded-[15px] bg-white p-6 md:p-8" style={{ boxShadow: "6px 6px 54px 0 rgba(0, 0, 0, 0.05)" }}>
+    <div className="w-full md:w-[756.65px] rounded-[15px] bg-white mt-6 p-6 md:p-8" style={{ boxShadow: "6px 6px 54px 0 rgba(0, 0, 0, 0.05)" }}>
       {/* Header with Edit button */}
       <div className="flex justify-end mb-6">
         <Link href="/profil/editprofil">

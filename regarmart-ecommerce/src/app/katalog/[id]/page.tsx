@@ -32,7 +32,7 @@ const Toast = ({
   type: "success" | "error";
   onClose: () => void;
 }) => (
-  <div className="fixed top-24 right-4 z-[100] animate-slide-in">
+  <div className="fixed top-24 right-4 z-[100002] animate-slide-in">
     <div
       className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${
         type === "success"

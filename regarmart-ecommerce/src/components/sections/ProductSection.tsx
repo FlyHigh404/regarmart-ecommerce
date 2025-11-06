@@ -17,7 +17,7 @@ const Toast = ({
   type: 'success' | 'error';
   onClose: () => void;
 }) => (
-  <div className="fixed top-26 right-4 z-[100] animate-slide-in">
+  <div className="fixed top-26 right-4 z-[10002] animate-slide-in">
     <div className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${type === 'success' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
       }`}>
       {type === 'success' ? (
