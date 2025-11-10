@@ -44,7 +44,7 @@ const NotifikasiItem: React.FC<NotifItemProps> = ({
     const { orderNumber, productName, status } = extractOrderInfo(message);
 
     return (
-        <div className={`flex p-2.5 border-b border-gray-200 cursor-pointer ${rowClass}`}>
+        <div className={`flex p-2.5 border-b border-gray-200 ${rowClass}`}>
             <div className="w-8 h-8 mr-3 flex-shrink-0 mt-0.5 bg-gray-200 rounded-md flex items-center justify-center">
                 <div className="text-xs text-gray-600 font-semibold">
                     {orderNumber.slice(0, 3)}
@@ -272,7 +272,7 @@ const NotifikasiCust: React.FC<NotifikasiCustProps> = ({
 
                             {/* Footer - Mark All Read */}
                             {!loading && !error && notifications.length > 0 && (
-                                <div className="p-3 flex justify-center border-t border-gray-200 bg-white">
+                                <div className="p-3 flex justify-center border-t border-gray-200 bg-white cursor-pointer">
                                     <button 
                                         onClick={() => {
                                             handleMarkAllRead();

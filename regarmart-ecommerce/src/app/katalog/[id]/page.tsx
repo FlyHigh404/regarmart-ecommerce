@@ -649,17 +649,15 @@ const ProductDetailPage = () => {
                     <span className="text-gray-500">
                       Kategori: {product.category?.name || "Tidak ada kategori"}
                     </span>
-                    {averageRating > 0 && (
-                      <div className="flex items-center gap-1">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="font-medium text-gray-900">
-                          {averageRating}
-                        </span>
-                        <span className="text-gray-500">
-                          ({totalReviews} ulasan)
-                        </span>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-1">
+                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    <span className="font-medium text-gray-900">
+                      {averageRating.toFixed(1)}
+                    </span>
+                    <span className="text-gray-500">
+                      ({totalReviews} ulasan)
+                    </span>
+                  </div>
                   </div>
                 </div>
 

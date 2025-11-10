@@ -84,20 +84,14 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
     fetchProductRating();
   }, [product.id]);
 
-  const renderRating = () => {
-    if (!averageRating || averageRating === 0) {
-      return null;
-    }
-
-    return (
-      <div className="flex items-center gap-1 mb-1">
-        <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-        <span className="text-xs text-gray-600 font-medium">
-          {averageRating.toFixed(1)}
-        </span>
-      </div>
-    );
-  };
+  const renderRating = () => (
+  <div className="flex items-center gap-1 mb-1">
+    <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+    <span className="text-xs text-gray-600 font-medium">
+      {averageRating.toFixed(1)}
+    </span>
+  </div>
+);
 
   const handleAddToCart = async (product: Product) => {
     if (!session) {

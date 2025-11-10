@@ -234,12 +234,12 @@ const CheckoutPage: React.FC = () => {
                       </span>
                     )}
                   </div>
-                  <button
+                  {/* <button
                     className="text-green-600 text-xs font-semibold hover:underline"
                     onClick={() => setOpenAlamat(true)}
                   >
                     Edit
-                  </button>
+                  </button> */}
                 </div>
 
                 <div className="pl-6 mt-1">
@@ -548,7 +548,6 @@ const CheckoutPage: React.FC = () => {
             status={order.status || OrderStatus.PROCESSING}
             paymentMethod={order.paymentMethod || paymentMethod}
             products={
-              // 🔥 PRIORITASKAN order.products DARI TRANSFORMORDER
               order.products && order.products.length > 0
                 ? order.products
                 : order?.orderItems?.map((item: any) => ({

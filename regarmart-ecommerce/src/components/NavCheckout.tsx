@@ -2,7 +2,7 @@ import Link from "next/link"
 
 export default function CheckoutNavbar() {
   return (
-    <nav className="w-full bg-white shadow-sm border-b border-gray-200 sticky top-0">
+    <nav className="w-full bg-white shadow-sm border-b border-gray-200 top-0">
       <div className="max-w-6xl mx-auto flex items-center px-4 sm:px-8 h-20 sm:h-24">
         
         {/* Logo */}

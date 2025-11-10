@@ -35,7 +35,7 @@ const Footer = () => {
   return (
     <footer
       ref={footerRef}
-      className={`bg-white z-0 py-12 px-4 sm:px-6 lg:px-8 transition-all duration-700 ease-out
+      className={`bg-white py-12 px-4 sm:px-6 lg:px-8 transition-all duration-700 ease-out
         ${
           isVisible
             ? "opacity-100 translate-y-0"

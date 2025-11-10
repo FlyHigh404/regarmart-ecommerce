@@ -174,7 +174,7 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
   return (
     <>
       <div 
-        className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-[10000] font-jakarta p-4"
+        className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-[10005] font-jakarta p-4"
         onClick={handleBackdropClick}
       >
         <div className="bg-white rounded-[15px] w-full max-w-md max-h-[90vh] overflow-y-auto relative shadow-2xl">
@@ -374,7 +374,7 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
 
       {/* Popup Selesaikan Pesanan */}
       {openFinishPopup && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-[10001] p-3">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-[10006] p-3">
           <div className="bg-white w-full max-w-sm rounded-xl p-5 shadow-xl text-center">
             <CheckCircle className="w-10 h-10 sm:w-12 sm:h-12 text-green-500 mx-auto mb-3" />
             <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-1">

@@ -31,7 +31,6 @@ interface KatalogGroupProps {
   linkHref: string;
 }
 
-// --- SUB-KOMPONEN: GROUP PRODUK PER KATEGORI ---
 const KatalogGroup: React.FC<KatalogGroupProps> = ({ title, products, linkHref }) => {
   if (!Array.isArray(products) || products.length === 0) return null;
 
@@ -61,9 +60,9 @@ const KatalogGroup: React.FC<KatalogGroupProps> = ({ title, products, linkHref }
   );
 };
 
-// --- KATALOG SECTION ---
 export default function KatalogSection() {
-  const [products, setProducts] = useState<ProductWithCategory[]>([]);
+  const [sayuranProducts, setSayuranProducts] = useState<ProductWithCategory[]>([]);
+  const [buahProducts, setBuahProducts] = useState<ProductWithCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -71,7 +70,7 @@ export default function KatalogSection() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch("/api/products");
+        const response = await fetch("/api/products/search");
         if (!response.ok) throw new Error(`Gagal mengambil produk: ${response.status}`);
 
         const data = await response.json();
@@ -95,12 +94,22 @@ export default function KatalogSection() {
           category: p.category ? { name: p.category.name } : p.categoryName ? { name: p.categoryName } : null,
         }));
 
-        // Filter Sembako
-        const sembakoProducts = allProducts.filter(
-          (product) => product.category?.name?.toLowerCase() === "sembako"
+        // Filter kategori
+        const sayuranSegarProducts = allProducts.filter(
+          (product) => product.category?.name?.toLowerCase() === "sayuran segar"
         );
 
-        setProducts(sembakoProducts);
+        const buahSegarProducts = allProducts.filter(
+          (product) => product.category?.name?.toLowerCase() === "buah segar"
+        );
+
+        // Debug log (tetap dipertahankan)
+        console.log("All Products:", allProducts);
+        console.log("Sayuran Products:", sayuranSegarProducts);
+        console.log("Available categories:", [...new Set(allProducts.map((p) => p.category?.name))]);
+
+        setSayuranProducts(sayuranSegarProducts);
+        setBuahProducts(buahSegarProducts);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -128,17 +137,21 @@ export default function KatalogSection() {
     );
   }
 
-  if (!Array.isArray(products) || products.length === 0) {
+  if (
+    (!Array.isArray(sayuranProducts) || sayuranProducts.length === 0) &&
+    (!Array.isArray(buahProducts) || buahProducts.length === 0)
+  ) {
     return (
       <section id="katalog" className="py-16 text-center">
-        <p className="text-gray-500 text-lg">Tidak ada produk dalam kategori "Sembako"</p>
+        <p className="text-gray-500 text-lg">Tidak ada produk dalam kategori yang tersedia</p>
       </section>
     );
   }
 
   return (
     <section id="katalog" className="py-8 md:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <KatalogGroup title="Produk Sembako" products={products} linkHref="/katalog" />
+      <KatalogGroup title="Sayuran Segar" products={sayuranProducts} linkHref="/katalog" />
+      <KatalogGroup title="Buah Segar" products={buahProducts} linkHref="/katalog" />
     </section>
   );
 }

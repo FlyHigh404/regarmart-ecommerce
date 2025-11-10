@@ -202,7 +202,13 @@ export default function ProfileAddressPage() {
         {/* No Search Results */}
         {!isLoading && addressList.length > 0 && filteredAddresses.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Search className="w-16 h-16 text-gray-300 mb-4" />
+            <Image
+              src="/AlamatKosong.png"
+              alt="Alamat Kosong"
+              width={160}
+              height={160}
+              className="mb-4"
+            />
             <h3 className="text-lg font-semibold text-gray-700 mb-2">
               Alamat Tidak Ditemukan
             </h3>
@@ -293,7 +299,7 @@ export default function ProfileAddressPage() {
         )}
       </div>
 
-      {/* Delete Confirmation Modal - FIXED */}
+      {/* Delete Confirmation Modal */}
       {deleteConfirmOpen && addressToDelete && (
         <div className="fixed inset-0 flex items-center justify-center z-[10001] p-4">
           <div 
@@ -352,7 +358,7 @@ export default function ProfileAddressPage() {
         </div>
       )}
 
-      {/* Edit Address Modal - FIXED */}
+      {/* Edit Address Modal */}
       {editOpen && addressEdit && (
         <div className="fixed inset-0 flex items-center justify-center z-[10001] p-4">
           <div 

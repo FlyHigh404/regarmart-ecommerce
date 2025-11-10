@@ -1,8 +1,6 @@
 "use client"
 import React, { useState, useEffect } from "react"
-import InputBox from "@/components/InputBox"
 import { User, Smartphone, Home, MapPin, ClipboardList } from "lucide-react"
-import { useToast, Toast } from "@/components/Toast"
 
 type Address = {
   id: string
@@ -21,6 +19,23 @@ interface AddAddressProps {
   onClose: () => void
   onSave: (address: Address) => void
 }
+
+const InputBox = ({ label, value, onChange, placeholder, icon, disabled }: any) => (
+  <div className="space-y-1">
+    <label className="text-sm font-medium text-gray-700">{label}</label>
+    <div className="relative">
+      <div className="absolute left-3 top-1/2 -translate-y-1/2">{icon}</div>
+      <input
+        type="text"
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        disabled={disabled}
+        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
+      />
+    </div>
+  </div>
+)
 
 const Checkbox = ({
   label,
@@ -55,19 +70,35 @@ const AddAddress: React.FC<AddAddressProps> = ({ isOpen, onClose, onSave }) => {
   const [note, setNote] = useState("")
   const [isPrimary, setIsPrimary] = useState(false)
   const [agree, setAgree] = useState(false)
-  const { toast, showToast, hideToast } = useToast()
+  const [toast, setToast] = useState({ isVisible: false, message: "", type: "success" as "success" | "warning" | "error" })
 
-  // Prevent body scroll when modal is open
+  const showToast = (message: string, type: "success" | "warning" | "error") => {
+    setToast({ isVisible: true, message, type })
+    setTimeout(() => setToast({ ...toast, isVisible: false }), 3000)
+  }
+
+  const hideToast = () => setToast({ ...toast, isVisible: false })
+
+  // Handle escape key and body scroll - sama seperti OrderConfirm
   useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose()
+      }
+    }
+
     if (isOpen) {
+      document.addEventListener('keydown', handleEscape)
       document.body.style.overflow = 'hidden'
     } else {
       document.body.style.overflow = 'unset'
     }
+
     return () => {
+      document.removeEventListener('keydown', handleEscape)
       document.body.style.overflow = 'unset'
     }
-  }, [isOpen])
+  }, [isOpen, onClose])
 
   if (!isOpen) return null
 
@@ -88,30 +119,15 @@ const AddAddress: React.FC<AddAddressProps> = ({ isOpen, onClose, onSave }) => {
     }
 
     try {
-      const response = await fetch("/api/profile/address", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newAddress),
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        onSave(newAddress)
-        setRecipientName("")
-        setPhoneNumber("")
-        setLabelAddress("")
-        setFullAddress("")
-        setNote("")
-        setIsPrimary(false)
-        setAgree(false)
-        onClose()
-        showToast("Alamat berhasil disimpan!", "success")
-      } else {
-        showToast(data.message || "Gagal menyimpan alamat.", "error")
-      }
+      onSave(newAddress)
+      setRecipientName("")
+      setPhoneNumber("")
+      setLabelAddress("")
+      setFullAddress("")
+      setNote("")
+      setIsPrimary(false)
+      setAgree(false)
+      onClose()
     } catch (error) {
       console.error(error)
       showToast("Terjadi kesalahan saat menyimpan alamat.", "error")
@@ -125,107 +141,146 @@ const AddAddress: React.FC<AddAddressProps> = ({ isOpen, onClose, onSave }) => {
   }
 
   return (
-    <div 
-     className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-[10000] font-jakarta px-3 sm:px-0"
-     onClick={handleBackdropClick}
-    >
-      <div className="bg-white w-full sm:w-[650px] max-h-[90vh] sm:max-h-[85vh] rounded-xl sm:rounded-2xl p-4 sm:p-6 relative shadow-2xl z-[10001]">
-        <div className="relative flex items-center border-b border-gray-200 pb-2 sm:pb-3 mb-4">
-          <h2 className="text-lg sm:text-2xl font-bold text-gray-800 text-center w-full">
-            Tambah Alamat
-          </h2>
-          <button
-            className="absolute right-0 text-gray-500 hover:text-gray-700 text-lg sm:text-xl transition-colors"
-            onClick={onClose}
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Form */}
-        <div className="space-y-3 sm:space-y-4 max-h-[calc(90vh-180px)] sm:max-h-[calc(85vh-180px)] overflow-y-auto pr-1 sm:pr-2 custom-scrollbar">
-          <p className="font-semibold text-gray-800 text-sm sm:text-base">Isi detail alamat</p>
-          <InputBox
-            label="Nama Penerima"
-            value={recipientName}
-            onChange={(e) => setRecipientName(e.target.value)}
-            placeholder="Masukkan nama penerima"
-            icon={<User size={18} className="sm:w-5 sm:h-5 text-gray-400" />}
-          />
-          <InputBox
-            label="Nomor Telepon"
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            placeholder="Masukkan nomor telepon"
-            icon={<Smartphone size={18} className="sm:w-5 sm:h-5 text-gray-400" />}
-          />
-          <InputBox
-            label="Label Alamat"
-            value={labelAddress}
-            onChange={(e) => setLabelAddress(e.target.value)}
-            placeholder="misalnya Rumah, Kantor"
-            icon={<Home size={18} className="sm:w-5 sm:h-5 text-gray-400" />}
-          />
-          <InputBox
-            label="Alamat Lengkap"
-            value={fullAddress}
-            onChange={(e) => setFullAddress(e.target.value)}
-            placeholder="Masukkan alamat lengkap"
-            icon={<MapPin size={18} className="sm:w-5 sm:h-5 text-gray-400" />}
-          />
-          <InputBox
-            label="Catatan untuk Kurir (Opsional)"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="misalnya Warna rumah, landmark, instruksi khusus"
-            icon={<ClipboardList size={18} className="sm:w-5 sm:h-5 text-gray-400" />}
-          />
-
-          {/* Checkbox */}
-          <div className="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
-            <Checkbox
-              label="Jadikan alamat utama"
-              checked={isPrimary}
-              onChange={(e) => setIsPrimary(e.target.checked)}
-            />
-            <Checkbox
-              checked={agree}
-              onChange={(e) => setAgree(e.target.checked)}
+    <>
+      <div 
+        className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-[10005] font-jakarta px-3 sm:px-0"
+        onClick={handleBackdropClick}
+      >
+        <div className="bg-white w-full sm:w-[650px] max-h-[90vh] sm:max-h-[85vh] rounded-xl sm:rounded-2xl p-4 sm:p-6 relative shadow-2xl animate-scale-in">
+          <div className="relative flex items-center border-b border-gray-200 pb-2 sm:pb-3 mb-4">
+            <h2 className="text-lg sm:text-2xl font-bold text-gray-800 text-center w-full">
+              Tambah Alamat
+            </h2>
+            <button
+              className="absolute right-0 text-gray-500 hover:text-gray-700 text-lg sm:text-xl transition-colors"
+              onClick={onClose}
             >
-              <span className="text-xs sm:text-sm">
-                Saya menyetujui{" "}
-                <a href="#" className="text-green-600 font-semibold hover:underline">
-                  Syarat & Ketentuan
-                </a>{" "}
-                dan{" "}
-                <a href="#" className="text-green-600 font-semibold hover:underline">
-                  Kebijakan Privasi
-                </a>{" "}
-                untuk manajemen alamat di Regar Mart
-              </span>
-            </Checkbox>
+              ✕
+            </button>
           </div>
-        </div>
 
-        {/* Button */}
-        <div className="mt-4 sm:mt-6 border-t border-gray-100 pt-4">
-          <button
-            className="w-full bg-green-600 hover:bg-green-700 text-white py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium text-sm sm:text-base disabled:bg-gray-400 transition-colors"
-            onClick={handleSave}
-            disabled={!agree}
-          >
-            Simpan
-          </button>
+          {/* Form */}
+          <div className="space-y-3 sm:space-y-4 max-h-[calc(90vh-180px)] sm:max-h-[calc(85vh-180px)] overflow-y-auto pr-1 sm:pr-2 custom-scrollbar">
+            <p className="font-semibold text-gray-800 text-sm sm:text-base">Isi detail alamat</p>
+            <InputBox
+              label="Nama Penerima"
+              value={recipientName}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRecipientName(e.target.value)}
+              placeholder="Masukkan nama penerima"
+              icon={<User size={18} className="sm:w-5 sm:h-5 text-gray-400" />}
+            />
+            <InputBox
+              label="Nomor Telepon"
+              value={phoneNumber}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhoneNumber(e.target.value)}
+              placeholder="Masukkan nomor telepon"
+              icon={<Smartphone size={18} className="sm:w-5 sm:h-5 text-gray-400" />}
+            />
+            <InputBox
+              label="Label Alamat"
+              value={labelAddress}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLabelAddress(e.target.value)}
+              placeholder="misalnya Rumah, Kantor"
+              icon={<Home size={18} className="sm:w-5 sm:h-5 text-gray-400" />}
+            />
+            <InputBox
+              label="Alamat Lengkap"
+              value={fullAddress}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFullAddress(e.target.value)}
+              placeholder="Masukkan alamat lengkap"
+              icon={<MapPin size={18} className="sm:w-5 sm:h-5 text-gray-400" />}
+            />
+            <InputBox
+              label="Catatan untuk Kurir (Opsional)"
+              value={note}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNote(e.target.value)}
+              placeholder="misalnya Warna rumah, landmark, instruksi khusus"
+              icon={<ClipboardList size={18} className="sm:w-5 sm:h-5 text-gray-400" />}
+            />
+
+            {/* Checkbox */}
+            <div className="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
+              <Checkbox
+                label="Jadikan alamat utama"
+                checked={isPrimary}
+                onChange={(e) => setIsPrimary(e.target.checked)}
+              />
+              <Checkbox
+                checked={agree}
+                onChange={(e) => setAgree(e.target.checked)}
+              >
+                <span className="text-xs sm:text-sm">
+                  Saya menyetujui{" "}
+                  <a href="#" className="text-green-600 font-semibold hover:underline">
+                    Syarat & Ketentuan
+                  </a>{" "}
+                  dan{" "}
+                  <a href="#" className="text-green-600 font-semibold hover:underline">
+                    Kebijakan Privasi
+                  </a>{" "}
+                  untuk manajemen alamat di Regar Mart
+                </span>
+              </Checkbox>
+            </div>
+          </div>
+
+          {/* Button */}
+          <div className="mt-4 sm:mt-6 border-t border-gray-100 pt-4">
+            <button
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium text-sm sm:text-base disabled:bg-gray-400 transition-colors"
+              onClick={handleSave}
+              disabled={!agree}
+            >
+              Simpan
+            </button>
+          </div>
+
+          {/* Toast */}
+          {toast.isVisible && (
+            <div className={`fixed top-4 right-4 px-4 py-3 rounded-lg shadow-lg animate-slide-in z-[10007] ${
+              toast.type === "success" ? "bg-green-50 text-green-800 border border-green-200" :
+              toast.type === "warning" ? "bg-yellow-50 text-yellow-800 border border-yellow-200" :
+              "bg-red-50 text-red-800 border border-red-200"
+            }`}>
+              <span className="text-sm font-medium">{toast.message}</span>
+            </div>
+          )}
         </div>
       </div>
-      
-      <Toast
-        message={toast.message}
-        type={toast.type}
-        isVisible={toast.isVisible}
-        onClose={hideToast}
-      />
-    </div>
+
+      <style jsx>{`
+        @keyframes scale-in {
+          from { transform: scale(0.95); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+        .animate-scale-in { animation: scale-in 0.2s ease-out; }
+
+        @keyframes slide-in {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        .animate-slide-in { animation: slide-in 0.3s ease-out; }
+
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #888;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #555;
+        }
+      `}</style>
+    </>
   )
 }
 

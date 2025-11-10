@@ -21,12 +21,6 @@ export async function GET() {
             orderBy: { createdAt: 'desc' },
         });
 
-        console.log("📦 Orders from DB:", orders.map(o => ({
-            id: o.id,
-            status: o.status,
-            hasOrderItems: o.orderItems.length
-        })));
-        
         return NextResponse.json(orders);
     } catch (error) {
         console.error("Error fetching orders:", error);

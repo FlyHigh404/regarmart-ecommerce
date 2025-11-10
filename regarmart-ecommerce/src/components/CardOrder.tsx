@@ -55,7 +55,6 @@ const CardOrder: React.FC<CardOrderProps> = ({
 
       // Try to get response text first for debugging
       const responseText = await res.text();
-      console.log("📡 Raw response:", responseText);
 
       let result;
       try {
@@ -215,7 +214,7 @@ const CardOrder: React.FC<CardOrderProps> = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                window.open(`/katalog/${products[0]?.id}`);
+                router.push(`/katalog/${products[0]?.id}`);
               }}
               className="rounded-[10px] sm:rounded-[13px] bg-green-600 text-white px-3 sm:px-4 py-1 text-[11px] sm:text-[12px] font-semibold hover:bg-green-700 transition-all"
             >
