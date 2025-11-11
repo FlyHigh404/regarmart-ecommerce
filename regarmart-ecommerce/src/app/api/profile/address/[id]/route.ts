@@ -15,6 +15,17 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   const { label, fullAddress, recipientName, phoneNumber, note, isPrimary } = body;
 
   try {
+    if (isPrimary) {
+      await prisma.address.updateMany({
+        where: {
+          userId: session.user.id,
+          isPrimary: true,
+          id: { not: params.id }
+        },
+        data: { isPrimary: false }
+      });
+    }
+
     const updatedAddress = await prisma.address.update({
       where: { id: params.id },
       data: {

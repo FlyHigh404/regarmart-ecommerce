@@ -76,7 +76,7 @@ export default function ProfilLayout({ children }: { children: React.ReactNode }
 
         {/* Konten utama */}
         <div className={`
-          mt-6 px-8 pl-12 md:px-16 md:pl-20 pb-20 transition-all duration-300 relative z-[1]
+          mt-6 mb-24 px-8 pl-12 md:px-16 md:pl-20 pb-20 transition-all duration-300 relative z-[1]
           ${isMobileMenuOpen ? 'blur-sm brightness-90' : 'blur-0 brightness-100'}
         `}>
           <div className="flex flex-col md:flex-row gap-6 md:gap-12">

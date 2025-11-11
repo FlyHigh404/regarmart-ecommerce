@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Search, MapPin, X, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import AddAddress from "@/components/TambahAlamat";
-import InputBox from "@/components/InputBox";
+import EditAddress from "@/components/EditAlamat";
 
 type Address = {
   id: string;
@@ -122,30 +122,30 @@ export default function ProfileAddressPage() {
 
   return (
     <>
-      {/* Toast Notifications */}
-      <div className="fixed top-4 right-4 z-[10000] space-y-2">
-        {toasts.map((toast) => (
-          <div
-            key={toast.id}
-            className={`flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg animate-slide-in ${toast.type === "success"
-              ? "bg-green-50 text-green-800 border border-green-200"
-              : "bg-red-50 text-red-800 border border-red-200"
-              }`}
-          >
-            {toast.type === "success" ? (
-              <CheckCircle2 className="w-5 h-5" />
-            ) : (
-              <AlertCircle className="w-5 h-5" />
-            )}
-            <span className="text-sm font-medium">{toast.message}</span>
-          </div>
-        ))}
-      </div>
-
       <div
-        className="w-full max-w-[756.65px] rounded-[15px] bg-white p-4 md:p-8 font-jakarta"
+        className="w-full max-w-[756.65px] rounded-[15px] bg-white p-4 md:p-8 font-jakarta relative"
         style={{ boxShadow: "6px 6px 54px 0 rgba(0, 0, 0, 0.05)" }}
       >
+        {/* Toast Notifications - Inside the address box */}
+        <div className="absolute top-4 right-4 z-50 space-y-2 max-w-xs">
+          {toasts.map((toast) => (
+            <div
+              key={toast.id}
+              className={`flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg animate-slide-in ${toast.type === "success"
+                ? "bg-green-50 text-green-800 border border-green-200"
+                : "bg-red-50 text-red-800 border border-red-200"
+                }`}
+            >
+              {toast.type === "success" ? (
+                <CheckCircle2 className="w-5 h-5" />
+              ) : (
+                <AlertCircle className="w-5 h-5" />
+              )}
+              <span className="text-sm font-medium">{toast.message}</span>
+            </div>
+          ))}
+        </div>
+
         {/* Header */}
         <div className="flex justify-between items-center mb-4 md:mb-6 -mt-8 md:-mt-16">
           <h1 className="text-black font-bold text-xl md:text-2xl mt-6 md:mt-12">Alamat</h1>
@@ -202,13 +202,7 @@ export default function ProfileAddressPage() {
         {/* No Search Results */}
         {!isLoading && addressList.length > 0 && filteredAddresses.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Image
-              src="/AlamatKosong.png"
-              alt="Alamat Kosong"
-              width={160}
-              height={160}
-              className="mb-4"
-            />
+            <Search className="w-16 h-16 text-gray-300 mb-4" />
             <h3 className="text-lg font-semibold text-gray-700 mb-2">
               Alamat Tidak Ditemukan
             </h3>
@@ -301,9 +295,9 @@ export default function ProfileAddressPage() {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmOpen && addressToDelete && (
-        <div className="fixed inset-0 flex items-center justify-center z-[10001] p-4">
-          <div 
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+        <div className="fixed inset-0 flex items-center justify-center z-[10005] p-4">
+          <div
+            className="fixed inset-0 bg-transparent backdrop-blur-sm"
             onClick={() => {
               setDeleteConfirmOpen(false);
               setAddressToDelete(null);
@@ -360,97 +354,33 @@ export default function ProfileAddressPage() {
 
       {/* Edit Address Modal */}
       {editOpen && addressEdit && (
-        <div className="fixed inset-0 flex items-center justify-center z-[10001] p-4">
-          <div 
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => setEditOpen(false)}
-          />
-          <div className="bg-white rounded-2xl shadow-lg w-full max-w-[600px] max-h-[90vh] overflow-y-auto p-4 md:p-6 relative z-[10002]">
-            <button
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-xl z-10"
-              onClick={() => setEditOpen(false)}
-              disabled={isSaving}
-            >
-              <X size={20} />
-            </button>
-            <h2 className="text-base md:text-lg font-bold text-black mb-4 text-center pr-8">
-              Ubah Alamat
-            </h2>
-            <hr className="border-gray-200 my-3" />
-
-            <div className="space-y-4">
-              <InputBox
-                label="Label Alamat"
-                value={addressEdit.label || ""}
-                onChange={(e) => setAddressEdit({ ...addressEdit, label: e.target.value })}
-                placeholder="misalnya Rumah, Kantor"
-                disabled={isSaving}
-              />
-
-              <InputBox
-                label="Alamat Lengkap"
-                value={addressEdit.fullAddress}
-                onChange={(e) => setAddressEdit({ ...addressEdit, fullAddress: e.target.value })}
-                placeholder="Masukkan alamat lengkap"
-                disabled={isSaving}
-              />
-
-              <InputBox
-                label="Catatan untuk Kurir (Opsional)"
-                value={addressEdit.note || ""}
-                onChange={(e) => setAddressEdit({ ...addressEdit, note: e.target.value })}
-                placeholder="misalnya Warna rumah, landmark, instruksi khusus"
-                disabled={isSaving}
-              />
-
-              <InputBox
-                label="Nama Penerima"
-                value={addressEdit.recipientName}
-                onChange={(e) => setAddressEdit({ ...addressEdit, recipientName: e.target.value })}
-                placeholder="Masukkan nama penerima"
-                disabled={isSaving}
-              />
-
-              <InputBox
-                label="Nomor Telepon"
-                value={addressEdit.phoneNumber}
-                onChange={(e) => setAddressEdit({ ...addressEdit, phoneNumber: e.target.value })}
-                placeholder="08xxxxxxxxxx"
-                disabled={isSaving}
-              />
-            </div>
-
-            <div className="mt-6 flex justify-center">
-              <button
-                className="w-full bg-green-600 text-white px-10 py-3 rounded-xl font-semibold hover:bg-green-700 flex items-center justify-center gap-2 disabled:opacity-50"
-                onClick={handleSaveEdit}
-                disabled={isSaving}
-              >
-                {isSaving ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Menyimpan...
-                  </>
-                ) : (
-                  "Simpan"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
+        <EditAddress
+          isOpen={editOpen}
+          onClose={() => {
+            setEditOpen(false);
+            setAddressEdit(null);
+          }}
+          address={addressEdit}
+          onSave={(updatedAddress: Address) => {
+            setAddressList((prev) => prev.map((a) => (a.id === updatedAddress.id ? updatedAddress : a)));
+            setEditOpen(false);
+            setAddressEdit(null);
+            showToast("success", "Alamat berhasil diperbarui");
+          }}
+          existingAddresses={addressList}
+        />
       )}
 
-
-   {/* Add Address Modal */}
-        <AddAddress
-          isOpen={addOpen}
-          onClose={() => setAddOpen(false)}
-          onSave={(newAddress: Address) => {
+      {/* Add Address Modal */}
+      <AddAddress
+        isOpen={addOpen}
+        onClose={() => setAddOpen(false)}
+        onSave={(newAddress: Address) => {
           setAddressList([...addressList, newAddress]);
           showToast("success", "Alamat baru berhasil ditambahkan");
-          }}
-        />
-        
+        }}
+      />
+
       <style jsx>{`
         @keyframes slide-in {
           from { transform: translateX(100%); opacity: 0; }
