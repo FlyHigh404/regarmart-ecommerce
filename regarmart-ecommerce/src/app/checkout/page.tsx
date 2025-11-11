@@ -16,7 +16,9 @@ import Link from "next/link";
 const CheckoutPage: React.FC = () => {
   const router = useRouter();
   const [openOrderConfirm, setOpenOrderConfirm] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.COD);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
+    PaymentMethod.COD
+  );
   const [alamatAktif, setAlamatAktif] = useState<Alamat | null>(null);
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -27,13 +29,13 @@ const CheckoutPage: React.FC = () => {
   const ongkir = 20000;
   const diskon = 0;
   const totalAmount = Number(order?.totalAmount) || 0;
-  const totalQuantity = order?.orderItems?.reduce((total: number, item: any) => {
-    return total + item.quantity;
-  }, 0) || 0;
+  const totalQuantity =
+    order?.orderItems?.reduce((total: number, item: any) => {
+      return total + item.quantity;
+    }, 0) || 0;
   const productTotal =
     order?.orderItems?.reduce(
-      (sum: number, item: any) =>
-        sum + Number(item.unitPrice) * item.quantity,
+      (sum: number, item: any) => sum + Number(item.unitPrice) * item.quantity,
       0
     ) || 0;
 
@@ -125,7 +127,7 @@ const fetchOrderData = async () => {
         }),
       });
 
-    const result = await response.json();
+      const result = await response.json();
 
       if (!response.ok) {
         throw new Error(result.error || "Failed to process checkout");
@@ -141,18 +143,29 @@ const fetchOrderData = async () => {
       return;
     }
 
-    if (paymentMethod === PaymentMethod.COD) {
-      const transformedOrder = transformOrder(result, alamatAktif);
-      setOrder(transformedOrder);
-      setOpenOrderConfirm(true);
+      if (paymentMethod === PaymentMethod.COD) {
+        const transformedOrder = transformOrder(result, alamatAktif);
+        console.log("Transformed order:", transformedOrder);
+        console.log("=== ORDER CONFIRM DEBUG ===");
+        console.log("Transformed products:", transformedOrder.products);
+        console.log("First product structure:", transformedOrder.products[0]);
+        console.log(
+          "Product keys:",
+          transformedOrder.products[0] &&
+            Object.keys(transformedOrder.products[0])
+        );
+        console.log("=== END DEBUG ===");
+
+        setOrder(transformedOrder);
+        setOpenOrderConfirm(true);
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+      alert("Terjadi kesalahan saat memproses checkout");
+    } finally {
+      setProcessingCheckout(false);
     }
-  } catch (error) {
-    console.error("Checkout error:", error);
-    alert("Terjadi kesalahan saat memproses checkout");
-  } finally {
-    setProcessingCheckout(false);
-  }
-};
+  };
 
   if (loading) {
     return (
@@ -391,9 +404,7 @@ const fetchOrderData = async () => {
 
                 <div className="pt-1 text-xs space-y-1">
                   <div className="flex justify-between">
-                    <span>
-                      Total harga ({totalQuantity} Produk)
-                    </span>
+                    <span>Total harga ({totalQuantity} Produk)</span>
                     <span>Rp{subtotal.toLocaleString("id-ID")}</span>
                   </div>
                   <div className="flex justify-between text-green-600">
@@ -426,6 +437,21 @@ const fetchOrderData = async () => {
                   </button>
                 </div>
               </div>
+            </div>
+
+            {/* 5. Tombol konfirmasi - mobile */}
+            <div className="md:hidden bg-white p-4 mt-3 sticky bottom-0 z-10 border-t border-gray-200 shadow-lg">
+              <button
+                onClick={processCheckout}
+                disabled={
+                  processingCheckout ||
+                  !order?.orderItems?.length ||
+                  !alamatAktif
+                }
+                className="bg-green-600 hover:bg-green-700 text-white px-6 h-12 rounded-lg font-semibold w-full disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              >
+                {processingCheckout ? "Memproses..." : "Konfirmasi Pesanan"}
+              </button>
             </div>
 
             {/* Kolom Kanan - Desktop */}
@@ -549,6 +575,7 @@ const fetchOrderData = async () => {
                   alt="QRIS"
                   className="w-64 h-64 rounded-lg border border-gray-200 object-contain"
                 />
+                <h1>{qrisUrl}</h1>
               </div>
 
               <p className="text-xs text-gray-500 text-center mb-4">
@@ -579,25 +606,41 @@ const fetchOrderData = async () => {
             status={order.status}
             paymentMethod={order.paymentMethod || paymentMethod}
             products={
+              // 🔥 PRIORITASKAN order.products DARI TRANSFORMORDER
               order.products && order.products.length > 0
                 ? order.products
                 : order?.orderItems?.map((item: any) => ({
-                  id: item.productId || item.id,
-                  name: item.product?.name || "Produk",
-                  qty: item.quantity || 0,
-                  price: `Rp${Number(item.unitPrice || 0).toLocaleString("id-ID")}`,
-                  image: item.product?.imageUrl?.[0] || "/placeholder-product.png",
-                })) || []
+                    id: item.productId || item.id,
+                    name: item.product?.name || "Produk",
+                    qty: item.quantity || 0,
+                    price: `Rp${Number(item.unitPrice || 0).toLocaleString(
+                      "id-ID"
+                    )}`,
+                    image:
+                      item.product?.imageUrl?.[0] || "/placeholder-product.png",
+                  })) || []
             }
-            total={order.total || `Rp${Number(order.totalAmount || totalPembayaran).toLocaleString("id-ID")}`}
-            address={order.address || {
-              id: alamatAktif?.id || "",
-              nama: alamatAktif?.recipientName || "Nama tidak tersedia",
-              telp: alamatAktif?.phoneNumber || "Telepon tidak tersedia",
-              alamat: alamatAktif?.fullAddress || "Alamat tidak tersedia",
-              utama: alamatAktif?.isPrimary || false,
-            }}
-            contact={order.contact || `${alamatAktif?.recipientName || ""} | ${alamatAktif?.phoneNumber || ""}`.trim()}
+            total={
+              order.total ||
+              `Rp${Number(order.totalAmount || totalPembayaran).toLocaleString(
+                "id-ID"
+              )}`
+            }
+            address={
+              order.address || {
+                id: alamatAktif?.id || "",
+                nama: alamatAktif?.recipientName || "Nama tidak tersedia",
+                telp: alamatAktif?.phoneNumber || "Telepon tidak tersedia",
+                alamat: alamatAktif?.fullAddress || "Alamat tidak tersedia",
+                utama: alamatAktif?.isPrimary || false,
+              }
+            }
+            contact={
+              order.contact ||
+              `${alamatAktif?.recipientName || ""} | ${
+                alamatAktif?.phoneNumber || ""
+              }`.trim()
+            }
           />
         )}
       </div>
