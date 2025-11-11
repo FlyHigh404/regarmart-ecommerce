@@ -231,7 +231,7 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
               <div className="grid grid-cols-2 text-sm mt-1">
                 <span>Metode Pembayaran:</span>
                 <span className="text-right font-medium">
-                  {PaymentMethod[paymentMethod]}
+                  {paymentMethod}
                 </span>
               </div>
             </div>
