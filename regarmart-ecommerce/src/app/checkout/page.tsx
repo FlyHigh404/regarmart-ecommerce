@@ -43,12 +43,38 @@ const CheckoutPage: React.FC = () => {
   useOrderSocket(order?.id, (status) => {
     if (status === "PROCESSING") {
       setQrisUrl(null);
+       setOrder((prev: any) => ({
+      ...prev,
+      status: "PROCESSING",
+      paymentMethod: paymentMethod
+    }));
+
+    fetchOrderData();
+
       setOpenOrderConfirm(true);
     } else if (status === "CANCELED") {
       setQrisUrl(null);
       alert("Pembayaran gagal atau dibatalkan ❌");
+
+       setOrder((prev: any) => ({
+      ...prev,
+      status: "CANCELED"
+    }));
+  }
+});
+
+const fetchOrderData = async () => {
+  try {
+    const response = await fetch(`/api/cart?orderId=${order.id}`);
+    if (response.ok) {
+      const updatedOrder = await response.json();
+      setOrder(updatedOrder);
     }
-  });
+  } catch (error) {
+    console.error("Error fetching updated order:", error);
+  }
+};
+
 
   useEffect(() => {
     const fetchCheckoutData = async () => {
@@ -106,9 +132,14 @@ const CheckoutPage: React.FC = () => {
       }
 
       if (paymentMethod === PaymentMethod.QRIS && result.midtrans?.qrisUrl) {
-        setQrisUrl(result.midtrans.qrisUrl);
-        return;
-      }
+       setOrder((prev: any) => ({
+        ...prev,
+        paymentMethod: PaymentMethod.QRIS,
+        status: "PENDING" 
+      }));
+      setQrisUrl(result.midtrans.qrisUrl);
+      return;
+    }
 
     if (paymentMethod === PaymentMethod.COD) {
       const transformedOrder = transformOrder(result, alamatAktif);
@@ -545,7 +576,7 @@ const CheckoutPage: React.FC = () => {
               }
             }}
             orderNumber={order.orderNumber || `#INV-${order?.id?.toString().padStart(4, "0")}`}
-            status={order.status || OrderStatus.PROCESSING}
+            status={order.status}
             paymentMethod={order.paymentMethod || paymentMethod}
             products={
               order.products && order.products.length > 0
