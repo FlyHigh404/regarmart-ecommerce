@@ -43,17 +43,9 @@ const CardOrder: React.FC<CardOrderProps> = ({
   const [loading, setLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
 
-  // ✅ Fungsi update order status yang benar
   const updateOrderStatus = async (newStatus: "CANCELED" | "COMPLETED") => {
     try {
       setLoading(true);
-
-      console.log("🔄 Updating order status:", {
-        orderId,
-        newStatus,
-        orderNumber,
-        endpoint: `/api/profile/order/${orderId}`
-      });
 
       const res = await fetch(`/api/profile/order/${orderId}`, {
         method: "PATCH",
@@ -61,12 +53,8 @@ const CardOrder: React.FC<CardOrderProps> = ({
         body: JSON.stringify({ status: newStatus }),
       });
 
-      console.log("📡 Response status:", res.status);
-      console.log("📡 Response ok:", res.ok);
-
       // Try to get response text first for debugging
       const responseText = await res.text();
-      console.log("📡 Raw response:", responseText);
 
       let result;
       try {
@@ -118,6 +106,27 @@ const CardOrder: React.FC<CardOrderProps> = ({
 
   const handleCancelOrder = () => updateOrderStatus("CANCELED");
   const handleCompleteOrder = () => updateOrderStatus("COMPLETED");
+  const handleShowDetail = () => {
+    console.log("🟢 CardOrder: Dispatching orderConfirm:open");
+    
+    window.dispatchEvent(new CustomEvent('orderConfirm:open', { 
+      detail: {
+        orderId,
+        orderNumber,
+        status,
+        total,
+        products,
+        paymentMethod,
+        address,
+        contact,
+        dateCompleted
+      }
+    }));
+    
+    if (onShowDetail) {
+      onShowDetail();
+    }
+  };
 
   const renderStatus = () => {
     switch (currentStatus) {
@@ -167,7 +176,7 @@ const CardOrder: React.FC<CardOrderProps> = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onShowDetail?.()
+                handleShowDetail();
               }}
               className="rounded-[10px] sm:rounded-[13px] bg-green-600 text-white px-3 sm:px-4 py-1 text-[11px] sm:text-[12px] font-semibold hover:bg-green-700 transition-all"
             >
@@ -191,25 +200,11 @@ const CardOrder: React.FC<CardOrderProps> = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onShowDetail?.()
+                handleShowDetail();
               }}
               className="rounded-[10px] sm:rounded-[13px] bg-green-600 text-white px-3 sm:px-4 py-1 text-[11px] sm:text-[12px] font-semibold hover:bg-green-700 transition-all"
             >
               Lihat detail
-            </button>
-          </div>
-        );
-      case OrderStatus.COMPLETED:
-        return (
-          <div className="mt-3 text-right">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                window.open(`/katalog/${products[0]?.id}`);
-              }}
-              className="rounded-[10px] sm:rounded-[13px] bg-green-600 text-white px-3 sm:px-4 py-1 text-[11px] sm:text-[12px] font-semibold hover:bg-green-700 transition-all"
-            >
-              Beli lagi
             </button>
           </div>
         );
@@ -219,7 +214,7 @@ const CardOrder: React.FC<CardOrderProps> = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                window.open(`/katalog/${products[0]?.id}`);
+                router.push(`/katalog/${products[0]?.id}`);
               }}
               className="rounded-[10px] sm:rounded-[13px] bg-green-600 text-white px-3 sm:px-4 py-1 text-[11px] sm:text-[12px] font-semibold hover:bg-green-700 transition-all"
             >
@@ -257,11 +252,11 @@ const CardOrder: React.FC<CardOrderProps> = ({
       >
         {/* Header nomor pesanan & status */}
         <div className="flex flex-wrap items-center justify-between mb-3 sm:mb-4">
-          <div className="text-[10px] sm:text-[14px] font-bold text-[#1B1F1B] break-words max-w-[200px] sm:max-w-none">
-            No Pesanan : <span>#INV {orderNumber}</span>
-          </div>
-          {renderStatus()}
+        <div className="text-[10px] sm:text-[14px] font-bold text-[#1B1F1B]">
+          No Pesanan : <span className="text-black">#INV {orderNumber}</span>
         </div>
+        {renderStatus()}
+      </div>
 
         {/* Produk */}
         <div className="space-y-2 sm:space-y-3">
@@ -352,7 +347,7 @@ const CardOrder: React.FC<CardOrderProps> = ({
             <div className="border border-gray-200 rounded-lg p-3 text-left mb-4">
               <p className="text-sm font-semibold">
                 No Pesanan:{" "}
-                <span className="text-green-700">#{orderNumber}</span>
+                <span className="text-green-700">#INV {orderNumber}</span>
               </p>
               {products.length > 0 && (
                 <div className="flex items-center gap-2 mt-2">
@@ -410,7 +405,7 @@ const CardOrder: React.FC<CardOrderProps> = ({
             <div className="border border-gray-200 rounded-lg p-3 text-left mb-4">
               <p className="text-sm font-semibold">
                 No Pesanan:{" "}
-                <span className="text-green-700">#{orderNumber}</span>
+                <span className="text-green-700">#INV {orderNumber}</span>
               </p>
               {products.length > 0 && (
                 <div className="flex items-center gap-2 mt-2">

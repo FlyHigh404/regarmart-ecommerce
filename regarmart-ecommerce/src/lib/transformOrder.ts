@@ -2,15 +2,12 @@ import { OrderProduct } from "@/types/order";
 import { Alamat } from "@/types/alamat";
 
 export const transformOrder = (order: any, alamatAktif?: any, cartItems?: OrderProduct[]) => {
-  console.log("Raw order data for transform:", order);
-
   const actualOrderId = order.id || order.orderId;
-  const orderNumber = order.orderNumber || `${(actualOrderId || '').slice(-8).toUpperCase()}`;
+  const calculatedOrderNumber = order.orderNumber || `${(actualOrderId || '').slice(-8).toUpperCase()}`;
 
   let products: OrderProduct[] = [];
 
   if (order.orderItems && order.orderItems.length > 0) {
-    console.log("Using products from order.orderItems");
     products = order.orderItems.map((item: any) => ({
       id: item.productId || item.id,
       name: item.product?.name || "Produk",
@@ -20,7 +17,6 @@ export const transformOrder = (order: any, alamatAktif?: any, cartItems?: OrderP
     }));
   }
 
-  // HANDLE TOTAL
   const totalAmount = Number(order.totalAmount) || 0;
   const shippingCost = Number(order.shippingCost) || 20000;
   
@@ -35,7 +31,6 @@ export const transformOrder = (order: any, alamatAktif?: any, cartItems?: OrderP
     }, 0) + shippingCost;
   }
 
-  // HANDLE ADDRESS
   let resolvedAddress = null;
   if (alamatAktif) {
     resolvedAddress = alamatAktif;
@@ -47,7 +42,6 @@ export const transformOrder = (order: any, alamatAktif?: any, cartItems?: OrderP
     resolvedAddress = order.shippingAddress;
   }
 
-  // Format alamat 
   const formattedAddress = {
     id: resolvedAddress?.id || "",
     nama: resolvedAddress?.recipientName || resolvedAddress?.nama || "Nama tidak tersedia",
@@ -56,15 +50,13 @@ export const transformOrder = (order: any, alamatAktif?: any, cartItems?: OrderP
     utama: resolvedAddress?.isPrimary || resolvedAddress?.utama || false,
   } as Alamat;
 
-  // Format contact info
   const contactName = resolvedAddress?.recipientName || resolvedAddress?.nama || "";
   const contactPhone = resolvedAddress?.phoneNumber || resolvedAddress?.telp || "";
   const contact = `${contactName} | ${contactPhone}`.trim();
 
-
   return {
     id: actualOrderId, 
-    orderNumber: orderNumber,
+    orderNumber: calculatedOrderNumber, 
     status: order.status || "PROCESSING",
     total: `Rp${calculatedTotal.toLocaleString("id-ID")}`,
     paymentMethod: order.paymentMethod || "COD",

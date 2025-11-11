@@ -11,6 +11,7 @@ import {
   Youtube,
 } from "lucide-react";
 import Link from "next/link";
+import Email from "next-auth/providers/email";
 
 const Footer = () => {
   const footerRef = useRef<HTMLElement | null>(null);
@@ -70,7 +71,7 @@ const Footer = () => {
           </div>
 
           {/* Right Side - Contact Information */}
-          <div className="space-y-6 lg:ml-96 lg:mt-3">
+          <div className="space-y-6 lg:ml-72 lg:mt-3">
             <h3 className="text-xl font-semibold text-green-600 mb-6">
               Contact Us
             </h3>
@@ -80,7 +81,7 @@ const Footer = () => {
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-gray-500" />
                 <p className="text-gray-500 text-sm font-book">
-                  regarm4rt@gmail.com
+                  panganku.fresh@gmail.com 
                 </p>
               </div>
 
@@ -92,15 +93,20 @@ const Footer = () => {
                 </p>
               </div>
 
+              {/* Telp */}
+              <div className="flex items-center space-x-3">
+                <Phone className="w-5 h-5 text-gray-500" />
+                <p className="text-gray-500 text-sm font-book">
+                  0858-1425-0627
+                </p>
+              </div>
+
               {/* Address */}
-              <div className="flex items-start space-x-3">
-                <MapPin className="w-5 h-5 text-gray-500 mt-1" />
+              <div className="flex items-start space-x-2">
+                <MapPin className="w-14 h-14 text-gray-500 mt-1  " />
                 <div>
-                  <p className="text-gray-500 text-sm font-book">
-                    Jl. Rungkut Asri No.72
-                  </p>
-                  <p className="text-gray-500 text-sm font-book">
-                    Surabaya, 33169
+                  <p className="text-gray-500 text-[12px] font-book leading-relaxed space-y-1">
+                    Perumahan Gramapuri Tamansari, Rt. 005 / Rw. 037, Kel. Wanasari,Kec. Cibitung, Kab. Bekasi, Prov. Jawa Barat 17520
                   </p>
                 </div>
               </div>
@@ -147,3 +153,9 @@ const Footer = () => {
 };
 
 export default Footer;
+
+// Email panganku fresh = panganku.fresh@gmail.com 
+// No.telp regar panganku fresh = 0858-1425-0627
+// Alamat regar panganku fresh = Perumahan Gramapuri Tamansari, Rt. 005 / Rw. 037, Kel. Wanasari, Kec. Cibitung, Kab. Bekasi, Prov. Jawa Barat 17520
+
+// Berikut teman-teman untuk informasi alamat dan kontak panganku fresh

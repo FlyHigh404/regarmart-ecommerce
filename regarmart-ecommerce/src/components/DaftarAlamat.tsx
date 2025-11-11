@@ -8,6 +8,7 @@ interface DaftarAlamatProps {
   open: boolean
   setOpen: (val: boolean) => void
   onSelectAlamat?: (alamat: Alamat) => void
+  showJadikanUtama?: boolean // Tambahkan prop ini
 }
 
 const normalizeAlamat = (item: any): Alamat => ({
@@ -28,6 +29,7 @@ export default function DaftarAlamat({
   open,
   setOpen,
   onSelectAlamat,
+  showJadikanUtama = false, // Default false
 }: DaftarAlamatProps) {
   const router = useRouter()
   const [selected, setSelected] = useState<string | number | null>(null)
@@ -189,7 +191,8 @@ export default function DaftarAlamat({
                           </span>
                         )}
                       </div>
-                      {!(item.utama || item.isPrimary) && (
+                      {/* Tambahkan kondisi showJadikanUtama */}
+                      {!(item.utama || item.isPrimary) && showJadikanUtama && (
                         <button
                           className="text-[11px] sm:text-xs text-green-600 hover:underline"
                           onClick={(e) => {

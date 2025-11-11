@@ -1,5 +1,5 @@
 "use client";
-import { LogIn, Plus, X, Star } from "lucide-react";
+import { LogIn, Plus, X, Star, CheckCircle, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { Product } from "@/types/product";
@@ -7,6 +7,43 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
+
+const Toast = ({ 
+  message, 
+  type, 
+  onClose 
+}: { 
+  message: string; 
+  type: 'success' | 'error'; 
+  onClose: () => void;
+}) => (
+  <div className="fixed top-26 right-4 z-[100] animate-slide-in">
+    <div className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${
+      type === 'success' ? 'bg-green-50 border border-green-200' : 
+      'bg-red-50 border border-red-200'
+    }`}>
+      {type === 'success' ? (
+        <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+      ) : (
+        <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+      )}
+      <p className={`text-sm font-medium ${
+        type === 'success' ? 'text-green-800' : 'text-red-800'
+      }`}>
+        {message}
+      </p>
+      <button
+        onClick={onClose}
+        className={`ml-2 ${
+          type === 'success' ? 'text-green-600 hover:text-green-700' : 
+          'text-red-600 hover:text-red-700'
+        }`}
+      >
+        <X className="w-4 h-4" />
+      </button>
+    </div>
+  </div>
+);
 
 interface CartProductProps {
   product: Product;
@@ -18,10 +55,18 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [averageRating, setAverageRating] = useState<number>(0);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  
   const { data: session } = useSession();
   const router = useRouter();
   const { incrementCart } = useCart();
 
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   useEffect(() => {
     const fetchProductRating = async () => {
@@ -39,22 +84,14 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
     fetchProductRating();
   }, [product.id]);
 
-  const renderRating = () => {
-    if (!averageRating || averageRating === 0) {
-      return null;
-    }
-
-
-    //rating display
-    return (
-      <div className="flex items-center gap-1 mb-1">
-      <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-      <span className="text-xs text-gray-600 font-medium">
-        {averageRating.toFixed(1)}
-      </span>
-    </div>
-    );
-  };
+  const renderRating = () => (
+  <div className="flex items-center gap-1 mb-1">
+    <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+    <span className="text-xs text-gray-600 font-medium">
+      {averageRating.toFixed(1)}
+    </span>
+  </div>
+);
 
   const handleAddToCart = async (product: Product) => {
     if (!session) {
@@ -84,12 +121,25 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) {
-        console.error("Gagal menambahkan ke keranjang");
+      if (response.ok) {
+        setTimeout(() => incrementCart(), 100);
+        setToast({
+          message: `${product.name} berhasil ditambahkan ke keranjang!`,
+          type: 'success'
+        });
+      } else {
+        const result = await response.json();
+        setToast({
+          message: result.error || "Gagal menambahkan ke keranjang.",
+          type: 'error'
+        });
       }
-      setTimeout(() => incrementCart(), 100);
     } catch (error: any) {
       console.error("Error terjadi:", error);
+      setToast({
+        message: "Terjadi kesalahan saat menambahkan ke keranjang.",
+        type: 'error'
+      });
     } finally {
       setIsAddingToCart(false);
     }
@@ -115,18 +165,22 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
 
   return (
     <>
-      {/* Error Modal */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       {showErrorModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
-          {/* Backdrop */}
           <div
             className="absolute inset-0 bg-transparent backdrop-blur-sm"
             onClick={closeErrorModal}
           ></div>
 
-          {/* Modal */}
           <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-slideUp">
-            {/* Close Button */}
             <button
               onClick={closeErrorModal}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
@@ -134,14 +188,12 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
               <X size={20} />
             </button>
 
-            {/* Icon */}
             <div className="flex justify-center mb-4">
               <div className="w-16 h-16 bg-[#26A81D] rounded-full flex items-center justify-center">
                 <LogIn size={32} className="text-white" />
               </div>
             </div>
 
-            {/* Content */}
             <div className="text-center mb-6">
               <h3 className="text-xl font-bold text-gray-900 mb-2">
                 Login Diperlukan
@@ -151,7 +203,6 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
               </p>
             </div>
 
-            {/* Actions */}
             <div className="flex gap-3">
               <button
                 onClick={closeErrorModal}
@@ -174,15 +225,9 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
       <Link href={`/katalog/${product.id}`} passHref>
         <div
           key={product.id}
-          className="cursor-pointer bg-white/90 backdrop-blur-sm 
-               rounded-lg sm:rounded-xl 
-               p-1.5 sm:p-3 lg:p-2 
-               shadow-sm sm:shadow-md hover:shadow-xl 
-               transition-all duration-500 hover:-translate-y-2 
-               group animate-card-appear"
+          className="cursor-pointer bg-white/90 backdrop-blur-sm rounded-lg sm:rounded-xl p-1.5 sm:p-3 lg:p-2 shadow-sm sm:shadow-md hover:shadow-xl transition-all duration-500 hover:-translate-y-2 group animate-card-appear"
           style={{ animationDelay: `${900 + index * 200}ms` }}
         >
-          {/* Gambar */}
           <div className="mb-2 sm:mb-4 bg-gray-50 rounded-lg overflow-hidden transform transition-transform duration-300 group-hover:scale-105">
             <Image
               src={product.imageUrl[0] || "/placeholder.svg"}
@@ -193,7 +238,6 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
             />
           </div>
 
-          {/* Nama + Berat */}
           <h4 className="font-bold text-sm sm:text-base lg:text-sm text-gray-800 mb-1 group-hover:text-green-600 transition-colors duration-300">
             {product.name}{" "}
             <span className="font-normal text-gray-600 text-xs sm:text-sm">{product.weight}</span>
@@ -201,22 +245,18 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
 
           {renderRating()}
 
-          {/* Stok */}
           <p className="text-gray-500 text-xs sm:text-sm lg:text-xs mb-1">
             Sisa stok: {product.stock}
           </p>
 
-          {/* Deskripsi */}
           <p className="text-gray-600 text-[0.65rem] sm:text-xs lg:text-[0.7rem] mb-1 line-clamp-2">
             {product.description}
           </p>
 
-          {/* Harga */}
           <span className="block text-sm sm:text-base lg:text-sm font-bold text-gray-800 mb-1.5">
             {formatPrice(product.price)}
           </span>
 
-          {/* Button */}
           <button
             onClick={(e) => {
               e.preventDefault();
@@ -224,17 +264,13 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
               handleAddToCart(product);
             }}
             disabled={isAddingToCart || product.stock === 0}
-            className={`
-              w-full py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs lg:text-[10px] 
-              transition-all duration-300 flex items-center justify-center gap-1 
-              transform active:scale-95
-              ${isAddingToCart
+            className={`w-full py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs lg:text-[10px] transition-all duration-300 flex items-center justify-center gap-1 transform active:scale-95 ${
+              isAddingToCart
                 ? "bg-gray-400 cursor-not-allowed"
                 : product.stock === 0
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                   : "bg-green-500 hover:bg-green-600 text-white hover:shadow-lg hover:scale-105"
-              }
-            `}
+            }`}
           >
             {isAddingToCart ? (
               <>
@@ -252,6 +288,22 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
           </button>
         </div>
       </Link>
+
+      <style jsx global>{`
+        @keyframes slide-in {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        .animate-slide-in {
+          animation: slide-in 0.3s ease-out;
+        }
+      `}</style>
     </>
   );
 };

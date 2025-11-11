@@ -82,7 +82,23 @@ const Navbar = () => {
 
   const handleNavClick = (href: string) => {
     setIsMobileMenuOpen(false);
-    router.push(href);
+
+    if (href.startsWith("#")) {
+      const targetId = href.replace("#", "");
+      const element = document.getElementById(targetId);
+      if (element) {
+        const offset = 80;
+        const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+        const offsetPosition = elementPosition - offset;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth",
+        });
+      }
+    } else {
+      router.push(href);
+    }
   };
 
   const handleSignOut = () => {
@@ -99,9 +115,8 @@ const Navbar = () => {
 
       {/* ---------------- NAVBAR ---------------- */}
       <nav
-        className={`fixed top-0 left-0 w-full px-4 sm:px-6 lg:px-8 xl:px-[8%] py-4 flex items-center justify-between z-50 transition-all duration-300 ${
-          isScrolled ? "bg-white/90 backdrop-blur-md shadow-sm" : "bg-transparent"
-        }`}
+        className={`fixed top-0 left-0 w-full px-4 sm:px-6 lg:px-8 xl:px-[8%] py-4 flex items-center justify-between z-50 transition-all duration-300 ${isScrolled ? "bg-white/90 backdrop-blur-md shadow-sm" : "bg-transparent"
+          }`}
       >
         {/* Logo */}
         <a
@@ -113,10 +128,10 @@ const Navbar = () => {
           }}
         >
           <div className="flex items-center">
-            <img 
-              src="/Logo.png" 
-              alt="RegarMart Logo" 
-              className="w-32 h-10 sm:w-40 sm:h-12 md:w-48 md:h-14 object-contain" 
+            <img
+              src="/Logo.png"
+              alt="RegarMart Logo"
+              className="w-32 h-10 sm:w-40 sm:h-12 md:w-48 md:h-14 object-contain"
             />
           </div>
         </a>
@@ -129,11 +144,10 @@ const Navbar = () => {
               <li key={item.href}>
                 <a
                   href={item.href}
-                  className={`relative transition-all duration-300 font-medium text-sm group ${
-                    isActive
-                      ? "text-green-600"
-                      : "text-gray-700 hover:text-green-600"
-                  }`}
+                  className={`relative transition-all duration-300 font-medium text-sm group ${isActive
+                    ? "text-green-600"
+                    : "text-gray-700 hover:text-green-600"
+                    }`}
                   onClick={(e) => {
                     e.preventDefault();
                     handleNavClick(item.href);
@@ -142,13 +156,12 @@ const Navbar = () => {
                   {item.label}
                   {/* Image underline instead of line */}
                   <div
-                    className={`absolute -bottom-2 left-0 w-full transition-all duration-300 ${
-                      isActive ? "opacity-100 scale-100" : "opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100"
-                    }`}
+                    className={`absolute -bottom-2 left-0 w-full transition-all duration-300 ${isActive ? "opacity-100 scale-100" : "opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100"
+                      }`}
                   >
-                    <img 
-                      src="/Line 66.png" 
-                      alt="Underline" 
+                    <img
+                      src="/Line 66.png"
+                      alt="Underline"
                       className="w-full h-auto object-contain"
                     />
                   </div>
@@ -186,19 +199,17 @@ const Navbar = () => {
                     {session.user?.name || "User"}
                   </span>
                   <ChevronDown
-                    className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
-                      isProfileDropdownOpen ? "rotate-180" : ""
-                    }`}
+                    className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isProfileDropdownOpen ? "rotate-180" : ""
+                      }`}
                   />
                 </button>
 
                 {/* Modern Minimalist Dropdown */}
                 <div
-                  className={`absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden transition-all duration-200 ${
-                    isProfileDropdownOpen
-                      ? "opacity-100 visible translate-y-0"
-                      : "opacity-0 invisible -translate-y-2 pointer-events-none"
-                  }`}
+                  className={`absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden transition-all duration-200 ${isProfileDropdownOpen
+                    ? "opacity-100 visible translate-y-0"
+                    : "opacity-0 invisible -translate-y-2 pointer-events-none"
+                    }`}
                 >
                   {/* Profile Info */}
                   <div className="px-4 py-3 bg-gradient-to-br from-green-50 to-gray-50">
@@ -221,16 +232,29 @@ const Navbar = () => {
 
                   {/* Menu Items */}
                   <div className="py-1">
-                    <button
-                      onClick={() => {
-                        setIsProfileDropdownOpen(false);
-                        router.push("/profil");
-                      }}
-                      className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors"
-                    >
-                      <User className="w-4 h-4 text-gray-400" />
-                      <span>Profil Saya</span>
-                    </button>
+                    {session.user?.role === "ADMIN" ? (
+                      <button
+                        onClick={() => {
+                          setIsProfileDropdownOpen(false);
+                          router.push("/admin/dashboard");
+                        }}
+                        className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors"
+                      >
+                        <User className="w-4 h-4 text-gray-400" />
+                        <span>Dashboard</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setIsProfileDropdownOpen(false);
+                          router.push("/profil");
+                        }}
+                        className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors"
+                      >
+                        <User className="w-4 h-4 text-gray-400" />
+                        <span>Profil Saya</span>
+                      </button>
+                    )}
                     <button
                       onClick={handleSignOut}
                       className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors"
@@ -273,17 +297,15 @@ const Navbar = () => {
       {/* ---------------- MOBILE MENU ---------------- */}
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300 lg:hidden ${
-          isMobileMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300 lg:hidden ${isMobileMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
         onClick={() => setIsMobileMenuOpen(false)}
       />
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 right-0 h-full w-[85vw] max-w-sm bg-white shadow-2xl z-50 transform transition-transform duration-300 lg:hidden overflow-y-auto ${
-          isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed top-0 right-0 h-full w-[85vw] max-w-sm bg-white shadow-2xl z-50 transform transition-transform duration-300 lg:hidden overflow-y-auto ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
@@ -330,18 +352,17 @@ const Navbar = () => {
                 <button
                   key={item.href}
                   onClick={() => handleNavClick(item.href)}
-                  className={`w-full text-left px-3 py-2.5 rounded-lg font-medium text-sm transition-colors relative ${
-                    isActive
-                      ? "bg-green-50 text-green-600"
-                      : "text-gray-700 hover:bg-gray-50 hover:text-green-600"
-                  }`}
+                  className={`w-full text-left px-3 py-2.5 rounded-lg font-medium text-sm transition-colors relative ${isActive
+                    ? "bg-green-50 text-green-600"
+                    : "text-gray-700 hover:bg-gray-50 hover:text-green-600"
+                    }`}
                 >
                   <div className="flex items-center justify-between">
                     <span>{item.label}</span>
                     {(isActive || item.href === pathname) && (
-                      <img 
-                        src="/Line 66.png" 
-                        alt="Active indicator" 
+                      <img
+                        src="/Line 66.png"
+                        alt="Active indicator"
                         className="w-16 h-2 object-contain"
                       />
                     )}
@@ -357,17 +378,30 @@ const Navbar = () => {
               <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Akun
               </p>
-              <button
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  router.push("/profil");
-                }}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-              >
-                <User className="w-5 h-5 text-gray-400" />
-                <span>Profil Saya</span>
-              </button>
-              
+              {session.user?.role === "ADMIN" ? (
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    router.push("/admin/dashboard");
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  <User className="w-5 h-5 text-gray-400" />
+                  <span>Dashboard</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    router.push("/profil");
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  <User className="w-5 h-5 text-gray-400" />
+                  <span>Profil Saya</span>
+                </button>
+              )}
+
               {showCustomerIcons && (
                 <>
                   <button
@@ -386,8 +420,8 @@ const Navbar = () => {
                     )}
                   </button>
                   <div className="w-full">
-                    <NotifikasiCust 
-                      notificationCount={notificationCount} 
+                    <NotifikasiCust
+                      notificationCount={notificationCount}
                       isMobile={true}
                       onClose={() => setIsMobileMenuOpen(false)}
                     />

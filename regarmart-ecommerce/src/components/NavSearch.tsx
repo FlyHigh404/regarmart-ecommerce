@@ -78,11 +78,11 @@ const NavSearch = () => {
     <>
       <nav className="fixed top-0 left-0 w-full h-20 bg-white shadow z-50 px-6 flex items-center justify-between">
         {/* Logo */}
-        <a href="/" className="flex items-center gap-2 ml-4 md:ml-22">
+        <a href="/" className="flex items-center gap-2 ml-4 md:ml-16">
           <img src="/Logo.png" alt="Logo" className="w-36 h-12 md:w-48 md:h-14 object-contain" />
         </a>
 
-        {/* Search (Desktop only) */}
+        {/* Search (Desktop only)
         <form
           onSubmit={handleSearchSubmit}
           className="flex-1 max-w-2xl mx-6 hidden md:block"
@@ -100,7 +100,7 @@ const NavSearch = () => {
               className="w-full pl-12 pr-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent focus:bg-white transition-all duration-200"
             />
           </div>
-        </form>
+        </form> */}
 
         {/* Right side */}
         <div className="flex items-center gap-2 md:gap-6">
@@ -202,7 +202,7 @@ const NavSearch = () => {
         </div>
       </nav>
 
-      {/* Search (Mobile only) */}
+      {/* Search (Mobile only)
       <div className="sticky mt-24 px-4 md:hidden">
         <form onSubmit={handleSearchSubmit}>
           <div className="relative">
@@ -219,7 +219,7 @@ const NavSearch = () => {
             />
           </div>
         </form>
-      </div>
+      </div> */}
     </>
   );
 };

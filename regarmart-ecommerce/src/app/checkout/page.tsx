@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { MapPin } from "lucide-react";
+import { Home, MapPin, Package } from "lucide-react";
 import DaftarAlamat from "@/components/DaftarAlamat";
 import { Alamat } from "@/types/alamat";
 import CheckoutNavbar from "@/components/NavCheckout";
@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import useOrderSocket from "@/hooks/useOrderSocket";
 import AuthCheck from "@/components/AuthCheck";
 import { transformOrder } from "@/lib/transformOrder";
+import Link from "next/link";
 
 const CheckoutPage: React.FC = () => {
   const router = useRouter();
@@ -143,17 +144,83 @@ const CheckoutPage: React.FC = () => {
     );
   }
 
-  if (!order || !alamatAktif) {
+  if (!order) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Data tidak ditemukan</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="max-w-md w-full text-center">
+          <div className="mb-6 flex justify-center">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
+              <Package className="w-10 h-10" style={{ color: '#26A81D' }} />
+            </div>
+          </div>
+
+          <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+            Pesanan Tidak Ditemukan
+          </h1>
+
+          <p className="text-gray-600 mb-8">
+            Maaf, data pesanan tidak ditemukan atau telah kadaluarsa.
+            Silakan mulai pesanan baru dari beranda.
+          </p>
+
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center gap-2 w-full text-white py-3 px-4 rounded-lg font-medium hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: '#26A81D' }}
+          >
+            <Home className="w-5 h-5" />
+            Kembali ke Beranda
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!alamatAktif) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="max-w-md w-full text-center">
+          <div className="mb-6 flex justify-center">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
+              <MapPin className="w-10 h-10" style={{ color: '#26A81D' }} />
+            </div>
+          </div>
+
+          <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+            Alamat Belum Ditambahkan
+          </h1>
+
+          <p className="text-gray-600 mb-8">
+            Anda belum memiliki alamat pengiriman.
+            Silakan tambahkan alamat terlebih dahulu untuk melanjutkan checkout.
+          </p>
+
+          <div className="space-y-3">
+            <Link
+              href="/profil/alamat"
+              className="inline-flex items-center justify-center gap-2 w-full text-white py-3 px-4 rounded-lg font-medium hover:opacity-90 transition-opacity"
+              style={{ backgroundColor: '#26A81D' }}
+            >
+              <MapPin className="w-5 h-5" />
+              Tambah Alamat
+            </Link>
+
+            <Link
+              href="/"
+              className="inline-flex items-center justify-center gap-2 w-full bg-white text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors border border-gray-300"
+            >
+              <Home className="w-5 h-5" />
+              Kembali ke Beranda
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
     <AuthCheck role="CUSTOMER">
-      <div className="min-h-screen bg-gray-100 max-sm:bg-white flex flex-col">
+      <div className="min-h-screen bg-gray-100 max-sm:bg-gray-100 flex flex-col">
         <CheckoutNavbar />
 
         {/* ======== ISI CHECKOUT ========= */}
@@ -180,12 +247,12 @@ const CheckoutPage: React.FC = () => {
                       </span>
                     )}
                   </div>
-                  <button
+                  {/* <button
                     className="text-green-600 text-xs font-semibold hover:underline"
                     onClick={() => setOpenAlamat(true)}
                   >
                     Edit
-                  </button>
+                  </button> */}
                 </div>
 
                 <div className="pl-6 mt-1">
@@ -203,7 +270,7 @@ const CheckoutPage: React.FC = () => {
 
                 {/* Strip Hijau-Oren */}
                 <div
-                  className="absolute bottom-0 left-0 w-full h-1 rounded-b-xl"
+                  className="absolute bottom-0 left-0 w-full h-1 md:mb-0 rounded-b-xl"
                   style={{
                     backgroundImage: `
                     repeating-linear-gradient(
@@ -222,7 +289,7 @@ const CheckoutPage: React.FC = () => {
               {order?.orderItems?.map((item: any, idx: number) => (
                 <div
                   key={item.id}
-                  className="bg-white shadow rounded-xl p-3 max-sm:shadow-none max-sm:rounded-none max-sm:border-b border-gray-200"
+                  className="bg-white shadow rounded-xl p-3 max-sm:shadow-none max-sm:rounded-none border-gray-200"
                 >
                   <h3 className="text-xs font-semibold mb-2">
                     Pesanan {idx + 1}
@@ -322,6 +389,21 @@ const CheckoutPage: React.FC = () => {
                 <div className="flex justify-between font-bold text-sm w-full mt-2">
                   <span>Total Pembayaran</span>
                   <span>Rp{totalPembayaran.toLocaleString("id-ID")}</span>
+                </div>
+
+                 {/* 5. Tombol konfirmasi - mobile */}
+                <div className="md:hidden p-4 mt-3 sticky bottom-0 z-10">
+                  <button
+                    onClick={processCheckout}
+                    disabled={
+                      processingCheckout ||
+                      !order?.orderItems?.length ||
+                      !alamatAktif
+                    }
+                    className="bg-green-600 hover:bg-green-700 text-white px-6 h-12 rounded-lg font-semibold w-full disabled:bg-gray-400 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                  >
+                    {processingCheckout ? "Memproses..." : "Konfirmasi Pesanan"}
+                  </button>
                 </div>
               </div>
             </div>
@@ -441,12 +523,13 @@ const CheckoutPage: React.FC = () => {
 
         {/* Modal QRIS */}
         {qrisUrl && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-transparent backdrop-blur-2xl bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-xl max-w-md w-full mx-4">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-bold text-gray-800">
                   Scan QRIS untuk Pembayaran
                 </h2>
+                <p>{qrisUrl}</p>
                 <button
                   onClick={() => setQrisUrl(null)}
                   className="text-gray-500 hover:text-gray-700 text-xl"

@@ -7,7 +7,6 @@ import { useSession } from "next-auth/react";
 import Link from 'next/link';
 import { useCart } from "@/context/CartContext";
 
-// Toast Notification Component
 const Toast = ({
   message,
   type,
@@ -17,7 +16,7 @@ const Toast = ({
   type: 'success' | 'error';
   onClose: () => void;
 }) => (
-  <div className="fixed top-26 right-4 z-[100] animate-slide-in">
+  <div className="fixed top-26 right-4 z-[10002] animate-slide-in">
     <div className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${type === 'success' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
       }`}>
       {type === 'success' ? (
@@ -40,7 +39,6 @@ const Toast = ({
   </div>
 );
 
-// Login Confirmation Modal Component
 const LoginModal = ({
   isOpen,
   onClose,
@@ -54,15 +52,12 @@ const LoginModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
-      {/* Backdrop */}
       <div
         className="absolute inset-0 bg-transparent backdrop-blur-sm"
         onClick={onClose}
       ></div>
 
-      {/* Modal */}
       <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-slideUp">
-        {/* Close Button */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
@@ -70,14 +65,12 @@ const LoginModal = ({
           <X size={20} />
         </button>
 
-        {/* Icon */}
         <div className="flex justify-center mb-4">
           <div className="w-16 h-16 bg-[#26A81D] rounded-full flex items-center justify-center">
             <LogIn size={32} className="text-white" />
           </div>
         </div>
 
-        {/* Content */}
         <div className="text-center mb-6">
           <h3 className="text-xl font-bold text-gray-900 mb-2">
             Login Diperlukan
@@ -87,7 +80,6 @@ const LoginModal = ({
           </p>
         </div>
 
-        {/* Actions */}
         <div className="flex gap-3">
           <button
             onClick={onClose}
@@ -108,7 +100,6 @@ const LoginModal = ({
   );
 };
 
-// Loading Skeleton Component
 const ProductSkeleton = () => (
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
     {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -141,7 +132,6 @@ export default function ProductPopuler() {
   const router = useRouter();
   const { incrementCart } = useCart();
 
-  // Handle client-side mounting
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -154,10 +144,13 @@ export default function ProductPopuler() {
           fetch("/api/products").then((res) => res.json()),
           fetch("/api/products/categories").then((res) => res.json()),
         ]);
-        setProducts(res1);
-        setCategories(res2);
+        setProducts(Array.isArray(res1) ? res1 : []);
+        setCategories(Array.isArray(res2) ? res2 : []);
       } catch (err) {
+        console.error("Error fetching data:", err);
         setError("Gagal memuat produk atau kategori");
+        setProducts([]);
+        setCategories([]);
       } finally {
         setLoading(false);
       }
@@ -165,7 +158,6 @@ export default function ProductPopuler() {
     fetchProducts();
   }, []);
 
-  // Auto-hide toast after 5 seconds
   useEffect(() => {
     if (toast) {
       const timer = setTimeout(() => setToast(null), 5000);
@@ -174,20 +166,16 @@ export default function ProductPopuler() {
   }, [toast]);
 
   const formatPrice = (price: number) => {
-    // Simple format that's consistent on server and client
     return `Rp ${price.toLocaleString('id-ID')}`;
   };
 
   const handleAddToCart = async (product: any) => {
-    // Cek login
     if (!session) {
-      // Simpan produk yang ingin ditambahkan dan tampilkan modal login
       setPendingProduct(product);
       setShowLoginModal(true);
       return;
     }
 
-    // Cek role user
     if (session.user?.role === "ADMIN") {
       setToast({
         message: "Akun admin tidak dapat menambahkan produk ke keranjang.",
@@ -247,7 +235,6 @@ export default function ProductPopuler() {
     setPendingProduct(null);
   };
 
-  // Render product card function
   const renderProductCard = (product: any, index: number) => (
     <Link href={`/katalog/${product.id}`} passHref key={product.id}>
       <div
@@ -255,41 +242,35 @@ export default function ProductPopuler() {
           }`}
         style={isMounted ? { animationDelay: `${index * 100}ms` } : undefined}
       >
-        {/* Gambar */}
         <div className="mb-2 sm:mb-4 bg-gray-50 rounded-lg overflow-hidden transform transition-transform duration-300 group-hover:scale-105">
           <Image
-            src={product.imageUrl[0] || "/placeholder.svg"}
-            alt={product.name}
+            src={product.imageUrl?.[0] || "/placeholder.svg"}
+            alt={product.name || "Product"}
             width={400}
             height={250}
             className="w-full h-20 sm:h-28 lg:h-24 object-cover transition-transform duration-500 group-hover:scale-110"
           />
         </div>
 
-        {/* Nama + Berat */}
         <h4 className="font-bold text-sm sm:text-base lg:text-sm text-gray-800 mb-1 group-hover:text-green-600 transition-colors duration-300">
-          {product.name}{" "}
-          <span className="font-normal text-gray-600 text-xs sm:text-sm">{product.weight}</span>
+          {product.name || "Produk"}{" "}
+          <span className="font-normal text-gray-600 text-xs sm:text-sm">{product.weight || ""}</span>
         </h4>
 
-        {/* Stok */}
         <p className="text-gray-500 text-xs sm:text-sm lg:text-xs mb-1">
           Sisa stok: <span className={product.stock > 0 ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
-            {product.stock}
+            {product.stock || 0}
           </span>
         </p>
 
-        {/* Deskripsi */}
         <p className="text-gray-600 text-[0.65rem] sm:text-xs lg:text-[0.7rem] mb-1 line-clamp-2">
-          {product.description}
+          {product.description || ""}
         </p>
 
-        {/* Harga */}
         <span className="block text-sm sm:text-base lg:text-sm font-bold text-gray-800 mb-1.5">
-          {formatPrice(product.price)}
+          {formatPrice(product.price || 0)}
         </span>
 
-        {/* Button */}
         <button
           onClick={(e) => {
             e.preventDefault();
@@ -326,15 +307,14 @@ export default function ProductPopuler() {
     </Link>
   );
 
-  // Filter products based on search and category
-  const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = !activeCategory || product.categoryName === activeCategory;
+  const filteredProducts = (products || []).filter((product) => {
+    const matchesSearch = 
+      product?.name?.toLowerCase()?.includes(searchQuery?.toLowerCase() || '') ||
+      product?.description?.toLowerCase()?.includes(searchQuery?.toLowerCase() || '');
+    const matchesCategory = !activeCategory || product?.categoryName === activeCategory;
     return matchesSearch && matchesCategory;
   });
 
-  // Don't render until mounted to avoid hydration mismatch
   if (!isMounted) {
     return (
       <div className="overflow-x-hidden">
@@ -382,7 +362,6 @@ export default function ProductPopuler() {
         onConfirm={handleLoginConfirm}
       />
 
-      {/* Search Bar */}
       <div className="relative max-w-xl mt-1 mx-auto mb-5 px-2 sm:px-0 animate-fade-in-up animation-delay-400">
         <div className="relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 sm:w-4.5 lg:w-4 h-4 sm:h-4.5 lg:h-4 text-gray-900 animate-pulse-soft" />
@@ -398,7 +377,6 @@ export default function ProductPopuler() {
         </div>
       </div>
 
-      {/* Category filters */}
       <div className="flex flex-wrap justify-center lg:justify-start lg:ml-42 gap-2 sm:gap-2.5 lg:gap-2 mb-4 animate-fade-in-up animation-delay-500">
         <button
           onClick={() => setActiveCategory(null)}
@@ -426,7 +404,6 @@ export default function ProductPopuler() {
         ))}
       </div>
 
-      {/* Popular products section */}
       <div className="text-left max-w-7xl lg:w-3xl mx-auto px-4 overflow-hidden">
         <div className="flex items-center justify-between mb-4 lg:ml-22">
           <h2 className="text-lg sm:text-xl lg:text-base font-semibold text-gray-700 animate-fade-in-up animation-delay-800">

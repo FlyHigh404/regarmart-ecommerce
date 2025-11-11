@@ -171,7 +171,7 @@ const FormRating: React.FC<FormRatingProps> = ({
       )}
 
       {/* Modal */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 font-jakarta p-4">
+      <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/40 backdrop-blur-sm font-jakarta p-4">
         <div
           className="relative flex flex-col p-6 w-full max-w-[564px] scale-90 sm:scale-100"
           style={{

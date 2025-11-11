@@ -1,7 +1,7 @@
 "use client"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, List, FileText, Users, BarChart2, Settings, LogOut, X, ShoppingBag, User } from "lucide-react"
+import { Home, List, FileText, Users, BarChart2, Settings, LogOut, X, ShoppingBag, User, ArrowLeftFromLine } from "lucide-react"
 import { signOut } from "next-auth/react"
 
 // Menu items array dengan icon yang disesuaikan
@@ -12,6 +12,7 @@ const menuItems = [
   { name: "Managemen Pesanan", icon: FileText, path: "/admin/pesanan" },
   { name: "Managemen Pengguna", icon: User, path: "/admin/pengguna" },
   { name: "Managemen Notifikasi", icon: BarChart2, path: "/admin/notifikasi" },
+  { name: "Halaman Customer", icon: ArrowLeftFromLine, path: "/" },
   { name: "Pengaturan", icon: Settings, path: "/admin/pengaturan" },
 ]
 
@@ -43,20 +44,22 @@ export default function Sidebar({ isOpen = false, onClose, onToggle, style }: Si
         {/* Menu */}
         <nav className="flex flex-col p-4 gap-2 flex-1 relative">
           {menuItems.map((item) => {
-            const isActive = pathname.startsWith(item.path)
+            const isActive =
+              item.path === "/"
+                ? pathname === "/"
+                : pathname.startsWith(item.path)
             const Icon = item.icon
 
             return (
               <div key={item.name} className="relative">
-                {/* Garis hijau terpisah di sisi kiri sidebar */}
                 {isActive && (
                   <div className="absolute -left-4 top-0 bottom-0 w-1 bg-green-600 rounded-r-full" />
                 )}
                 <Link
                   href={item.path}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all relative ${isActive
-                      ? "bg-green-100 text-green-700 font-medium"
-                      : "text-gray-700 hover:bg-gray-50"
+                    ? "bg-green-100 text-green-700 font-medium"
+                    : "text-gray-700 hover:bg-gray-50"
                     }`}
                 >
                   <Icon className={`w-5 h-5 ${isActive ? "text-green-700" : "text-gray-600"}`} />
@@ -96,18 +99,19 @@ export default function Sidebar({ isOpen = false, onClose, onToggle, style }: Si
         {/* Menu */}
         <nav className="flex flex-col p-4 gap-2 flex-1 relative">
           {menuItems.map((item) => {
-            const isActive = pathname.startsWith(item.path)
+            const isActive =
+              item.path === "/"
+                ? pathname === "/"
+                : pathname.startsWith(item.path)
             const Icon = item.icon
 
             return (
               <div key={item.name} className="relative">
-                {/* Garis hijau terpisah di sisi kiri sidebar untuk mobile */}
                 {isActive && (
                   <div className="absolute -left-4 top-0 bottom-0 w-1 bg-green-600 rounded-r-full" />
                 )}
                 <Link
                   href={item.path}
-                  onClick={onClose}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all relative ${isActive
                       ? "bg-green-100 text-green-700 font-medium"
                       : "text-gray-700 hover:bg-gray-50"

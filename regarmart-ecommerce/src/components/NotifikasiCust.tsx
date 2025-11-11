@@ -44,7 +44,7 @@ const NotifikasiItem: React.FC<NotifItemProps> = ({
     const { orderNumber, productName, status } = extractOrderInfo(message);
 
     return (
-        <div className={`flex p-2.5 border-b border-gray-200 cursor-pointer ${rowClass}`}>
+        <div className={`flex p-2.5 border-b border-gray-200 ${rowClass}`}>
             <div className="w-8 h-8 mr-3 flex-shrink-0 mt-0.5 bg-gray-200 rounded-md flex items-center justify-center">
                 <div className="text-xs text-gray-600 font-semibold">
                     {orderNumber.slice(0, 3)}
@@ -272,7 +272,7 @@ const NotifikasiCust: React.FC<NotifikasiCustProps> = ({
 
                             {/* Footer - Mark All Read */}
                             {!loading && !error && notifications.length > 0 && (
-                                <div className="p-3 flex justify-center border-t border-gray-200 bg-white">
+                                <div className="p-3 flex justify-center border-t border-gray-200 bg-white cursor-pointer">
                                     <button 
                                         onClick={() => {
                                             handleMarkAllRead();
@@ -334,11 +334,11 @@ const NotifikasiCust: React.FC<NotifikasiCustProps> = ({
             {isDropdownVisible && (
                 <div 
                     id="notification-dropdown"
-                    className={`absolute right-0 mt-3 w-[420px] ${DROPDOWN_MAX_HEIGHT_CLASS} overflow-y-auto bg-white rounded-lg shadow-2xl z-50 border border-gray-200`}
+                    className={`absolute right-0 mt-3 w-[280px] sm:w-[360px] md:w-[420px] ${DROPDOWN_MAX_HEIGHT_CLASS} overflow-y-auto bg-white rounded-lg shadow-2xl z-50 border border-gray-200`}
                     style={{ zIndex: 60 }} 
                 >
-                    <div className="p-4 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10 shadow-md">
-                        <h3 className="text-lg font-bold text-gray-800">Notifikasi</h3>
+                    <div className="p-3 sm:p-4 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10 shadow-md">
+                        <h3 className="text-base sm:text-lg font-bold text-gray-800">Notifikasi</h3>
                     </div>
 
                     {/* Loading State */}
@@ -399,7 +399,7 @@ const NotifikasiCust: React.FC<NotifikasiCustProps> = ({
                                     className={`text-sm font-semibold transition ${
                                         notifications.length === 0
                                         ? 'text-gray-400 cursor-not-allowed'
-                                        : 'text-green-600 hover:text-green-700 cursor-pointer'
+                                        : 'text-green-600 hover:text-green-700'
                                     }`}
                                 >
                                     Tandai semua sudah dibaca

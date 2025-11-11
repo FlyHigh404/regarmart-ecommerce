@@ -53,7 +53,7 @@ export const Toast: React.FC<ToastProps> = ({
   const style = styles[type]
 
   return (
-    <div className="fixed top-4 right-4 z-[60] animate-slideIn">
+    <div className="fixed top-4 right-4 z-[100003] animate-slideIn">
       <div className={`${style.bg} ${style.border} border-l-4 rounded-lg shadow-lg p-4 min-w-[300px] max-w-md flex items-start gap-3`}>
         <div className="flex-shrink-0 mt-0.5">
           {style.icon}

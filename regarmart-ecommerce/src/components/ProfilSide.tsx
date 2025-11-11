@@ -18,14 +18,16 @@ const navItems = [
 
 interface ProfilSideProps {
   onItemClick?: () => void
+  isMobileOpen?: boolean
+  onClose?: () => void
 }
 
-export default function ProfilSide({ onItemClick }: ProfilSideProps) {
+export default function ProfilSide({ onItemClick, isMobileOpen = false, onClose }: ProfilSideProps) {
   const pathname = usePathname()
 
   return (
     <div className="w-full md:w-[280px] flex-shrink-0">
-      <div className="bg-white rounded-[15px] shadow-md border border-gray-100 overflow-hidden pt-2 pb-32">
+      <div className="bg-white rounded-[15px] md:shadow-md border border-gray-100 overflow-hidden pt-2 pb-32">
         <nav className="flex flex-col p-4 gap-2 flex-1 relative">
           {navItems.map((item) => {
             const isActive = pathname === item.href || item.children?.some((child) => pathname.startsWith(child))
@@ -39,7 +41,10 @@ export default function ProfilSide({ onItemClick }: ProfilSideProps) {
                 )}
                 <Link href={item.href}>
                   <div
-                    onClick={onItemClick}
+                    onClick={() => {
+                      onItemClick?.()
+                      onClose?.()
+                    }}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all relative ${isActive
                         ? "bg-green-100 text-green-700 font-medium"
                         : "text-gray-700 hover:bg-gray-50"
@@ -56,15 +61,15 @@ export default function ProfilSide({ onItemClick }: ProfilSideProps) {
             onClick={() => {
               signOut({ callbackUrl: "/" })
               onItemClick?.()
+              onClose?.()
             }}
             className="group flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-gray-700 font-medium hover:bg-gray-100 hover:text-red-600 cursor-pointer"
           >
-            <LogOut className="w-5 h-5 text-gray-700 group-hover:text-red-600 transition-colors" />
-            <span className="text-sm font-medium">Log Out</span>
+            <LogOut className="w-5 h-5 text-red-700 group-hover:text-red-600 transition-colors" />
+            <span className="text-sm font-medium text-red-700">Log Out</span>
           </button>
         </nav>
       </div>
     </div>
   )
 }
-

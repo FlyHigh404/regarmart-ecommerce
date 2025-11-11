@@ -1,17 +1,21 @@
+// app/profil/riwayat-transaksi/transaksi-diproses/page.tsx
 "use client"
 import CardOrder from "@/components/CardOrder";
-import OrderConfirm from "@/components/OrderConfirm";
 import TabRiwayat from "@/components/TabRiwayat";
 import { transformOrder } from "@/lib/transformOrder";
 import { OrderStatus } from "@prisma/client";
 import { useEffect, useState } from "react";
 
-export default function TransaksiDiprosesPage() {
+interface TransaksiDiprosesPageProps {
+  onShowOrderConfirm?: (order: any) => void;
+}
+
+export default function TransaksiDiprosesPage({ 
+  onShowOrderConfirm 
+}: TransaksiDiprosesPageProps) {
   const [orders, setOrders] = useState<any[]>([]);
   const [alamatAktif, setAlamatAktif] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
-  const [openOrderConfirm, setOpenOrderConfirm] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -52,8 +56,9 @@ export default function TransaksiDiprosesPage() {
   }, []);
 
   const handleShowOrderConfirm = (order: any) => {
-    setSelectedOrder(order);
-    setOpenOrderConfirm(true);
+    if (onShowOrderConfirm) {
+      onShowOrderConfirm(order); // Panggil parent function dari layout
+    }
   };
 
   if (isLoading) {
@@ -92,25 +97,11 @@ export default function TransaksiDiprosesPage() {
                 address={order.address}
                 contact={order.contact}
                 dateCompleted={order.dateCompleted}
-                onShowDetail={() => handleShowOrderConfirm(order)} // ✅ TAMBAH PROP INI
+                onShowDetail={() => handleShowOrderConfirm(order)} 
               />
             </div>
           ))}
         </div>
-      )}
-
-      {selectedOrder && (
-        <OrderConfirm
-          open={openOrderConfirm}
-          onClose={() => setOpenOrderConfirm(false)}
-          orderNumber={selectedOrder.orderNumber} 
-          status={selectedOrder.status}
-          paymentMethod={selectedOrder.paymentMethod}
-          products={selectedOrder.products} 
-          total={selectedOrder.total}
-          address={selectedOrder.address} 
-          contact={selectedOrder.contact} 
-        />
       )}
     </div>
   );

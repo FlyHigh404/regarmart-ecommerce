@@ -32,7 +32,7 @@ const Toast = ({
   type: "success" | "error";
   onClose: () => void;
 }) => (
-  <div className="fixed top-24 right-4 z-[100] animate-slide-in">
+  <div className="fixed top-24 right-4 z-[100002] animate-slide-in">
     <div
       className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${
         type === "success"
@@ -255,7 +255,6 @@ const ProductDetailPage = () => {
   const [isRatingOpen, setIsRatingOpen] = useState(false);
   const [RelatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
-  // 🔥 PERBAIKAN: Pindahkan fetchData keluar agar bisa dipanggil ulang
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -310,8 +309,7 @@ const ProductDetailPage = () => {
       } else {
         setReviews([]);
       }
-
-      // 🔥 PERBAIKAN: Process ratings data dengan cara yang benar
+      // Process ratings data
       let processedRatings: Rating[];
       if (ratingsResponse.ok) {
         const ratingsJson = await ratingsResponse.json();
@@ -587,7 +585,7 @@ const ProductDetailPage = () => {
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 py-6">
           {/* Product Detail Container */}
-          <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-8 md:mt-22">
+          <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-8 mt-20 md:mt-22">
             {/* Back Button */}
             <div className="px-6 py-4 border-b border-gray-100">
               <button
@@ -651,17 +649,15 @@ const ProductDetailPage = () => {
                     <span className="text-gray-500">
                       Kategori: {product.category?.name || "Tidak ada kategori"}
                     </span>
-                    {averageRating > 0 && (
-                      <div className="flex items-center gap-1">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="font-medium text-gray-900">
-                          {averageRating}
-                        </span>
-                        <span className="text-gray-500">
-                          ({totalReviews} ulasan)
-                        </span>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-1">
+                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    <span className="font-medium text-gray-900">
+                      {averageRating.toFixed(1)}
+                    </span>
+                    <span className="text-gray-500">
+                      ({totalReviews} ulasan)
+                    </span>
+                  </div>
                   </div>
                 </div>
 
