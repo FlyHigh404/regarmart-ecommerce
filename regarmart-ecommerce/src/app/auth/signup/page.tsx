@@ -119,7 +119,7 @@ export default function Register() {
               {/* Header */}
               <div className="text-center">
                 <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                  Daftar ke Regar Mart
+                  Daftar ke Panganku Fresh
                 </h1>
                 <p className="text-gray-600 text-sm">
                   Bergabunglah untuk belanja kebutuhan segar Anda
@@ -175,7 +175,7 @@ export default function Register() {
                     Email atau Nomor HP
                   </label>
                   <p className="text-sm text-gray-400 ml-1 mt-1">
-                    Contoh: email@regarmart.com
+                    Contoh: email@pangankufresh.com
                   </p>
                 </div>
 
