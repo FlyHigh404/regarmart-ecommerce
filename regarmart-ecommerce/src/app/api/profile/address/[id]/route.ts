@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 // PUT -> update alamat
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user?.id) {
@@ -20,14 +21,14 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         where: {
           userId: session.user.id,
           isPrimary: true,
-          id: { not: params.id }
+          id: { not: id }
         },
         data: { isPrimary: false }
       });
     }
 
     const updatedAddress = await prisma.address.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         label,
         fullAddress,
@@ -48,7 +49,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 // DELETE -> hapus alamat
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+
+
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user?.id) {
@@ -57,7 +61,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
   try {
     await prisma.address.delete({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     return NextResponse.json({ success: true }, { status: 200 });

@@ -2,12 +2,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"; // adjust path
-
+import { authOptions } from "@/lib/auth";
 // GET reviews by productId
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
 
   const { id } = await params;
@@ -33,8 +32,10 @@ export async function GET(
 // POST add review
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+
   const session = await getServerSession(authOptions);
   if (!session || session.user?.role !== "CUSTOMER") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -49,7 +50,7 @@ export async function POST(
     const newReview = await prisma.review.create({
       data: {
         content,
-        productId: params.id,
+        productId: id,
         userId: session.user.id,
       },
     });
@@ -66,8 +67,10 @@ export async function POST(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+
   const session = await getServerSession(authOptions);
   if (!session || session.user?.role !== "CUSTOMER") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -75,7 +78,7 @@ export async function DELETE(
   try {
     const review = await prisma.review.delete({
       where: {
-        id: params.id,
+        id: id,
         userId: session.user.id,
       },
     });

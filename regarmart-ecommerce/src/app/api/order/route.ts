@@ -1,7 +1,7 @@
 // regarmart-ecommerce/src/app/api/order/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth/next";
 import { prisma } from "@/lib/prisma";
 

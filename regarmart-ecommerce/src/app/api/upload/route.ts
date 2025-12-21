@@ -1,13 +1,11 @@
-// src/app/api/upload/route.ts
-
-import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
+import { writeFile, mkdir } from "fs/promises";
 import { nanoid } from "nanoid";
+import path from "path";
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {
     const formData = await request.formData();
-
     const file = formData.get("file") as File;
 
     if (!file) {
@@ -44,19 +42,32 @@ export async function POST(request: Request): Promise<NextResponse> {
         { status: 400 }
       );
     }
+
+    // Konversi File ke Buffer
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    // Buat nama file unik
     const fileExtension = file.name.split(".").pop();
     const fileNameWithoutExt = file.name.split(".").slice(0, -1).join(".");
-    const uniqueFilename = `${fileNameWithoutExt}-${nanoid(
-      8
-    )}.${fileExtension}`;
+    const uniqueFilename = `${fileNameWithoutExt}-${nanoid(8)}.${fileExtension}`;
 
-    const blob = await put(uniqueFilename, file, {
-      access: "public",
-    });
+    // Path untuk menyimpan file
+    const uploadDir = path.join(process.cwd(), "public", "uploads");
+    const filePath = path.join(uploadDir, uniqueFilename);
 
-    return NextResponse.json({ url: blob.url });
+    // Buat folder jika belum ada
+    await mkdir(uploadDir, { recursive: true });
+
+    // Simpan file
+    await writeFile(filePath, buffer);
+
+    // URL untuk akses file
+    const fileUrl = `/uploads/${uniqueFilename}`;
+
+    return NextResponse.json({ url: fileUrl });
   } catch (error) {
-    console.error("Error uploading file to Vercel Blob:", error);
+    console.error("Error uploading file:", error);
     return NextResponse.json(
       { error: "Terjadi kesalahan saat mengupload file." },
       { status: 500 }

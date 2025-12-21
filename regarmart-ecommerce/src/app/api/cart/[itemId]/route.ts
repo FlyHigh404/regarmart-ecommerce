@@ -1,12 +1,14 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/route";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { authOptions } from "@/lib/auth";
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { itemId: string } }
+  { params }: { params: Promise<{ itemId: string }> }
 ) {
+  const { itemId } = await params;
+
   const session = await getServerSession(authOptions);
   if (!session || session.user?.role !== "CUSTOMER") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -14,7 +16,7 @@ export async function DELETE(
 
   try {
     await prisma.orderItem.delete({
-      where: { id: params.itemId },
+      where: { id: itemId },
     });
     return NextResponse.json({ message: "Item removed" });
   } catch (error) {
@@ -24,8 +26,10 @@ export async function DELETE(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { itemId: string } }
+  { params }: { params: Promise<{ itemId: string }> }
 ) {
+  const { itemId } = await params;
+
   const session = await getServerSession(authOptions);
   if (!session || session.user?.role !== "CUSTOMER") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -40,7 +44,7 @@ export async function PUT(
 
     // Update the cart item quantity
     const updatedItem = await prisma.orderItem.update({
-      where: { id: params.itemId },
+      where: { id: itemId },
       data: { quantity },
     });
 

@@ -2,12 +2,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 // GET ratings by productId + average
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   try {
@@ -33,8 +33,10 @@ export async function GET(
 // POST/UPSERT rating
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+
   const session = await getServerSession(authOptions);
   if (!session || session.user?.role !== "CUSTOMER") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -50,14 +52,14 @@ export async function POST(
       where: {
         // make unique key manually
         productId_userId: {
-          productId: params.id,
+          productId: id,
           userId: session.user.id,
         },
       },
       update: { value },
       create: {
         value,
-        productId: params.id,
+        productId: id,
         userId: session.user.id,
       },
     });
@@ -72,8 +74,11 @@ export async function POST(
 // PUT rating
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+
+
   const session = await getServerSession(authOptions);
   if (!session || session.user?.role !== "CUSTOMER") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -88,7 +93,7 @@ export async function PUT(
     const rating = await prisma.rating.update({
       where: {
         productId_userId: {
-          productId: params.id,
+          productId: id,
           userId: session.user.id,
         },
       },
@@ -105,8 +110,10 @@ export async function PUT(
 // DELETE rating
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+
   const session = await getServerSession(authOptions);
   if (!session || session.user?.role !== "CUSTOMER") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -116,7 +123,7 @@ export async function DELETE(
     await prisma.rating.delete({
       where: {
         productId_userId: {
-          productId: params.id,
+          productId: id,
           userId: session.user.id,
         },
       },

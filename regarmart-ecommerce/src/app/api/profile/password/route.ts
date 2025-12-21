@@ -2,7 +2,7 @@ import {NextResponse, NextRequest} from 'next/server';
 import {getServerSession} from 'next-auth';
 import {prisma} from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { authOptions } from '../../auth/[...nextauth]/route';
+import { authOptions } from "@/lib/auth";
 
 export async function PUT(req: NextRequest) {
     const session = await getServerSession(authOptions);
