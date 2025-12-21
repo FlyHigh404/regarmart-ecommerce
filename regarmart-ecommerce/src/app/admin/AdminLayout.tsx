@@ -5,7 +5,7 @@ import AuthCheck from "@/components/AuthCheck";
 import { Search, Bell } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Regar Mart Admin",
+  title: "Panganku Fresh Admin",
 };
 
 interface AdminLayoutProps {
@@ -91,7 +91,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </button>
             <img
               src="/LogoAdmin.png"
-              alt="RegarMart Admin Logo"
+              alt="Panganku Fresh Admin Logo"
               className="h-8 object-contain"
             />
             <div className="w-10" /> {/* Spacer */}

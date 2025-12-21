@@ -35,7 +35,7 @@ export default function Sidebar({ isOpen = false, onClose, onToggle, style }: Si
           <div className="flex items-center">
             <img
               src="/LogoAdmin.png"
-              alt="RegarMart Admin Logo"
+              alt="Panganku Fresh Admin Logo"
               className="w-48 h-14 object-contain"
             />
           </div>
@@ -85,7 +85,7 @@ export default function Sidebar({ isOpen = false, onClose, onToggle, style }: Si
         <div className="flex items-center justify-between p-4">
           <img
             src="/LogoAdmin.png"
-            alt="RegarMart Admin Logo"
+            alt="Panganku Fresh Admin Logo"
             className="h-10 object-contain"
           />
           <button

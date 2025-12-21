@@ -74,7 +74,7 @@ export default function LoginPageAdmin() {
                 Email atau Nomor HP
               </label>
               <p className="text-sm text-gray-400 ml-1 mt-1">
-                Contoh: email@regarmart.com
+                Contoh: email@pangankufresh.com
               </p>
             </div>
             {/* Password */}
