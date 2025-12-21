@@ -130,7 +130,7 @@ const Navbar = () => {
           <div className="flex items-center">
             <img
               src="/Logo.png"
-              alt="RegarMart Logo"
+              alt="Panganku Fresh Logo"
               className="w-32 h-10 sm:w-40 sm:h-12 md:w-48 md:h-14 object-contain"
             />
           </div>
@@ -309,7 +309,7 @@ const Navbar = () => {
       >
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-          <img src="/Logo.png" alt="RegarMart" className="h-10 object-contain" />
+          <img src="/Logo.png" alt="Panganku Fresh" className="h-10 object-contain" />
           <button
             className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
             onClick={() => setIsMobileMenuOpen(false)}

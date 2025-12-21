@@ -9,7 +9,7 @@ export default function CheckoutNavbar() {
         <Link href="/" className="flex items-center gap-4 flex-shrink-0">
           <img 
             src="/Logo.png" 
-            alt="RegarMart Logo" 
+            alt="Panganku Fresh Logo" 
             className="w-28 sm:w-48 h-10 sm:h-14 object-contain" 
           />
         </Link>

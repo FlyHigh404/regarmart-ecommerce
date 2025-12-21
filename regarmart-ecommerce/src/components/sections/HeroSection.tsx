@@ -102,7 +102,7 @@ const HeroSection = () => {
                         Mau masak besok pagi? Butuh stok dapur buat seminggu ke depan?
                     </p>
                     <p className="text-gray-600 font-medium text-sm sm:text-base md:text-lg lg:text-[1.02rem] mb-3 max-w-2xl mx-auto animate-fade-in-up animation-delay-300">
-                        Di <span className="font-bold">RegarMart</span>, kamu tinggal pilih bahan segarnya, biar{" "}
+                        Di <span className="font-bold">Panganku Fresh</span>, kamu tinggal pilih bahan segarnya, biar{" "}
                         <span className="font-bold">kami yang antar</span>.
                     </p>
 

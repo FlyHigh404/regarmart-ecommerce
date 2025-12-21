@@ -94,7 +94,7 @@ const NavSearch = () => {
             />
             <input
               type="text"
-              placeholder="Cari produk terbaik di RegarMart..."
+              placeholder="Cari produk terbaik di Panganku Fresh..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-12 pr-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent focus:bg-white transition-all duration-200"

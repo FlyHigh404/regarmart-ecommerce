@@ -8,7 +8,7 @@ const NavAuth = () => {
         <Link href="/" className="flex items-center">
           <img
             src="/Logo.png"
-            alt="RegarMart Logo"
+            alt="Panganku Fresh Logo"
             className="w-48 h-14 object-contain"
           />
         </Link>

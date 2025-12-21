@@ -16,7 +16,7 @@ const ReasonSection: React.FC = () => {
       <div className="container mx-auto px-2 text-center">
         {/* Judul */}
         <h2 className="text-xl sm:text-2xl md:text-4xl font-bold text-green-600 mb-10 md:mb-12">
-          Mengapa Berbelanja di Regar Mart ?
+          Mengapa Berbelanja di Panganku Fresh ?
         </h2>
 
         

@@ -51,7 +51,7 @@ const Footer = () => {
             <div className="flex items-center space-x-3">
               <img
                 src="/Logo.png"
-                alt="RegarMart Logo"
+                alt="Panganku Fresh Logo"
                 className="w-48 h-14 object-contain"
               />
             </div>
@@ -89,7 +89,7 @@ const Footer = () => {
               <div className="flex items-center space-x-3">
                 <Facebook className="w-5 h-5 text-gray-500" />
                 <p className="text-gray-500 text-sm font-book">
-                  Regar Mart
+                  Panganku Fresh
                 </p>
               </div>
 

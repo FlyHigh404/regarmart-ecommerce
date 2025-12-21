@@ -4,12 +4,12 @@ import { useEffect, useRef, useState } from "react"
 import CardTesti from "@/components/CardTesti"
 
   const testimonials = [
-  { name: "Chaidar Abdillah", role: "Mahasiswa", testimonial: "Belanja di Regar Mart selalu memuaskan. Sayur segar, harga bersahabat, pelayanan cepat dan ramah!", avatar: "/Chaidar.jpg" },
-  { name: "Setia Cahya", role: "Mahasiswa", testimonial: "Awalnya ragu belanja online, tapi Regar Mart bikin nyaman. Barang cepat datang dan selalu segar!", avatar: "/Setia.jpg" },
-  { name: "Sharon Virginia", role: "Mahasiswa", testimonial: "Regar Mart jadi penyelamat saya yang sibuk! Semua sayur dan sembako fresh, tinggal pesan, langsung diantar", avatar: "/Sharon.jpg" },
-  { name: "Abednego Sinaga", role: "Karyawan", testimonial: "Kualitas sayurannya selalu bagus dan segar. Harganya juga pas di kantong. Mantap banget Regar Mart", avatar: "/Abednego.jpg" },
+  { name: "Chaidar Abdillah", role: "Mahasiswa", testimonial: "Belanja di Panganku Fresh selalu memuaskan. Sayur segar, harga bersahabat, pelayanan cepat dan ramah!", avatar: "/Chaidar.jpg" },
+  { name: "Setia Cahya", role: "Mahasiswa", testimonial: "Awalnya ragu belanja online, tapi Panganku Fresh bikin nyaman. Barang cepat datang dan selalu segar!", avatar: "/Setia.jpg" },
+  { name: "Sharon Virginia", role: "Mahasiswa", testimonial: "Panganku Fresh jadi penyelamat saya yang sibuk! Semua sayur dan sembako fresh, tinggal pesan, langsung diantar", avatar: "/Sharon.jpg" },
+  { name: "Abednego Sinaga", role: "Karyawan", testimonial: "Kualitas sayurannya selalu bagus dan segar. Harganya juga pas di kantong. Mantap banget Panganku Fresh", avatar: "/Abednego.jpg" },
   { name: "Steven Silitonga", role: "Karyawan", testimonial: "Coba sekali langsung ketagihan! Sayurannya fresh, pengiriman cepat, dan pelayanan top!", avatar: "/Steven.jpg" },
-  { name: "Ahmad Saddam", role: "Karyawan", testimonial: "Produk selalu segar, kurir sopan, dan pengiriman tepat waktu. Regar Mart memang terbaik!", avatar: "/Ahmad.jpg" },
+  { name: "Ahmad Saddam", role: "Karyawan", testimonial: "Produk selalu segar, kurir sopan, dan pengiriman tepat waktu. Panganku Fresh memang terbaik!", avatar: "/Ahmad.jpg" },
 ]
 
 export default function TestiSection() {

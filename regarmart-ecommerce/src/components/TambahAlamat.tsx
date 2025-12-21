@@ -204,7 +204,7 @@ const AddAddress: React.FC<AddAddressProps> = ({ isOpen, onClose, onSave }) => {
                 <a href="#" className="text-green-600 font-semibold hover:underline">
                   Kebijakan Privasi
                 </a>{" "}
-                untuk manajemen alamat di Regar Mart
+                untuk manajemen alamat di Panganku Fresh
               </span>
             </Checkbox>
           </div>

@@ -40,7 +40,7 @@ export default function AboutSection() {
         <div className="flex-shrink-0">
           <Image
             src="/IconRM.png"
-            alt="Regar Mart Logo"
+            alt="Panganku Fresh Logo"
             width={200}
             height={200}
             className={`object-contain w-32 h-32 md:w-[200px] md:h-[200px] ${
@@ -58,7 +58,7 @@ export default function AboutSection() {
               textShadow: "0 1px 4px rgba(0, 0, 0, 0.10)",
             }}
           >
-            Tentang Regar Mart
+            Tentang Panganku Fresh
           </h1>
 
           <p
@@ -68,9 +68,9 @@ export default function AboutSection() {
               textShadow: "0 1px 4px rgba(0, 0, 0, 0.10)",
             }}
           >
-            Regar Mart adalah oasis bagi mereka yang mencari kesegaran dan kualitas dalam setiap gigitan. Dengan
+            Panganku Fresh adalah oasis bagi mereka yang mencari kesegaran dan kualitas dalam setiap gigitan. Dengan
             sayuran segar dan sembako pilihan, kami menghidupkan rumah Anda dengan cinta dan dedikasi. Setiap produk
-            adalah bukti komitmen kami untuk menghadirkan yang terbaik, menjadikan Regar Mart sebagai bagian tak
+            adalah bukti komitmen kami untuk menghadirkan yang terbaik, menjadikan Panganku Fresh sebagai bagian tak
             terpisahkan dari kehidupan sehari-hari Anda.
           </p>
         </div>
