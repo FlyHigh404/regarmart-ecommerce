@@ -44,7 +44,7 @@ const Categories = () => {
 
   const refreshCategories = async () => {
     try {
-      const response = await fetch("/api/admin/categories");
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/admin/categories`);
       if (response.ok) {
         const data = await response.json();
         setCategories(data);
@@ -58,7 +58,7 @@ const Categories = () => {
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        const response = await fetch("/api/admin/categories");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/admin/categories`);
         if (response.ok) {
           const data = await response.json();
           setCategories(data);
@@ -88,7 +88,7 @@ const Categories = () => {
     setDeleteConfirmOpen(false);
 
     try {
-      const response = await fetch(`/api/admin/categories/${categoryToDelete.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/admin/categories/${categoryToDelete.id}`, {
         method: 'DELETE',
       });
 

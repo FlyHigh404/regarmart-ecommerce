@@ -48,7 +48,7 @@ export default function DaftarAlamat({
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch("/api/profile/address")
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/profile/address`)
       if (!response.ok) {
         throw new Error("Gagal mengambil data alamat")
       }
@@ -70,7 +70,7 @@ export default function DaftarAlamat({
 
   const handleDelete = async (id: string | number) => {
     try {
-      const response = await fetch(`/api/profile/address/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/profile/address/${id}`, {
         method: "DELETE",
       })
       
@@ -92,7 +92,7 @@ export default function DaftarAlamat({
 
   const setSebagaiUtama = async (id: string | number) => {
     try {
-      const response = await fetch(`/api/profile/address/${id}/set-primary`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/profile/address/${id}/set-primary`, {
         method: "PATCH",
       })
       

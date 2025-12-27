@@ -22,7 +22,7 @@ const Notifikasi = () => {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const response = await fetch("/api/admin/notifications");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/admin/notifications`);
         const data = await response.json();
         setNotifications(data);
       } catch (error) {

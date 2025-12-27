@@ -47,7 +47,7 @@ const Products = () => {
       if (!silentRefresh) {
         setLoading(true);
       }
-      const response = await fetch("/api/admin/products");
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/admin/products`);
       if (response.ok) {
         const data = await response.json();
         setProducts(data);
@@ -78,7 +78,7 @@ const Products = () => {
     setDeleteConfirmOpen(false);
 
     try {
-      const response = await fetch(`/api/admin/products/${productToDelete.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/admin/products/${productToDelete.id}`, {
         method: 'DELETE',
       });
 

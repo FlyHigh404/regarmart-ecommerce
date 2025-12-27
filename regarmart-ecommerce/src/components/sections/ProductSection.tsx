@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Search, Plus, X, Loader2, CheckCircle, AlertCircle, LogIn } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/context/AuthContext";
 import Link from 'next/link';
 import { useCart } from "@/context/CartContext";
 
@@ -128,7 +128,7 @@ export default function ProductPopuler() {
   const [pendingProduct, setPendingProduct] = useState<any>(null);
   const [isMounted, setIsMounted] = useState(false);
 
-  const { data: session } = useSession();
+  const { user, token } = useAuth()
   const router = useRouter();
   const { incrementCart } = useCart();
 
@@ -140,9 +140,11 @@ export default function ProductPopuler() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+        
         const [res1, res2] = await Promise.all([
-          fetch("/api/products").then((res) => res.json()),
-          fetch("/api/products/categories").then((res) => res.json()),
+          fetch(`${baseUrl}/app/api/products`).then((res) => res.json()),
+          fetch(`${baseUrl}/app/api/products/categories`).then((res) => res.json()),
         ]);
         setProducts(Array.isArray(res1) ? res1 : []);
         setCategories(Array.isArray(res2) ? res2 : []);
@@ -170,13 +172,13 @@ export default function ProductPopuler() {
   };
 
   const handleAddToCart = async (product: any) => {
-    if (!session) {
+    if (!user) {
       setPendingProduct(product);
       setShowLoginModal(true);
       return;
     }
 
-    if (session.user?.role === "ADMIN") {
+    if (user.role === "ADMIN") {
       setToast({
         message: "Akun admin tidak dapat menambahkan produk ke keranjang.",
         type: 'error'
@@ -190,7 +192,7 @@ export default function ProductPopuler() {
   const addToCart = async (product: any) => {
     setAddingToCart(product.id);
     try {
-      const response = await fetch("/api/cart", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/cart`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

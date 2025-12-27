@@ -92,7 +92,7 @@ const AddAddress: React.FC<AddAddressProps> = ({ isOpen, onClose, onSave }) => {
     }
 
     try {
-      const response = await fetch("/api/profile/address", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/profile/address`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

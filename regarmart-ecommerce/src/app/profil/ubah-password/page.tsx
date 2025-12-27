@@ -38,7 +38,7 @@ export default function UbahPasswordPage() {
     setSuccess(null)
 
     try {
-      const response = await fetch('/api/profile/password', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/profile/password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

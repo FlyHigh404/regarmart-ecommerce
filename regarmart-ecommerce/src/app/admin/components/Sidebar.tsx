@@ -2,7 +2,8 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Home, List, FileText, Users, BarChart2, Settings, LogOut, X, ShoppingBag, User, ArrowLeftFromLine } from "lucide-react"
-import { signOut } from "next-auth/react"
+// import { signOut } from "next-auth/react"
+import { useAuth } from "@/context/AuthContext"
 
 // Menu items array dengan icon yang disesuaikan
 const menuItems = [
@@ -25,6 +26,7 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen = false, onClose, onToggle, style }: SidebarProps) {
   const pathname = usePathname()
+  const { logoutAdmin } = useAuth();
 
   return (
     <>
@@ -69,7 +71,7 @@ export default function Sidebar({ isOpen = false, onClose, onToggle, style }: Si
             )
           })}
           <button
-            onClick={() => signOut({ callbackUrl: "/admin-login" })}
+            onClick={() => logoutAdmin}
             className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all bg-red-50 text-red-600 font-medium hover:bg-red-100 mt-auto"
           >
             <LogOut className="w-5 h-5 text-red-600" />
@@ -124,7 +126,7 @@ export default function Sidebar({ isOpen = false, onClose, onToggle, style }: Si
             )
           })}
           <button
-            onClick={() => signOut({ callbackUrl: "/admin-login" })}
+            onClick={() => logoutAdmin}
             className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all bg-red-50 text-red-600 font-medium hover:bg-red-100 mt-8"
           >
             <LogOut className="w-5 h-5 text-red-600" />

@@ -1,12 +1,14 @@
 "use client"
 
-import { useSession } from "next-auth/react"
+import { useAuth } from "@/context/AuthContext";
+// import { useSession } from "next-auth/react"
 import useReplySocket from "@/hooks/useReplySocket"
 import { useToast, Toast } from "@/components/Toast"
 
 export default function NotificationProvider({ children }: { children: React.ReactNode }) {
-    const { data: session } = useSession()
-    const userId = session?.user?.id as string
+    // const { data: session } = useSession()
+    const { user } = useAuth();
+    const userId = user?.id as string
     const { toast, showToast, hideToast } = useToast()
 
     const handleNotification = (message: string) => {

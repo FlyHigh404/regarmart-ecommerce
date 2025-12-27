@@ -33,7 +33,7 @@ const Pengaturan = () => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const res = await fetch("/api/admin/profile")
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/admin/profile`);
                 if (!res.ok) throw new Error("Failed to fetch profile")
 
                 const data = await res.json()
@@ -79,7 +79,7 @@ const Pengaturan = () => {
         setError(null)
 
         try {
-            const res = await fetch("/api/upload", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/admin/upload`, {
                 method: "POST",
                 body: uploadData,
             })
@@ -92,7 +92,7 @@ const Pengaturan = () => {
             const data = await res.json()
 
             // Update profile image via API
-            const updateRes = await fetch("/api/admin/profile", {
+            const updateRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/admin/profile`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -154,7 +154,7 @@ const Pengaturan = () => {
         setPasswordLoading(true)
 
         try {
-            const res = await fetch("/api/admin/profile/password", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/admin/profile/password`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",

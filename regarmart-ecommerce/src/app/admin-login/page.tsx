@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+// import { signIn } from "next-auth/react";
+import { useAuth } from "@/context/AuthContext";
 import NavAuth from "@/components/NavAuth";
 import Footer from "@/components/Footer";
 
@@ -14,6 +15,7 @@ export default function LoginPageAdmin() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const { login } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -23,16 +25,33 @@ export default function LoginPageAdmin() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const result = await signIn("credentials", {
-      email: formData.email,
-      password: formData.password,
-      redirect: false,
-    });
-    if (result?.error) {
-      setError(result.error);
-      setLoading(false);
-    } else {
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/auth/[...nextauth]`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Gagal masuk ke akun admin");
+      }
+
+      if (data.user.role !== "ADMIN") {
+        throw new Error("Anda tidak memiliki akses ke halaman ini.");
+      }
+
+      login(data.user, data.token); 
       router.push("/admin/dashboard");
+
+    } catch (err: any) {
+      setError(err.message);
+      setLoading(false);
     }
   };
 

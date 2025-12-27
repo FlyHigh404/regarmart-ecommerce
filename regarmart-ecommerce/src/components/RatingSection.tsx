@@ -1,7 +1,7 @@
 "use client"
 import { Star } from "lucide-react"
 import { useState } from "react"
-import { useSession } from "next-auth/react"
+import { useAuth } from "@/context/AuthContext"
 import FormRating from "./FormRating"
 
 interface RatingSectionProps {
@@ -25,17 +25,18 @@ export default function RatingSection({
   product,
   orderNumber,
 }: RatingSectionProps) {
-  const { data: session } = useSession()
+  // const { data: session } = useSession()
+  const { user, login, logout, token } = useAuth();
   const [isRatingOpen, setIsRatingOpen] = useState(false)
 
-  const isUserLoggedIn = !!session && session.user?.role !== "ADMIN"
+  const isUserLoggedIn = !!user && user?.role !== "ADMIN"
 
   const handleWriteReview = () => {
-    if (!session) {
+    if (!user) {
       alert("Silakan login terlebih dahulu untuk menulis ulasan")
       return
     }
-    if (session.user?.role === "ADMIN") {
+    if (user?.role === "ADMIN") {
       alert("Akun admin tidak dapat memberikan ulasan")
       return
     }

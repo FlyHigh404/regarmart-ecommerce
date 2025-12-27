@@ -12,7 +12,7 @@ export default function ProfilPage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await fetch("/api/profile")
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/profile`);
         if (!response.ok) {
           throw new Error("Failed to fetch profile")
         }
@@ -56,7 +56,7 @@ export default function ProfilPage() {
         {/* Image container with larger negative margin */}
         <div className="mb-4 -mt-28">
           <Image
-            src={user.image || "/icon.png"}
+            src={user.image || "/panganku-fresh-icon.png"}
             alt="Profile"
             width={92}  // Increased size
             height={92}  // Increased size

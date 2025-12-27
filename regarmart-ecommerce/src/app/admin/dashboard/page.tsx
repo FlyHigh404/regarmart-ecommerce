@@ -44,7 +44,7 @@ export default function AdminDashboard() {
   const fetchDashboardData = async (filter: 'bulan' | 'minggu') => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/admin/dashboard?filter=${filter}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/admin/dashboard?filter=${filter}`);
 
       if (!response.ok) {
         throw new Error('Failed to fetch dashboard data');

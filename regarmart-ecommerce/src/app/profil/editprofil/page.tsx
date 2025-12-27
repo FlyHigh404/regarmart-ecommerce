@@ -26,7 +26,7 @@ export default function ProfilForm() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await fetch("/api/profile")
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/profile`);
         if (!response.ok) throw new Error("Gagal memuat data profil")
         const data = await response.json()
 
@@ -90,7 +90,7 @@ export default function ProfilForm() {
     setSuccess(false)
 
     try {
-      const response = await fetch("/api/profile", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/profile`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -142,7 +142,7 @@ export default function ProfilForm() {
     setError(null)
 
     try {
-      const res = await fetch("/api/upload", { method: "POST", body: uploadData })
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/upload`, { method: "POST", body: uploadData })
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}))
         throw new Error(errorData.message || "Upload gagal")

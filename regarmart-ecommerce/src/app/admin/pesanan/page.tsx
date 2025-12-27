@@ -45,7 +45,7 @@ export default function Pesanan() {
     const fetchOrders = async () => {
       try {
         setLoading(true)
-        const res = await fetch("/api/admin/order")
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/admin/order`);
         if (!res.ok) throw new Error("Gagal fetch data")
         const data = await res.json()
 

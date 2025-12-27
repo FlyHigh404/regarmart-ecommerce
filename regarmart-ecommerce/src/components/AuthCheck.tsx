@@ -1,7 +1,8 @@
 "use client";
 
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function AuthCheck({
   children,
@@ -10,23 +11,30 @@ export default function AuthCheck({
   children: React.ReactNode;
   role?: string;
 }) {
-  interface SessionUser {
-    name?: string | null;
-    email?: string | null;
-    image?: string | null;
-    role?: string | null;
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push("/auth/signin");
+    }
+
+    if (!isLoading && user && role && user.role !== role) {
+      router.push("/unauthorized");
+    }
+  }, [user, isLoading, role, router]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="animate-pulse">Loading ...</p>
+      </div>
+    );
   }
 
-  interface Session {
-    user?: SessionUser;
-    [key: string]: any;
+  if (user && (!role || user.role === role)) {
+    return <>{children}</>;
   }
 
-  const { data: session, status } = useSession() as { data: Session | null, status: string };
-
-  if (status === "loading") return <div>Loading...</div>;
-  if (!session) redirect("/auth/signin");
-  if (role && session?.user?.role !== role) redirect("/unauthorized");
-
-  return <>{children}</>;
+  return null;
 }

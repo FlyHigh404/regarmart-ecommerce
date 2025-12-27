@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { Menu, X, ShoppingCart, User, LogOut, Bell, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
+import { useAuth } from "@/context/AuthContext";
+// import { signOut, useSession } from "next-auth/react";
 import NotifikasiCust from "./NotifikasiCust";
 import CartCust from "./CartCust";
 import { useCart } from "@/context/CartContext";
@@ -17,7 +18,7 @@ const Navbar = () => {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const router = useRouter();
   const pathname = usePathname();
-  const { data: session } = useSession();
+  const { user, token, login, logout } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { cartCount } = useCart();
   const [notificationCount, setNotificationCount] = useState<number>(0);
@@ -26,9 +27,9 @@ const Navbar = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!session) return;
+      if (!user) return;
       try {
-        const res = await fetch("/api/profile", { credentials: "include" });
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/profile`, { credentials: "include" });
         if (!res.ok) {
           console.warn("Profile fetch failed:", res.status);
           return;
@@ -41,7 +42,7 @@ const Navbar = () => {
     };
 
     fetchProfile();
-  }, [session]);
+  }, [user]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -104,10 +105,10 @@ const Navbar = () => {
   const handleSignOut = () => {
     setIsProfileDropdownOpen(false);
     setIsMobileMenuOpen(false);
-    signOut({ callbackUrl: "/" });
+    logout;
   };
 
-  const showCustomerIcons = session && session.user?.role !== "ADMIN";
+  const showCustomerIcons = user && user?.role !== "ADMIN";
 
   return (
     <>
@@ -173,7 +174,7 @@ const Navbar = () => {
 
         {/* ---------------- DESKTOP ICONS ---------------- */}
         <div className="hidden lg:flex items-center gap-2">
-          {session ? (
+          {user ? (
             <>
               {showCustomerIcons && (
                 <div className="flex items-center gap-1">
@@ -190,13 +191,13 @@ const Navbar = () => {
                 >
                   <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-gray-100">
                     <img
-                      src={profileImage || session?.user?.image || "/default-avatar.png"}
+                      src={profileImage || user?.image || "/default-avatar.png"}
                       alt="Profile"
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <span className="text-sm font-medium text-gray-700 max-w-[100px] truncate hidden xl:block">
-                    {session.user?.name || "User"}
+                    {user?.name || "User"}
                   </span>
                   <ChevronDown
                     className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isProfileDropdownOpen ? "rotate-180" : ""
@@ -215,16 +216,16 @@ const Navbar = () => {
                   <div className="px-4 py-3 bg-gradient-to-br from-green-50 to-gray-50">
                     <div className="flex items-center gap-3">
                       <img
-                        src={profileImage || session.user?.image || "/default-avatar.png"}
+                        src={profileImage || user?.image || "/default-avatar.png"}
                         alt="Profile"
                         className="w-10 h-10 rounded-full object-cover ring-2 ring-white"
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-gray-900 truncate">
-                          {session.user?.name}
+                          {user?.name}
                         </p>
                         <p className="text-xs text-gray-500 truncate">
-                          {session.user?.email}
+                          {user?.email}
                         </p>
                       </div>
                     </div>
@@ -232,7 +233,7 @@ const Navbar = () => {
 
                   {/* Menu Items */}
                   <div className="py-1">
-                    {session.user?.role === "ADMIN" ? (
+                    {user?.role === "ADMIN" ? (
                       <button
                         onClick={() => {
                           setIsProfileDropdownOpen(false);
@@ -321,20 +322,20 @@ const Navbar = () => {
 
         <div className="px-6 py-4">
           {/* Profile Section (if logged in) */}
-          {session && (
+          {user && (
             <div className="mb-6 p-4 bg-gradient-to-br from-green-50 to-gray-50 rounded-xl">
               <div className="flex items-center gap-3">
                 <img
-                  src={profileImage || session.user?.image || "/default-avatar.png"}
+                  src={profileImage || user?.image || "/default-avatar.png"}
                   alt="Profile"
                   className="w-12 h-12 rounded-full object-cover ring-2 ring-white shadow-sm"
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-gray-900 truncate">
-                    {session.user?.name}
+                    {user?.name}
                   </p>
                   <p className="text-xs text-gray-500 truncate">
-                    {session.user?.email}
+                    {user?.email}
                   </p>
                 </div>
               </div>
@@ -373,12 +374,12 @@ const Navbar = () => {
           </nav>
 
           {/* Action Buttons */}
-          {session ? (
+          {user ? (
             <div className="space-y-1 pt-4 border-t border-gray-100">
               <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Akun
               </p>
-              {session.user?.role === "ADMIN" ? (
+              {user?.role === "ADMIN" ? (
                 <button
                   onClick={() => {
                     setIsMobileMenuOpen(false);

@@ -33,7 +33,7 @@ export default function CategoryUploadForm({ initialData, onClose, onSuccess }: 
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await fetch("/api/products/categories");
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/products/categories`);
                 if (response.ok) {
                     const data = await response.json();
                     setCategories(data);
@@ -77,13 +77,13 @@ export default function CategoryUploadForm({ initialData, onClose, onSuccess }: 
             const isEdit = !!initialData;
             
             if (isEdit) {
-                response = await fetch(`/api/admin/categories/${initialData.id}`, {
+                response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/admin/categories/${initialData.id}`, {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(categoryData),
                 });
             } else {
-                response = await fetch("/api/admin/categories", {
+                response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/admin/categories`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(categoryData),

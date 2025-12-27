@@ -224,7 +224,7 @@ const CartPage = () => {
     const fetchCart = async () => {
       try {
         setLoading(true);
-        const response = await fetch("/api/cart");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/cart`);
         const data = await response.json();
 
         if (response.ok) {
@@ -333,7 +333,7 @@ const CartPage = () => {
     setUpdatingItems((prev) => [...prev, id]);
 
     try {
-      const response = await fetch(`/api/cart/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/cart/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -380,7 +380,7 @@ const CartPage = () => {
     setDeletingItems((prev) => [...prev, id]);
 
     try {
-      const response = await fetch(`/api/cart/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/cart/${id}`, {
         method: "DELETE",
       });
 
@@ -423,8 +423,9 @@ const CartPage = () => {
     setDeletingItems((prev) => [...prev, ...selectedIds]);
 
     try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL;
       const deletePromises = selectedIds.map((id) =>
-        fetch(`/api/cart/${id}`, { method: "DELETE" })
+        fetch(`${baseUrl}/app/api/cart/${id}`, { method: "DELETE" })
       );
 
       const responses = await Promise.all(deletePromises);

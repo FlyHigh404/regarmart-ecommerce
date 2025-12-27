@@ -92,7 +92,7 @@ const FormRating: React.FC<FormRatingProps> = ({
 
     try {
       // 1. Kirim rating ke endpoint rating
-      const ratingResponse = await fetch(`/api/products/${product.id}/ratings`, {
+      const ratingResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/products/${product.id}/ratings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -108,7 +108,7 @@ const FormRating: React.FC<FormRatingProps> = ({
         throw new Error(errorData.error || "Gagal mengirim rating");
       }
 
-      const reviewResponse = await fetch(`/api/products/${product.id}/reviews`, {
+      const reviewResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/products/${product.id}/reviews`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

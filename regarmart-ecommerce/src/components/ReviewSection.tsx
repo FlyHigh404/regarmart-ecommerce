@@ -50,7 +50,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ reviews, userRole }) => {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/admin/reply-review', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/admin/reply-review`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -4,7 +4,7 @@ import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { Product } from "@/types/product";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 
@@ -57,7 +57,7 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
   const [averageRating, setAverageRating] = useState<number>(0);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   
-  const { data: session } = useSession();
+  const { user, token } = useAuth()
   const router = useRouter();
   const { incrementCart } = useCart();
 
@@ -71,7 +71,7 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
   useEffect(() => {
     const fetchProductRating = async () => {
       try {
-        const response = await fetch(`/api/products/${product.id}/ratings`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/products/${product.id}/ratings`);
         if (response.ok) {
           const ratingData = await response.json();
           setAverageRating(ratingData.average || 0);
@@ -94,13 +94,13 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
 );
 
   const handleAddToCart = async (product: Product) => {
-    if (!session) {
+    if (!user) {
       setErrorMessage("Anda harus login terlebih dahulu untuk menambahkan produk ke keranjang.");
       setShowErrorModal(true);
       return;
     }
 
-    if (session.user?.role === "ADMIN") {
+    if (user.role === "ADMIN") {
       setErrorMessage("Akun admin tidak dapat menambahkan produk ke keranjang.");
       setShowErrorModal(true);
       return;
@@ -115,7 +115,7 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
         unitPrice: product.price,
       };
 
-      const response = await fetch("/api/cart", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/cart`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -211,11 +211,11 @@ const CartProduct: React.FC<CartProductProps> = ({ product, index }) => {
                 Batal
               </button>
               <button
-                onClick={session?.user?.role === "ADMIN" ? closeErrorModal : handleLoginRedirect}
+                onClick={user?.role === "ADMIN" ? closeErrorModal : handleLoginRedirect}
                 className="flex-1 px-4 py-3 bg-[#26A81D] hover:bg-green-600 text-white font-semibold rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2"
               >
                 <LogIn size={18} />
-                {session?.user?.role === "ADMIN" ? "Tutup" : "Login"}
+                {user?.role === "ADMIN" ? "Tutup" : "Login"}
               </button>
             </div>
           </div>

@@ -89,7 +89,7 @@ useEffect(() => {
       const fetchCart = async () => {
         try {
           setLoading(true);
-          const response = await fetch("/api/cart", { 
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/cart`, { 
             cache: "no-store",
             headers: {
               'Cache-Control': 'no-cache',

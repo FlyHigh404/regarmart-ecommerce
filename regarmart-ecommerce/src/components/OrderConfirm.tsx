@@ -92,7 +92,7 @@ const OrderConfirm: React.FC<OrderConfirmProps> = ({
         endpoint: `/api/profile/order/${orderId}`
       });
 
-      const res = await fetch(`/api/profile/order/${orderId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/profile/order/${orderId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),

@@ -14,9 +14,10 @@ export default function TransaksiDiprosesPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL;
         const [ordersRes, addressRes] = await Promise.all([
-          fetch("/api/profile/riwayat-transaksi", { cache: "no-store" }),
-          fetch("/api/profile/address-primary", { cache: "no-store" }) 
+          fetch(`${baseUrl}/app/api/profile/riwayat-transaksi`, { cache: "no-store" }),
+          fetch(`${baseUrl}/app/api/profile/address-primary`, { cache: "no-store" }) 
         ]);
 
         if (!ordersRes.ok || !addressRes.ok) {
@@ -35,7 +36,7 @@ export default function TransaksiDiprosesPage() {
         setAlamatAktif(addressData);
       } catch (error) {
         console.error("Error fetching data:", error);
-        const ordersRes = await fetch("/api/profile/riwayat-transaksi", { cache: "no-store" });
+        const ordersRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/profile/riwayat-transaksi`, { cache: "no-store" });
         const ordersData = await ordersRes.json();
         const filtered = ordersData.filter((o: any) => o.status === OrderStatus.COMPLETED);
         const transformedOrders = filtered.map((order: any) => transformOrder(order));

@@ -91,7 +91,7 @@ export default function EditAddress({ isOpen, onClose, address, onSave, existing
 
     setIsSaving(true);
     try {
-      const response = await fetch(`/api/profile/address/${addressEdit.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/profile/address/${addressEdit.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(addressEdit),

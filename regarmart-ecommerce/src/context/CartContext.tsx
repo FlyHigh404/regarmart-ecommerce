@@ -16,7 +16,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
     const fetchCartCount = async () => {
         try {
-            const response = await fetch("/api/cart", { cache: "no-store" });
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/cart`, { cache: "no-store" });
             if (!response.ok) {
                 setCartCount(0);
                 return;

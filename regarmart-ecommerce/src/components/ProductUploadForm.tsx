@@ -48,7 +48,7 @@ export default function ProductUploadForm({ initialData, onClose, onSuccess }: P
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch("/api/products/categories")
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/products/categories`)
         if (response.ok) {
           const data = await response.json()
           setCategories(data)
@@ -119,7 +119,7 @@ export default function ProductUploadForm({ initialData, onClose, onSuccess }: P
         const fd = new FormData();
         fd.append("file", file);
 
-        const res = await fetch("/api/upload", { method: "POST", body: fd });
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/upload`, { method: "POST", body: fd });
         if (!res.ok) throw new Error("Upload failed");
         const data = await res.json();
         uploadedUrls.push(data.url);
@@ -136,13 +136,13 @@ export default function ProductUploadForm({ initialData, onClose, onSuccess }: P
       const isEdit = !!initialData;
       
       if (isEdit) {
-        response = await fetch(`/api/admin/products/${initialData.id}`, {
+        response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/admin/products/${initialData.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(productData),
         });
       } else {
-        response = await fetch("/api/admin/products", {
+        response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/admin/products`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(productData),

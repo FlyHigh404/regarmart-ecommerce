@@ -47,7 +47,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   useEffect(() => {
     const fetchAdminProfile = async () => {
       try {
-        const res = await fetch("/api/admin/profile");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/admin/profile`);
         if (!res.ok) throw new Error("Failed to fetch admin profile");
         const data: AdminProfile = await res.json();
         setAdmin(data);
@@ -108,7 +108,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 </span>
                 <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-green-200">
                   <img
-                    src={admin?.image || "/icon.png"}
+                    src={admin?.image || "/panganku-fresh-icon.png"}
                     alt="Admin Avatar"
                     className="w-full h-full object-cover"
                   />
@@ -126,7 +126,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               </span>
               <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-green-200 flex-shrink-0">
                 <img
-                  src={admin?.image || "/icon.png"}
+                  src={admin?.image || "/panganku-fresh-icon.png"}
                   alt="Admin Avatar"
                   className="w-full h-full object-cover"
                 />

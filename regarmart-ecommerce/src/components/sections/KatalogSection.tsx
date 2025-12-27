@@ -70,7 +70,7 @@ export default function KatalogSection() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch("/api/products/search");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/products/search`);
         if (!response.ok) throw new Error(`Gagal mengambil produk: ${response.status}`);
 
         const data = await response.json();

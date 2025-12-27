@@ -9,7 +9,8 @@ import Pagination from "@/components/Pagination";
 import Footer from "@/components/Footer";
 import NavSearch from "@/components/NavSearch";
 import { useCart } from "@/context/CartContext";
-import { useSession } from "next-auth/react";
+// import { useSession } from "next-auth/react";
+import { useAuth } from "@/context/AuthContext";
 
 // Toast Notification Component
 const Toast = ({ 
@@ -99,13 +100,14 @@ export default function KatalogPage() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
 
-  const { data: session } = useSession();
+  const { user } = useAuth();
+  // const { data: session } = useSession();
   const { incrementCart } = useCart();
 
   const addToCart = async (product: any) => {
     setAddingToCart(product.id);
     try {
-      const response = await fetch("/api/cart", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/cart`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -161,7 +163,7 @@ export default function KatalogPage() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch("/api/products/categories");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/products/categories`);
         if (!res.ok) throw new Error("Gagal memuat kategori");
         const data = await res.json();
         setCategories([{ id: "all", name: "Semua" }, ...data]);
@@ -215,7 +217,7 @@ useEffect(() => {
 
       console.log("Fetching with params:", params.toString());
 
-      const res = await fetch(`/api/products/search?${params.toString()}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/products/search?${params.toString()}`);
       if (!res.ok) throw new Error("Gagal memuat produk");
       
       const data = await res.json();

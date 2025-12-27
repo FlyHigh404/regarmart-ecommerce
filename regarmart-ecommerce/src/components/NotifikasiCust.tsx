@@ -94,7 +94,7 @@ const NotifikasiCust: React.FC<NotifikasiCustProps> = ({
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch('/api/notifications');
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/notifications`);
             if (!response.ok) {
                 throw new Error('Failed to fetch notifications');
             }
@@ -138,7 +138,7 @@ const NotifikasiCust: React.FC<NotifikasiCustProps> = ({
 
     const handleMarkAllRead = useCallback(async () => {
         try {
-            const response = await fetch('/api/notifications', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/notifications`, {
                 method: 'DELETE',
             });
 

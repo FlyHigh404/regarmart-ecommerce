@@ -56,7 +56,7 @@ const Pengguna = () => {
     const fetchCustomers = async () => {
       try {
         setLoading(true)
-        const response = await fetch('/api/admin/customers')
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/admin/customers`);
         if (!response.ok) {
           throw new Error('Failed to fetch customers')
         }

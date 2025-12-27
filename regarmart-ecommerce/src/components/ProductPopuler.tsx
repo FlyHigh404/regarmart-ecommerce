@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Search, Plus, X, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/context/AuthContext";
+// import { useSession } from "next-auth/react";
 import Link from 'next/link';
 
 export default function ProductPopuler() {
@@ -17,16 +18,17 @@ export default function ProductPopuler() {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
-  const { data: session } = useSession();
+  const { user, login, logout, token } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL;
         const [res1, res2] = await Promise.all([
-          fetch("/api/products").then((res) => res.json()),
-          fetch("/api/products/categories").then((res) => res.json()),
+          fetch(`${baseUrl}/app/api/products`).then((res) => res.json()),
+          fetch(`${baseUrl}/app/api/products/categories`).then((res) => res.json()),
         ]);
         setProducts(res1);
         setCategories(res2);
@@ -50,14 +52,14 @@ export default function ProductPopuler() {
 
   const handleAddToCart = async (product: any) => {
     // Cek login
-    if (!session) {
+    if (!user) {
       setErrorMessage("Anda harus login terlebih dahulu.");
       setShowErrorModal(true);
       return;
     }
 
     // Cek role user
-    if (session.user?.role === "ADMIN") {
+    if (user?.role === "ADMIN") {
       setErrorMessage("Akun admin tidak dapat menambahkan produk ke keranjang.");
       setShowErrorModal(true);
       return;
@@ -65,7 +67,7 @@ export default function ProductPopuler() {
 
     setAddingToCart(product.id);
     try {
-      const response = await fetch("/api/cart", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/cart`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -120,7 +122,7 @@ export default function ProductPopuler() {
               >
                 Tutup
               </button>
-              {!session && (
+              {!user && (
                 <button
                   onClick={handleLoginRedirect}
                   className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"

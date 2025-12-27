@@ -3,14 +3,15 @@
 import { useState, useEffect, useRef } from "react";
 import { User, Settings, LogOut, ChevronDown, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
+import { useAuth } from "@/context/AuthContext";
+// import { signOut, useuser } from "next-auth/react";
 import NotifikasiCust from "./NotifikasiCust";
 import CartCust from "./CartCust";
 import { useCart } from "@/context/CartContext"
 import Link from "next/link";
 
 const NavSearch = () => {
-  const { data: session } = useSession();
+  const { user, login, logout, token } = useAuth();
   const router = useRouter();
 
   const [notificationCount, setNotificationCount] = useState(0);
@@ -21,18 +22,18 @@ const NavSearch = () => {
   const { cartCount, fetchCartCount } = useCart();
 
   useEffect(() => {
-    if (session && session.user?.role !== "ADMIN") {
+    if (user && user?.role !== "ADMIN") {
       fetchCartCount();
     } else {
       setNotificationCount(0);
     }
-  }, [session, fetchCartCount]);
+  }, [user, fetchCartCount]);
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!session) return;
+      if (!user) return;
       try {
-        const res = await fetch("/api/profile", { credentials: "include" });
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/profile`, { credentials: "include" });
         if (!res.ok) {
           console.warn("Profile fetch failed:", res.status);
           return;
@@ -45,7 +46,7 @@ const NavSearch = () => {
     };
 
     fetchProfile();
-  }, [session]);
+  }, [user]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -62,7 +63,7 @@ const NavSearch = () => {
 
   const handleSignOut = () => {
     setIsProfileDropdownOpen(false);
-    signOut({ callbackUrl: "/" });
+    logout;
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -72,7 +73,7 @@ const NavSearch = () => {
     }
   };
 
-  const showIcons = session && session.user?.role !== "ADMIN";
+  const showIcons = user && user?.role !== "ADMIN";
 
   return (
     <>
@@ -111,7 +112,7 @@ const NavSearch = () => {
           {showIcons && <CartCust />}
 
           {/* Profile / Login */}
-          {session ? (
+          {user ? (
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
@@ -119,13 +120,13 @@ const NavSearch = () => {
               >
                 <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-gray-100">
                   <img
-                    src={profileImage || session.user?.image || "/default-avatar.png"}
+                    src={profileImage || user?.image || "/default-avatar.png"}
                     alt="Profile"
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <span className="text-sm font-medium text-gray-700 max-w-[120px] truncate hidden sm:block">
-                  {session.user?.name || "User"}
+                  {user?.name || "User"}
                 </span>
                 <ChevronDown
                   className={`w-4 h-4 text-gray-500 transition-transform duration-200 hidden sm:block ${
@@ -146,16 +147,16 @@ const NavSearch = () => {
                 <div className="px-4 py-3 bg-gradient-to-br from-green-50 to-gray-50">
                   <div className="flex items-center gap-3">
                     <img
-                      src={profileImage || session.user?.image || "/default-avatar.png"}
+                      src={profileImage || user?.image || "/default-avatar.png"}
                       alt="Profile"
                       className="w-10 h-10 rounded-full object-cover ring-2 ring-white"
                     />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-gray-900 truncate">
-                        {session.user?.name}
+                        {user?.name}
                       </p>
                       <p className="text-xs text-gray-500 truncate">
-                        {session.user?.email}
+                        {user?.email}
                       </p>
                     </div>
                   </div>

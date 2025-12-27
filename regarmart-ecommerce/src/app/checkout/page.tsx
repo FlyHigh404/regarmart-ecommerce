@@ -67,7 +67,7 @@ const CheckoutPage: React.FC = () => {
 
 const fetchOrderData = async () => {
   try {
-    const response = await fetch(`/api/cart?orderId=${order.id}`);
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/cart?orderId=${order.id}`);
     if (response.ok) {
       const updatedOrder = await response.json();
       setOrder(updatedOrder);
@@ -81,12 +81,13 @@ const fetchOrderData = async () => {
   useEffect(() => {
     const fetchCheckoutData = async () => {
       try {
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL;
         const searchParams = new URLSearchParams(window.location.search);
         const orderId = searchParams.get("orderId");
         setLoading(true);
         const [cartResponse, addressResponse] = await Promise.all([
-          fetch(`/api/cart${orderId ? `?orderId=${orderId}` : ""}`),
-          fetch("/api/profile/address-primary"),
+          fetch(`${baseUrl}/app/api/cart${orderId ? `?orderId=${orderId}` : ""}`),
+          fetch(`${baseUrl}/app/api/profile/address-primary`),
         ]);
 
         if (!cartResponse.ok || !addressResponse.ok) {
@@ -119,7 +120,7 @@ const fetchOrderData = async () => {
     try {
       setProcessingCheckout(true);
 
-      const response = await fetch(`/api/cart/checkout?orderId=${order.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/cart/checkout?orderId=${order.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
