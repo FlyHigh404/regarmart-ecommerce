@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
-import { ArrowLeft, Phone, MapPin, Truck, Clock, CheckCircle, X, AlertCircle, XCircle } from "lucide-react"
+import { ArrowLeft, Phone, MapPin, Truck, Clock, CheckCircle, X, AlertCircle, XCircle, SquareUserRound } from "lucide-react"
 import { useRouter, useParams } from "next/navigation"
 import AdminLayout from "../../AdminLayout"
 
@@ -13,6 +13,12 @@ interface OrderItem {
     name: string
     imageUrl?: string[]
   }
+}
+
+interface Courier {
+  id: string
+  name: string
+  status: string
 }
 
 interface User {
@@ -32,6 +38,9 @@ interface Order {
   createdAt: string
   orderItems?: OrderItem[]
   user?: User
+  courier?: { 
+    name: string
+  }
 }
 
 interface ConfirmationModalProps {
@@ -239,6 +248,11 @@ const PesananDetailPage = () => {
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
 
+  // courier status
+  const [showCourierModal, setShowCourierModal] = useState(false)
+  const [couriers, setCouriers] = useState<Courier[]>([])
+  const [courierLoading, setCourierLoading] = useState(false)
+
   // Ubah updating menjadi object untuk melacak status masing-masing button
   const [updating, setUpdating] = useState<{
     tugaskanKurir: boolean
@@ -314,6 +328,41 @@ const PesananDetailPage = () => {
     })
   }
 
+  const fetchCouriers = async () => {
+    try {
+      setCourierLoading(true)
+      const res = await fetch('/api/admin/courier')
+      if (res.ok) {
+        const data = await res.json()
+        setCouriers(data)
+      }
+    } catch (error) {
+      console.error("Error fetching couriers:", error)
+    } finally {
+      setCourierLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    const fetchOrderDetail = async () => {
+      try {
+        setLoading(true)
+        const res = await fetch(`/api/admin/order/${params.id}`)
+        if (!res.ok) throw new Error("Gagal fetch data")
+        const data = await res.json()
+        setOrder(data)
+      } catch (error) {
+        console.error("Gagal mengambil detail pesanan:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (params.id) {
+      fetchOrderDetail()
+    }
+  }, [params.id])
+
   useEffect(() => {
     const fetchOrderDetail = async () => {
       try {
@@ -388,25 +437,77 @@ const PesananDetailPage = () => {
     setModalConfig(prev => ({ ...prev, isOpen: false }))
   }
 
+  const confirmCourierAssignment = async (courierId: string) => {
+    try {
+      setUpdating(prev => ({ ...prev, tugaskanKurir: true }))
+      const res = await fetch('/api/admin/courier/assign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: params.id, courierId }),
+      })
+
+      if (!res.ok) throw new Error("Gagal tugaskan kurir")
+
+      // Refresh page data
+      const updatedRes = await fetch(`/api/admin/order/${params.id}`)
+      const updatedData = await updatedRes.json()
+      setOrder(updatedData)
+      setShowCourierModal(false)
+
+      setNotification({
+        isOpen: true,
+        title: "Berhasil!",
+        message: "Kurir berhasil ditugaskan dan pesanan sedang dikirim.",
+        type: "success"
+      })
+    } catch (error) {
+      setNotification({ isOpen: true, title: "Gagal!", message: "Gagal menugaskan kurir.", type: "error" })
+    } finally {
+      setUpdating(prev => ({ ...prev, tugaskanKurir: false }))
+    }
+  }
+
+  const handleCompleteOrderAction = async () => {
+    try {
+      setUpdating(prev => ({ ...prev, selesaikanPesanan: true }))
+      const res = await fetch('/api/admin/courier/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: params.id }),
+      })
+
+      if (!res.ok) throw new Error("Gagal menyelesaikan pesanan")
+
+      const updatedRes = await fetch(`/api/admin/order/${params.id}`)
+      const updatedData = await updatedRes.json()
+      setOrder(updatedData)
+
+      setNotification({
+        isOpen: true,
+        title: "Pesanan Selesai!",
+        message: "Pesanan berhasil diselesaikan dan kurir tersedia kembali.",
+        type: "success"
+      })
+    } catch (error) {
+      setNotification({ isOpen: true, title: "Gagal!", message: "Gagal menyelesaikan pesanan.", type: "error" })
+    } finally {
+      setUpdating(prev => ({ ...prev, selesaikanPesanan: false }))
+    }
+  }
+
   const handleAssignCourier = () => {
-    openModal({
-      title: "Tugaskan Kurir",
-      message: "Apakah Anda yakin ingin menugaskan kurir untuk pesanan ini? Pesanan akan diubah ke status 'Dikirim Kurir'.",
-      confirmText: "Ya, Tugaskan Kurir",
-      cancelText: "Batal",
-      type: "default",
-      onConfirm: () => updateOrderStatus('SHIPPED', 'tugaskanKurir')
-    })
+    fetchCouriers()
+    setShowCourierModal(true)
   }
 
   const handleCompleteOrder = () => {
     openModal({
       title: "Selesaikan Pesanan",
-      message: "Apakah Anda yakin ingin menyelesaikan pesanan ini? Pesanan akan diubah ke status 'Pesanan Selesai'.",
+      message: "Apakah Anda yakin ingin menyelesaikan pesanan ini? Kurir akan otomatis tersedia kembali untuk tugas berikutnya.",
       confirmText: "Ya, Selesaikan",
       cancelText: "Batal",
       type: "success",
-      onConfirm: () => updateOrderStatus('COMPLETED', 'selesaikanPesanan')
+      onConfirm: handleCompleteOrderAction
     })
   }
 
@@ -499,6 +600,47 @@ const PesananDetailPage = () => {
         message={notification.message}
         type={notification.type}
       />
+
+      {/* Courier Modal */}
+      {showCourierModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowCourierModal(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0">
+              <h2 className="text-xl font-bold text-gray-900">Pilih Kurir Tersedia</h2>
+              <button onClick={() => setShowCourierModal(false)} className="text-gray-400 hover:text-gray-600"><X size={24} /></button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto">
+              {courierLoading ? (
+                <div className="text-center py-8 text-gray-500">Memuat kurir...</div>
+              ) : (
+                <div className="space-y-3">
+                  {couriers.filter(c => c.status === "AVAILABLE").map(courier => (
+                    <div key={courier.id} className="flex items-center justify-between p-4 border rounded-xl hover:bg-gray-50 transition-colors">
+                      <div>
+                        <p className="font-bold text-gray-900">{courier.name}</p>
+                        <p className="text-xs text-green-600 font-medium uppercase tracking-wider">Tersedia</p>
+                      </div>
+                      <button
+                        onClick={() => confirmCourierAssignment(courier.id)}
+                        className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-700 transition-colors"
+                      >
+                        Pilih
+                      </button>
+                    </div>
+                  ))}
+                  {couriers.filter(c => c.status === "AVAILABLE").length === 0 && (
+                    <div className="text-center py-8 bg-red-50 rounded-xl border border-red-100">
+                      <p className="text-red-600 font-medium">Tidak ada kurir yang tersedia saat ini.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <main className="flex-1 bg-gray-50 pt-4 px-4">
         <div className="max-w-6xl mx-auto">
@@ -603,6 +745,14 @@ const PesananDetailPage = () => {
                     <span className="font-bold text-xl text-white uppercase">
                       {statusInfo.label}
                     </span>
+                    {currentStatus === "SHIPPED" && order.courier?.name && (
+                      <div className="ml-4 flex items-center gap-2 bg-white/20 px-4 py-1 rounded-full border border-white/30 backdrop-blur-sm">
+                        <SquareUserRound size={16} className="text-white" />
+                        <span className="text-white font-bold text-sm">
+                          {order.courier.name}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   {StatusIcon && (
                     <div className="absolute right-6 top-1/2 transform -translate-y-1/2">

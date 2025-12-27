@@ -137,6 +137,8 @@ model Order {
   updatedAt     DateTime      @updatedAt
   user          User          @relation(fields: [userId], references: [id])
   orderItems    OrderItem[]
+  courierId     String?       
+  courier       Courier?      @relation(fields: [courierId], references: [id])
 }
 
 model OrderItem {
@@ -147,6 +149,13 @@ model OrderItem {
   unitPrice Decimal @db.Decimal(10, 2)
   order     Order   @relation(fields: [orderId], references: [id])
   product   Product @relation(fields: [productId], references: [id])
+}
+
+model Courier{
+  id        String  @id @default(uuid())
+  name      String 
+  status    CourierStatus @default(AVAILABLE)
+  orders    Order[]
 }
 
 model Notification {
@@ -163,6 +172,12 @@ enum OrderStatus {
   SHIPPED
   COMPLETED
   CANCELED
+}
+
+enum CourierStatus {
+  AVAILABLE
+  ON_DELIVERY
+  INACTIVE
 }
 
 enum PaymentMethod {

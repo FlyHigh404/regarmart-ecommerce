@@ -269,7 +269,18 @@ const ProductDetailPage = () => {
         setQuantity(1);
       // Fetch product data
       const productResponse = await fetch(`/api/products/${productId}`);
-      if (!productResponse.ok) throw new Error("Gagal mengambil data produk");
+      if (!productResponse.ok) {
+        const errorText = await productResponse.text();
+        console.error("Product API Error:", errorText);
+        throw new Error("Gagal mengambil data produk");
+      }
+
+      const contentType = productResponse.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const errorText = await productResponse.text();
+        console.error("Non-JSON response:", errorText.substring(0, 200));
+        throw new Error("Server mengembalikan respons yang tidak valid");
+      }
 
       const productData = await productResponse.json();
       setProduct(productData);
@@ -284,27 +295,36 @@ const ProductDetailPage = () => {
           ),
         ]);
 
-      const relatedProductsData = await productRelatedResponse.json();
+      let relatedProductsData = [];
+      if (productRelatedResponse.ok) {
+        const contentType = productRelatedResponse.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          relatedProductsData = await productRelatedResponse.json();
+        }
+      }
       setRelatedProducts(relatedProductsData);
 
       // Process reviews data
       let reviewsData: Review[] = [];
       if (reviewsResponse.ok) {
-        const reviewsJson = await reviewsResponse.json();
-        reviewsData = Array.isArray(reviewsJson)
-          ? reviewsJson.map((r: any) => ({
-              id: r.id,
-              content: r.content,
-              createdAt: r.createdAt,
-              user: {
-                name: r.user?.name || "Anonim",
-                image: r.user?.image || null,
-              },
-              reply: r.reply,
-              replyBy: r.replyBy,
-              admin: r.admin ? { name: r.admin.name, role: "Admin" } : null,
-            }))
-          : [];
+        const contentType = reviewsResponse.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const reviewsJson = await reviewsResponse.json();
+          reviewsData = Array.isArray(reviewsJson)
+            ? reviewsJson.map((r: any) => ({
+                id: r.id,
+                content: r.content,
+                createdAt: r.createdAt,
+                user: {
+                  name: r.user?.name || "Anonim",
+                  image: r.user?.image || null,
+                },
+                reply: r.reply,
+                replyBy: r.replyBy,
+                admin: r.admin ? { name: r.admin.name, role: "Admin" } : null,
+              }))
+            : [];
+        }
         setReviews(reviewsData);
       } else {
         setReviews([]);
@@ -312,26 +332,33 @@ const ProductDetailPage = () => {
       // Process ratings data
       let processedRatings: Rating[];
       if (ratingsResponse.ok) {
-        const ratingsJson = await ratingsResponse.json();
-        const ratingsList = ratingsJson.ratings || [];
-        const averageFromApi = ratingsJson.average || 0;
+        const contentType = ratingsResponse.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const ratingsJson = await ratingsResponse.json();
+          const ratingsList = ratingsJson.ratings || [];
+          const averageFromApi = ratingsJson.average || 0;
 
-        // Hitung count untuk setiap rating value
-        const ratingCounts = [1, 2, 3, 4, 5].map((value) => {
-          const count = ratingsList.filter((r: any) => r.value === value).length;
-          return { value, count };
-        });
+          // Hitung count untuk setiap rating value
+          const ratingCounts = [1, 2, 3, 4, 5].map((value) => {
+            const count = ratingsList.filter((r: any) => r.value === value).length;
+            return { value, count };
+          });
 
-        // Reverse untuk urutan 5 ke 1
-        processedRatings = ratingCounts.reverse();
+          // Reverse untuk urutan 5 ke 1
+          processedRatings = ratingCounts.reverse();
 
-        // Set state dengan data dari API
-        setTotalReviews(ratingsList.length);
-        setAverageRating(Number(averageFromApi.toFixed(1)));
-        
-        // Update product rating
-        if (productData.rating !== averageFromApi) {
-          setProduct((prev) => (prev ? { ...prev, rating: averageFromApi } : null));
+          // Set state dengan data dari API
+          setTotalReviews(ratingsList.length);
+          setAverageRating(Number(averageFromApi.toFixed(1)));
+          
+          // Update product rating
+          if (productData.rating !== averageFromApi) {
+            setProduct((prev) => (prev ? { ...prev, rating: averageFromApi } : null));
+          }
+        } else {
+          processedRatings = processRatingsData(null);
+          setTotalReviews(0);
+          setAverageRating(0);
         }
       } else {
         processedRatings = processRatingsData(null);

@@ -12,6 +12,7 @@ interface CardOrderProps {
   orderId: string;
   orderNumber: string;
   status: OrderStatus;
+  courierName?: string;
   total: string;
   products: OrderProduct[];
   paymentMethod: PaymentMethod;
@@ -26,6 +27,7 @@ const CardOrder: React.FC<CardOrderProps> = ({
   orderId,
   orderNumber,
   status,
+  courierName,
   total,
   products,
   paymentMethod,
@@ -47,7 +49,7 @@ const CardOrder: React.FC<CardOrderProps> = ({
     try {
       setLoading(true);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/app/api/profile/order/${orderId}`, {
+      const res = await fetch(`/api/profile/order/${orderId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
@@ -232,7 +234,9 @@ const CardOrder: React.FC<CardOrderProps> = ({
       case OrderStatus.PROCESSING:
         return "Pesanan anda sedang kami siapkan";
       case OrderStatus.SHIPPED:
-        return "Pesanan sedang diantar oleh kurir";
+        return courierName 
+        ? `Pesanan sedang diantar oleh ${courierName}` 
+        : "Pesanan sedang diantar oleh kurir";
       case OrderStatus.COMPLETED:
         return "Pesanan telah tiba dan diterima customer";
       case OrderStatus.CANCELED:

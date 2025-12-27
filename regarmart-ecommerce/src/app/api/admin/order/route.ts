@@ -12,7 +12,8 @@ export async function GET(req: NextRequest) {
     try {
         const orders = await prisma.order.findMany({
             include: {
-                user: { select: { id: true, name: true, email: true, image: true } }
+                user: { select: { id: true, name: true, email: true, image: true } },
+                courier: { select: {id: true, name: true}}
             },
             orderBy: { createdAt: 'desc' },
         });
